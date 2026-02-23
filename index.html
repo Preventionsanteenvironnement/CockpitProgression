@@ -321,27 +321,6 @@
                 <div class="sub">Logger une séance</div>
             </div>
         </a>
-        <a href="log.html?room=205" class="btn-quick">
-            <div class="icon">🏫</div>
-            <div>
-                <div class="label">Salle 205</div>
-                <div class="sub">QR salle 205</div>
-            </div>
-        </a>
-        <a href="log.html?room=118" class="btn-quick">
-            <div class="icon">🏫</div>
-            <div>
-                <div class="label">Salle 118</div>
-                <div class="sub">QR salle 118</div>
-            </div>
-        </a>
-        <a href="log.html?room=010" class="btn-quick">
-            <div class="icon">🏫</div>
-            <div>
-                <div class="label">Salle 010</div>
-                <div class="sub">QR salle 010</div>
-            </div>
-        </a>
         <a href="dashboard.html" class="btn-quick">
             <div class="icon">📈</div>
             <div>
@@ -446,11 +425,11 @@
     <!-- ── TAB: QR CODES ── -->
     <div id="tabQr" class="section">
         <div class="card">
-            <div class="card-title">📱 QR Codes par salle</div>
+            <div class="card-title">📱 QR Code universel</div>
             <p style="color:var(--muted); font-size:0.82em; margin-bottom:18px;">
-                Imprimez ces QR codes et collez-les dans chaque salle. En scannant, la saisie rapide s'ouvre avec la bonne salle pré-remplie.
+                Imprimez ce QR code. En scannant, la saisie rapide détecte automatiquement la classe via votre emploi du temps Pronote.
             </p>
-            <button class="btn-print" onclick="window.print()" style="margin-bottom:18px;">🖨️ Imprimer tous les QR codes</button>
+            <button class="btn-print" onclick="window.print()" style="margin-bottom:18px;">🖨️ Imprimer le QR code</button>
             <div class="qr-grid" id="qrGrid"></div>
         </div>
     </div>
@@ -1182,10 +1161,7 @@
     var BASE_URL = 'https://preventionsanteenvironnement.github.io/CockpitProgression/';
 
     var QR_ROOMS = [
-        { room: '', label: 'QR Universel', desc: 'Detecte automatiquement la classe via Pronote (heure + jour)', primary: true },
-        { room: '205', label: 'Salle 205 TECHNO', desc: 'Filtre par salle 205' },
-        { room: '118', label: 'Salle 118', desc: 'Filtre par salle 118' },
-        { room: '010', label: 'Salle 010 PSR', desc: 'Filtre par salle 010' }
+        { room: '', label: 'QR Universel', desc: 'Détecte automatiquement la classe via Pronote (heure + jour)', primary: true }
     ];
 
     function renderQrCodes() {

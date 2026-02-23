@@ -306,6 +306,35 @@
             display: none;
         }
 
+        /* ── SESSION HISTORY ── */
+        .history-list {
+            max-height: 250px; overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .history-card {
+            padding: 10px 12px; border-radius: 10px;
+            border: 1px solid var(--border); margin-bottom: 6px;
+            background: white; font-size: 0.82em;
+        }
+        .history-card:first-child { border-color: var(--primary); background: #eff6ff; }
+        .history-card-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 4px;
+        }
+        .history-date { font-weight: 700; color: var(--muted); font-size: 0.9em; }
+        .history-statut { font-size: 0.85em; font-weight: 700; }
+        .history-detail { color: var(--muted); font-size: 0.9em; }
+        .history-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .history-badge {
+            padding: 2px 6px; border-radius: 4px;
+            background: var(--primary-light); color: var(--primary-dark);
+            font-size: 0.75em; font-weight: 600;
+        }
+        .history-count {
+            font-size: 0.75em; font-weight: 600; color: var(--muted);
+            background: var(--bg); padding: 2px 8px; border-radius: 10px;
+        }
+
         /* ── COURSE NAV ── */
         .course-nav {
             display: flex; align-items: center; gap: 8px;
@@ -398,6 +427,14 @@
 
     <!-- LAST LOG -->
     <div class="last-log" id="lastLogInfo" style="display:none;"></div>
+
+    <!-- SESSION HISTORY -->
+    <div id="sessionHistory" style="display:none;">
+        <div class="card">
+            <div class="card-title">📋 Historique <span class="history-count" id="historyCount"></span></div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+    </div>
 
     <!-- CARD 1: SÉANCE -->
     <div class="card">
@@ -632,6 +669,9 @@
     let todayCourses = [];
     let courseNavIndex = -1;
 
+    // History state (for smart checklist)
+    let currentClassLogs = [];
+
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -821,6 +861,32 @@
         };
     }
 
+    // ═══════ FIND CURRENT WEEK FROM PROGRESSION PREVUE ═══════
+    function findCurrentWeekPrevue(classeDocId) {
+        if (!classeDocId) return null;
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) return null;
+
+        var today = new Date();
+        for (var i = 0; i < prevue.semaines.length; i++) {
+            var sem = prevue.semaines[i];
+            if (!sem.date) continue;
+            // Parse DD/MM/YYYY safely (cross-browser)
+            var semDate;
+            var dateParts = sem.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            if (dateParts) {
+                semDate = new Date(parseInt(dateParts[3]), parseInt(dateParts[2]) - 1, parseInt(dateParts[1]));
+            } else {
+                semDate = new Date(sem.date);
+            }
+            var diffDays = (today - semDate) / (1000 * 60 * 60 * 24);
+            if (diffDays >= 0 && diffDays < 7) {
+                return { week: sem, index: i };
+            }
+        }
+        return null;
+    }
+
     // ═══════ CLASSE CHANGE ═══════
     async function onClasseChange() {
         var classeDocId = document.getElementById('selectClasse').value;
@@ -839,7 +905,6 @@
         (prevue.semaines || []).forEach(function(s) {
             var m = (s.module || '').trim();
             if (m && m !== 'N/A' && m !== 'Présentation PSE' && !seen[m]) {
-                // Clean: take just the base module name (before " – Évaluation" etc.)
                 var baseName = m;
                 seen[m] = true;
                 modules.push(baseName);
@@ -853,16 +918,37 @@
             selectModule.appendChild(opt);
         });
 
-        // Load last log for this class to show info
+        // ── AUTO-SELECT MODULE from progression_prevue (current week) ──
+        var weekInfo = findCurrentWeekPrevue(classeDocId);
+        if (weekInfo && weekInfo.week.module) {
+            var expectedModule = weekInfo.week.module.trim();
+            for (var i = 0; i < selectModule.options.length; i++) {
+                if (selectModule.options[i].value === expectedModule) {
+                    selectModule.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Load last log + history for this class
         await loadLastLog(classeDocId, prevue.classeId);
+
+        // Rebuild checklist (uses currentClassLogs for smart distribution)
+        buildChecklist();
 
         // Check for module delay vs planned progression
         await checkModuleDelay(classeDocId);
+
+        // Rebuild checklist when module changes too
+        selectModule.onchange = function() { buildChecklist(); };
     }
 
-    // ═══════ LAST LOG ═══════
+    // ═══════ LAST LOG + HISTORIQUE ═══════
     async function loadLastLog(classeDocId, classeLabel) {
         var infoDiv = document.getElementById('lastLogInfo');
+        var historyContainer = document.getElementById('sessionHistory');
+        var historyList = document.getElementById('historyList');
+
         try {
             var logsSnap = await getDocs(collection(db, 'progression_logs'));
             var classLogs = [];
@@ -873,8 +959,12 @@
                 }
             });
 
+            // Store for Feature 6 (smart distribution)
+            currentClassLogs = classLogs;
+
             if (classLogs.length === 0) {
                 infoDiv.style.display = 'none';
+                historyContainer.style.display = 'none';
                 return;
             }
 
@@ -899,13 +989,65 @@
                 (last.statut ? ' [' + last.statut + ']' : '') +
                 (todoDisplay ? '<br>📌 Prévu : ' + todoDisplay : '');
 
-            // ── AUTO-SELECT MODULE ──
+            // ── RENDER FULL HISTORY ──
+            var statutIcons = { 'Réalisé': '✅', 'Prévu': '📋', 'Reporté': '🔄', 'Non réalisé': '❌' };
+            var BADGE_LABELS = {
+                'eval_diagnostique': 'Éval diag', 'cours_complet': 'Cours complet',
+                'cours_seance': 'Cours séance', 'docs_distribues': 'Docs',
+                'devoir_donne': 'Devoir', 'copies_ramassees': 'Copies ramassées',
+                'copies_corrigees': 'Corrigées', 'copies_rendues': 'Copies rendues',
+                'auto_eval_ligne': 'Auto-éval', 'exercice_en_ligne': 'Exercice ligne',
+                'eval_formative': 'Éval formative', 'eval_sommative': 'Éval sommative',
+                'eval_corrigee': 'Éval corrigée', 'eval_rendue': 'Éval rendue'
+            };
+
+            historyContainer.style.display = 'block';
+            document.getElementById('historyCount').textContent = classLogs.length + ' séance' + (classLogs.length > 1 ? 's' : '');
+            historyList.innerHTML = '';
+
+            classLogs.forEach(function(log) {
+                var card = document.createElement('div');
+                card.className = 'history-card';
+
+                // Checklist badges
+                var badges = '';
+                var cl = log.checklist || {};
+                Object.keys(cl).forEach(function(key) {
+                    var val = cl[key];
+                    if (val && BADGE_LABELS[key]) {
+                        var label = BADGE_LABELS[key];
+                        // cours_seance with seanceNum
+                        if (key === 'cours_seance' && typeof val === 'object' && val.seanceNum) {
+                            label = 'Cours S' + val.seanceNum;
+                        }
+                        badges += '<span class="history-badge">' + label + '</span>';
+                    }
+                });
+
+                var icon = statutIcons[log.statut] || '';
+                card.innerHTML =
+                    '<div class="history-card-header">' +
+                        '<span class="history-date">' + (log.date || '') + '</span>' +
+                        '<span class="history-statut">' + icon + ' ' + (log.statut || '') + '</span>' +
+                    '</div>' +
+                    '<div class="history-detail">' +
+                        (log.moduleId || '') + ' — ' + (log.seance || '') +
+                        (log.arret ? ' | Arrêt: ' + log.arret : '') +
+                    '</div>' +
+                    (badges ? '<div class="history-badges">' + badges + '</div>' : '');
+
+                historyList.appendChild(card);
+            });
+
+            // ── AUTO-SELECT MODULE (only if not already set by progression_prevue) ──
             if (last.moduleId) {
                 var selectMod = document.getElementById('selectModule');
-                for (var i = 0; i < selectMod.options.length; i++) {
-                    if (selectMod.options[i].value === last.moduleId) {
-                        selectMod.selectedIndex = i;
-                        break;
+                if (!selectMod.value) {
+                    for (var i = 0; i < selectMod.options.length; i++) {
+                        if (selectMod.options[i].value === last.moduleId) {
+                            selectMod.selectedIndex = i;
+                            break;
+                        }
                     }
                 }
             }
@@ -966,19 +1108,103 @@
         });
     }
 
+    function findDistributedSeances() {
+        var distributed = [];
+        var currentModule = document.getElementById('selectModule').value;
+        if (!currentModule || !currentClassLogs) return distributed;
+
+        currentClassLogs.forEach(function(log) {
+            if (log.moduleId !== currentModule) return;
+            var cl = log.checklist || {};
+
+            // New format: object with seanceNum
+            if (cl.cours_seance && typeof cl.cours_seance === 'object' && cl.cours_seance.seanceNum) {
+                distributed.push(cl.cours_seance.seanceNum);
+            }
+            // New flat format: cours_seance_num stored separately
+            else if (cl.cours_seance_num && cl.cours_seance_num > 0) {
+                distributed.push(cl.cours_seance_num);
+            }
+            // Old boolean format: infer from seance field
+            else if (cl.cours_seance === true) {
+                var seanceMatch = (log.seance || '').match(/[Ss]éance\s*(\d+)/);
+                if (seanceMatch) distributed.push(parseInt(seanceMatch[1]));
+            }
+        });
+
+        return distributed;
+    }
+
     function buildChecklist() {
         var grid = document.getElementById('checklistGrid');
         grid.innerHTML = '';
+
+        var distributedSeances = findDistributedSeances();
+
         CHECKLIST.forEach(function(item) {
-            checklist[item.key] = false;
-            var btn = document.createElement('button');
-            btn.className = 'check-btn';
-            btn.innerHTML = '<span class="check-icon">' + item.icon + '</span>' + item.label;
-            btn.addEventListener('click', function() {
-                checklist[item.key] = !checklist[item.key];
-                btn.classList.toggle('active', checklist[item.key]);
-            });
-            grid.appendChild(btn);
+            if (item.key === 'cours_seance') {
+                // ── Special: séance sub-buttons S1-S5 ──
+                checklist[item.key] = false;
+                checklist['cours_seance_num'] = 0;
+
+                var container = document.createElement('div');
+                container.className = 'check-btn';
+                container.style.gridColumn = '1 / -1';
+                container.innerHTML = '<span class="check-icon">' + item.icon + '</span>' + item.label;
+
+                var subGrid = document.createElement('div');
+                subGrid.style.cssText = 'display:flex; gap:6px; margin-top:8px; justify-content:center;';
+
+                for (var n = 1; n <= 5; n++) {
+                    (function(num) {
+                        var subBtn = document.createElement('button');
+                        var isDistributed = distributedSeances.indexOf(num) >= 0;
+                        subBtn.className = 'seance-btn' + (isDistributed ? '' : '');
+                        subBtn.textContent = 'S' + num;
+                        subBtn.style.cssText = 'padding:6px 12px; font-size:0.78em; min-width:38px;';
+
+                        if (isDistributed) {
+                            subBtn.style.opacity = '0.35';
+                            subBtn.style.textDecoration = 'line-through';
+                            subBtn.disabled = true;
+                            subBtn.title = 'Déjà distribué';
+                        }
+
+                        subBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            subGrid.querySelectorAll('.seance-btn').forEach(function(b) {
+                                if (!b.disabled) b.classList.remove('selected');
+                            });
+                            if (checklist['cours_seance_num'] === num) {
+                                checklist[item.key] = false;
+                                checklist['cours_seance_num'] = 0;
+                                container.classList.remove('active');
+                            } else {
+                                subBtn.classList.add('selected');
+                                checklist[item.key] = true;
+                                checklist['cours_seance_num'] = num;
+                                container.classList.add('active');
+                            }
+                        });
+
+                        subGrid.appendChild(subBtn);
+                    })(n);
+                }
+
+                container.appendChild(subGrid);
+                grid.appendChild(container);
+            } else {
+                // ── Normal checklist item ──
+                checklist[item.key] = false;
+                var btn = document.createElement('button');
+                btn.className = 'check-btn';
+                btn.innerHTML = '<span class="check-icon">' + item.icon + '</span>' + item.label;
+                btn.addEventListener('click', function() {
+                    checklist[item.key] = !checklist[item.key];
+                    btn.classList.toggle('active', checklist[item.key]);
+                });
+                grid.appendChild(btn);
+            }
         });
     }
 
@@ -1014,6 +1240,7 @@
 
         // Options évaluation (toujours disponibles)
         var always = [
+            { action: 'evaluation', label: 'Évaluation' },
             { action: 'eval_diagnostique_plan', label: 'Prévoir éval diagnostique', reminderPronote: true, reminderType: 'diagnostique' },
             { action: 'eval_formative_plan', label: 'Prévoir éval formative', reminderPronote: true, reminderType: 'formative' },
             { action: 'eval_sommative_plan', label: 'Prévoir éval sommative', reminderPronote: true, reminderType: 'sommative' },
@@ -1149,11 +1376,22 @@
         });
     }
 
-    // ═══════ COURSE NAVIGATION ═══════
+    // ═══════ COURSE NAVIGATION (semaine entière) ═══════
     function buildCourseNav() {
         var nav = document.getElementById('courseNav');
         var now = new Date();
         var todayStr = now.toISOString().split('T')[0];
+
+        // Calculate Monday and Friday of current week
+        var dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+        var monday = new Date(now);
+        monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+        monday.setHours(0, 0, 0, 0);
+        var friday = new Date(monday);
+        friday.setDate(monday.getDate() + 4);
+        friday.setHours(23, 59, 59, 999);
+        var mondayStr = monday.toISOString().split('T')[0];
+        var fridayStr = friday.toISOString().split('T')[0];
 
         todayCourses = [];
 
@@ -1161,42 +1399,55 @@
             pronoteEvents.forEach(function(ev) {
                 if (!ev.start || !ev.classe) return;
                 var evDate = new Date(ev.start);
-                if (evDate.toISOString().split('T')[0] !== todayStr) return;
+                var evDateStr = evDate.toISOString().split('T')[0];
+                // Filter Monday→Friday of current week
+                if (evDateStr < mondayStr || evDateStr > fridayStr) return;
                 todayCourses.push({
                     classe: ev.classe,
                     start: ev.start,
                     end: ev.end || '',
                     location: ev.location || '',
-                    summary: ev.summary || ''
+                    summary: ev.summary || '',
+                    dateStr: evDateStr
                 });
             });
         } else {
-            // Fallback: static EMPLOI_DU_TEMPS
-            var dayOfWeek = now.getDay();
-            EMPLOI_DU_TEMPS.forEach(function(e) {
-                if (e.jour !== dayOfWeek) return;
-                var parts = e.heure.split(':');
-                var startTime = new Date(now);
-                startTime.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
-                todayCourses.push({
-                    classe: e.classe,
-                    start: startTime.toISOString(),
-                    end: '',
-                    location: e.salle,
-                    summary: ''
+            // Fallback: static EMPLOI_DU_TEMPS — generate all 5 weekdays
+            for (var d = 0; d < 5; d++) {
+                var dayTarget = new Date(monday);
+                dayTarget.setDate(monday.getDate() + d);
+                var targetDay = dayTarget.getDay();
+                var dayStr = dayTarget.toISOString().split('T')[0];
+
+                EMPLOI_DU_TEMPS.forEach(function(e) {
+                    if (e.jour !== targetDay) return;
+                    var parts = e.heure.split(':');
+                    var startTime = new Date(dayTarget);
+                    startTime.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+                    todayCourses.push({
+                        classe: e.classe,
+                        start: startTime.toISOString(),
+                        end: '',
+                        location: e.salle,
+                        summary: '',
+                        dateStr: dayStr
+                    });
                 });
-            });
+            }
         }
 
         if (todayCourses.length === 0) { nav.style.display = 'none'; return; }
 
         todayCourses.sort(function(a, b) { return new Date(a.start) - new Date(b.start); });
 
-        // Find best initial index (current or closest course)
+        // Find best initial index — prioritize today's current course
         var currentMs = now.getTime();
         var bestIdx = -1;
         var bestDiff = Infinity;
+
+        // 1st pass: current course today
         todayCourses.forEach(function(ev, idx) {
+            if (ev.dateStr !== todayStr) return;
             var evStart = new Date(ev.start).getTime();
             var diffMin = (currentMs - evStart) / 60000;
             if (diffMin >= -30 && diffMin < 120 && Math.abs(diffMin) < bestDiff) {
@@ -1205,17 +1456,29 @@
             }
         });
 
-        // If no current course, find latest past course
+        // 2nd: latest past course today
         if (bestIdx === -1) {
             for (var i = todayCourses.length - 1; i >= 0; i--) {
+                if (todayCourses[i].dateStr !== todayStr) continue;
                 if (new Date(todayCourses[i].start).getTime() < currentMs) {
                     bestIdx = i;
                     break;
                 }
             }
-            // If still none, first future course
-            if (bestIdx === -1) bestIdx = 0;
         }
+
+        // 3rd: first future course this week
+        if (bestIdx === -1) {
+            for (var j = 0; j < todayCourses.length; j++) {
+                if (new Date(todayCourses[j].start).getTime() > currentMs) {
+                    bestIdx = j;
+                    break;
+                }
+            }
+        }
+
+        // 4th: fallback to first course
+        if (bestIdx === -1) bestIdx = 0;
 
         courseNavIndex = bestIdx;
         nav.style.display = 'flex';
@@ -1231,15 +1494,26 @@
         var heure = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         var heureFin = endDate ? endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
 
-        document.getElementById('navTime').textContent = heure + (heureFin ? ' → ' + heureFin : '');
+        // Day label (e.g., "Lun 24/02") — omit if today
+        var joursCourts = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+        var jourLabel = joursCourts[startDate.getDay()] + ' ' +
+            String(startDate.getDate()).padStart(2, '0') + '/' +
+            String(startDate.getMonth() + 1).padStart(2, '0');
+
+        var todayStr = new Date().toISOString().split('T')[0];
+        var evDateStr = ev.dateStr || startDate.toISOString().split('T')[0];
+        var isToday = evDateStr === todayStr;
+
+        document.getElementById('navTime').textContent =
+            (isToday ? '' : jourLabel + '  ') + heure + (heureFin ? ' → ' + heureFin : '');
         document.getElementById('navClass').textContent = ev.classe + (ev.location ? ' — Salle ' + ev.location : '');
         document.getElementById('navCounter').textContent = (courseNavIndex + 1) + ' / ' + todayCourses.length;
 
-        // Check if current, past, or future
+        // Style: current, past, or future
         var now = new Date();
         var diffMin = (now.getTime() - startDate.getTime()) / 60000;
-        var isCurrent = diffMin >= -30 && diffMin < 120;
-        var isPast = !isCurrent && diffMin >= 120;
+        var isCurrent = isToday && diffMin >= -30 && diffMin < 120;
+        var isPast = startDate.getTime() < now.getTime() - 120 * 60000;
         var navClassEl = document.getElementById('navClass');
         navClassEl.className = 'nav-class' + (isCurrent ? ' nav-current' : '') + (isPast ? ' nav-past' : '');
 
@@ -1353,7 +1627,15 @@
             situation: selectedSituation || 'Normal',
             isValide: isValide,
             arret: document.getElementById('inputArret').value.trim(),
-            checklist: Object.assign({}, checklist),
+            checklist: (function() {
+                var cl = Object.assign({}, checklist);
+                // Save cours_seance as structured object if seance number selected
+                if (cl.cours_seance && cl.cours_seance_num) {
+                    cl.cours_seance = { distributed: true, seanceNum: cl.cours_seance_num };
+                }
+                delete cl.cours_seance_num; // don't save temp field
+                return cl;
+            })(),
             cps: Object.assign({}, cps),
             absences: absences,
             qualite: selectedQualite,
@@ -1596,30 +1878,12 @@
 
     // ═══════ MODULE DELAY DETECTION ═══════
     async function checkModuleDelay(classeDocId) {
-        if (!classeDocId) return;
+        var weekInfo = findCurrentWeekPrevue(classeDocId);
+        if (!weekInfo) return;
+        var currentWeek = weekInfo.week;
+
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
-        if (!prevue || !prevue.semaines) return;
-
-        var today = new Date();
-        var todayStr = today.toISOString().split('T')[0];
-
-        // Find expected week in prevue
-        var currentWeek = null;
-        var currentIndex = -1;
-        for (var i = 0; i < prevue.semaines.length; i++) {
-            var sem = prevue.semaines[i];
-            if (!sem.date) continue;
-            var semDate = new Date(sem.date);
-            // Check if we're in this week (within 7 days after)
-            var diffDays = (today - semDate) / (1000 * 60 * 60 * 24);
-            if (diffDays >= 0 && diffDays < 7) {
-                currentWeek = sem;
-                currentIndex = i;
-                break;
-            }
-        }
-
-        if (!currentWeek) return;
+        if (!prevue) return;
 
         // Get latest log for this class
         var classeLabel = prevue.classeId;
