@@ -306,6 +306,29 @@
             display: none;
         }
 
+        /* ── COURSE NAV ── */
+        .course-nav {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--card); border-radius: var(--radius); padding: 14px;
+            margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .nav-arrow {
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 2px solid var(--border); background: white;
+            font-size: 1.2em; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            font-family: inherit; transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+        }
+        .nav-arrow:active { transform: scale(0.92); background: var(--bg); }
+        .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+        .nav-info { flex: 1; text-align: center; }
+        .nav-time { font-size: 0.8em; color: var(--muted); font-weight: 600; }
+        .nav-class { font-size: 0.95em; font-weight: 700; margin-top: 2px; }
+        .nav-current { color: var(--primary-dark); }
+        .nav-past { color: var(--muted); }
+        .nav-counter { font-size: 0.72em; color: var(--muted); margin-top: 4px; }
+
         /* ── TOAST ── */
         .toast {
             position: fixed; bottom: 90px; left: 50%;
@@ -354,6 +377,17 @@
         <button class="btn-scan" id="btnScan" onclick="toggleQrScanner()">📷 Scanner un QR code</button>
         <div id="qrReader"></div>
         <div class="qr-result" id="qrResult"></div>
+    </div>
+
+    <!-- COURSE NAV — navigation entre les cours du jour -->
+    <div class="course-nav" id="courseNav" style="display:none;">
+        <button class="nav-arrow" id="navPrev" onclick="navigateCourse(-1)">◀</button>
+        <div class="nav-info">
+            <div class="nav-time" id="navTime"></div>
+            <div class="nav-class" id="navClass"></div>
+            <div class="nav-counter" id="navCounter"></div>
+        </div>
+        <button class="nav-arrow" id="navNext" onclick="navigateCourse(1)">▶</button>
     </div>
 
     <!-- MISSED CLASSES REMINDER -->
@@ -594,6 +628,10 @@
     // Try to load Pronote EDT from Firestore for smarter auto-detect
     let pronoteEvents = [];
 
+    // Course navigation state
+    let todayCourses = [];
+    let courseNavIndex = -1;
+
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -659,7 +697,26 @@
         } catch (e) { console.error('Load EDT error:', e); }
 
         // ── AUTO-DETECT CLASS ──
-        detectCurrentClass(room);
+        var todayStr = now.toISOString().split('T')[0];
+        var detection = detectCurrentClass(room);
+
+        // ── BUILD COURSE NAVIGATION (flèches gauche/droite) ──
+        buildCourseNav();
+
+        // ── AUTO-DETECT RESULT: hide QR scanner if class found on page load ──
+        if (detection.classe) {
+            var qrCard = document.querySelector('.qr-scanner-card');
+            var qrResult = document.getElementById('qrResult');
+            // Hide scan button, show compact success
+            document.getElementById('btnScan').style.display = 'none';
+            qrResult.style.display = 'block';
+            var detMsg = '✅ ' + detection.classe;
+            if (detection.location) detMsg += ' — Salle ' + detection.location;
+            qrResult.textContent = detMsg;
+            qrResult.style.background = '#dcfce7';
+            qrResult.style.borderColor = '#16a34a';
+            qrResult.style.color = '#166534';
+        }
 
         // ── CHECK FOR MISSED CLASSES (séances oubliées) ──
         await checkMissedClasses(todayStr, now);
@@ -1091,6 +1148,130 @@
             container.appendChild(div);
         });
     }
+
+    // ═══════ COURSE NAVIGATION ═══════
+    function buildCourseNav() {
+        var nav = document.getElementById('courseNav');
+        var now = new Date();
+        var todayStr = now.toISOString().split('T')[0];
+
+        todayCourses = [];
+
+        if (pronoteEvents.length > 0) {
+            pronoteEvents.forEach(function(ev) {
+                if (!ev.start || !ev.classe) return;
+                var evDate = new Date(ev.start);
+                if (evDate.toISOString().split('T')[0] !== todayStr) return;
+                todayCourses.push({
+                    classe: ev.classe,
+                    start: ev.start,
+                    end: ev.end || '',
+                    location: ev.location || '',
+                    summary: ev.summary || ''
+                });
+            });
+        } else {
+            // Fallback: static EMPLOI_DU_TEMPS
+            var dayOfWeek = now.getDay();
+            EMPLOI_DU_TEMPS.forEach(function(e) {
+                if (e.jour !== dayOfWeek) return;
+                var parts = e.heure.split(':');
+                var startTime = new Date(now);
+                startTime.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+                todayCourses.push({
+                    classe: e.classe,
+                    start: startTime.toISOString(),
+                    end: '',
+                    location: e.salle,
+                    summary: ''
+                });
+            });
+        }
+
+        if (todayCourses.length === 0) { nav.style.display = 'none'; return; }
+
+        todayCourses.sort(function(a, b) { return new Date(a.start) - new Date(b.start); });
+
+        // Find best initial index (current or closest course)
+        var currentMs = now.getTime();
+        var bestIdx = -1;
+        var bestDiff = Infinity;
+        todayCourses.forEach(function(ev, idx) {
+            var evStart = new Date(ev.start).getTime();
+            var diffMin = (currentMs - evStart) / 60000;
+            if (diffMin >= -30 && diffMin < 120 && Math.abs(diffMin) < bestDiff) {
+                bestDiff = Math.abs(diffMin);
+                bestIdx = idx;
+            }
+        });
+
+        // If no current course, find latest past course
+        if (bestIdx === -1) {
+            for (var i = todayCourses.length - 1; i >= 0; i--) {
+                if (new Date(todayCourses[i].start).getTime() < currentMs) {
+                    bestIdx = i;
+                    break;
+                }
+            }
+            // If still none, first future course
+            if (bestIdx === -1) bestIdx = 0;
+        }
+
+        courseNavIndex = bestIdx;
+        nav.style.display = 'flex';
+        updateCourseNav();
+    }
+
+    function updateCourseNav() {
+        if (todayCourses.length === 0) return;
+
+        var ev = todayCourses[courseNavIndex];
+        var startDate = new Date(ev.start);
+        var endDate = ev.end ? new Date(ev.end) : null;
+        var heure = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        var heureFin = endDate ? endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+        document.getElementById('navTime').textContent = heure + (heureFin ? ' → ' + heureFin : '');
+        document.getElementById('navClass').textContent = ev.classe + (ev.location ? ' — Salle ' + ev.location : '');
+        document.getElementById('navCounter').textContent = (courseNavIndex + 1) + ' / ' + todayCourses.length;
+
+        // Check if current, past, or future
+        var now = new Date();
+        var diffMin = (now.getTime() - startDate.getTime()) / 60000;
+        var isCurrent = diffMin >= -30 && diffMin < 120;
+        var isPast = !isCurrent && diffMin >= 120;
+        var navClassEl = document.getElementById('navClass');
+        navClassEl.className = 'nav-class' + (isCurrent ? ' nav-current' : '') + (isPast ? ' nav-past' : '');
+
+        // Enable/disable arrows
+        document.getElementById('navPrev').disabled = (courseNavIndex <= 0);
+        document.getElementById('navNext').disabled = (courseNavIndex >= todayCourses.length - 1);
+    }
+
+    window.navigateCourse = function(direction) {
+        var newIdx = courseNavIndex + direction;
+        if (newIdx < 0 || newIdx >= todayCourses.length) return;
+        courseNavIndex = newIdx;
+        updateCourseNav();
+
+        // Select this class in the dropdown
+        var ev = todayCourses[courseNavIndex];
+        var select = document.getElementById('selectClasse');
+        for (var i = 0; i < select.options.length; i++) {
+            var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
+            if (prevue && (prevue.classeId.includes(ev.classe) || ev.classe.includes(prevue.classeId))) {
+                select.selectedIndex = i;
+                onClasseChange();
+                break;
+            }
+        }
+
+        // Update room badge
+        if (ev.location) {
+            document.getElementById('roomBadge').style.display = 'block';
+            document.getElementById('roomNum').textContent = ev.location;
+        }
+    };
 
     // ═══════ INTERACTIONS ═══════
     window.selectStatut = function(val, btn) {
