@@ -110,6 +110,41 @@
         .seance-btn:active { transform: scale(0.95); }
         .seance-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
 
+        /* ── PHASE SELECTOR ── */
+        .phase-grid { display: flex; gap: 8px; margin-bottom: 14px; }
+        .phase-btn {
+            flex: 1; padding: 10px 8px; border: 2px solid var(--border); border-radius: 10px;
+            background: white; font-size: 0.8em; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: all 0.15s; color: var(--muted); text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .phase-btn:active { transform: scale(0.95); }
+        .phase-btn.selected { border-color: #6366f1; background: #e0e7ff; color: #4338ca; }
+        .phase-btn .phase-icon { display: block; font-size: 1.2em; margin-bottom: 2px; }
+
+        /* ── MODULE SUIVANT ── */
+        .module-suivant-toggle {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+            padding: 10px 14px; border-radius: 10px; border: 2px dashed var(--border);
+            background: white; cursor: pointer; transition: all 0.15s;
+            font-size: 0.82em; font-weight: 600; color: var(--muted);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .module-suivant-toggle:active { transform: scale(0.98); }
+        .module-suivant-toggle.active { border-color: #6366f1; border-style: solid; background: #e0e7ff; color: #4338ca; }
+        #moduleSuivantSection {
+            padding: 12px; border-radius: 10px; background: #f8fafc;
+            border: 1px solid var(--border); margin-bottom: 14px;
+        }
+        #moduleSuivantSection select { width: 100%; margin-bottom: 10px; }
+        .phase-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 6px;
+            font-size: 0.7em; font-weight: 600; margin-left: 6px;
+        }
+        .phase-badge.cours { background: #dcfce7; color: #166534; }
+        .phase-badge.evaluation { background: #fef3c7; color: #92400e; }
+        .phase-badge.correction { background: #e0e7ff; color: #4338ca; }
+
         /* ── STATUS BUTTONS ── */
         .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
         .status-btn {
@@ -450,6 +485,22 @@
             <option value="">-- Sélectionner --</option>
         </select>
 
+        <label class="field-label">Phase</label>
+        <div class="phase-grid" id="phaseGrid"></div>
+
+        <div class="module-suivant-toggle" id="moduleSuivantToggle">
+            <span id="moduleSuivantIcon">☐</span>
+            <span>+ Module suivant (même séance)</span>
+        </div>
+        <div id="moduleSuivantSection" style="display:none;">
+            <label class="field-label">Module suivant</label>
+            <select id="selectModuleSuivant">
+                <option value="">-- Sélectionner --</option>
+            </select>
+            <label class="field-label">Phase</label>
+            <div class="phase-grid" id="phaseSuivantGrid"></div>
+        </div>
+
         <label class="field-label">Séance / étape</label>
         <div class="seance-grid" id="seanceGrid"></div>
     </div>
@@ -644,6 +695,78 @@
     // Séance options
     const SEANCES = ['Séance 1', 'Séance 1-2', 'Séance 2', 'Séance 2-3', 'Séance 3', 'Séance 3-4', 'Séance 4', 'Séance 4-5', 'Séance 5', 'Séance 6', 'Évaluation', 'Correction', 'Corr.+séance 1'];
 
+    // ═══════ MODULES PSE PAR NIVEAU (source: CockpitPSE/data_modules.js) ═══════
+    var CLASSES_CONFIG = {
+        'C1CAN': 'CAP', 'C1HORT': 'CAP', 'C1JP': 'CAP', 'C1PSR': 'CAP', 'C1VAN': 'CAP',
+        'C2CAN': 'CAP', 'C2HORT': 'CAP', 'C2JP': 'CAP', 'C2PSR': 'CAP', 'C2VAN': 'CAP',
+        'B2GATL1': 'BAC_PRO_2NDE', 'B2GATL2': 'BAC_PRO_2NDE', 'B2MELEC': 'BAC_PRO_2NDE',
+        'B1AGO1': 'BAC_PRO_1ERE', 'B1AGO2': 'BAC_PRO_1ERE', 'B1MELEC': 'BAC_PRO_1ERE',
+        'BTAGO1': 'BAC_PRO_TERM', 'BTAGO2': 'BAC_PRO_TERM', 'BTMELEC': 'BAC_PRO_TERM'
+    };
+
+    var MODULES_PSE = {
+        'CAP': [
+            { id: 'MA1', titre: 'Le système de santé', theme: 'A' },
+            { id: 'MA2', titre: 'Le sommeil, un rythme biologique', theme: 'A' },
+            { id: 'MA3', titre: "L'activité physique", theme: 'A' },
+            { id: 'MA4', titre: 'Les addictions', theme: 'A' },
+            { id: 'MA5', titre: 'La sexualité – La contraception', theme: 'A' },
+            { id: 'MA6', titre: 'Prévenir les IST', theme: 'A' },
+            { id: 'MA7', titre: "L'alimentation adaptée à son activité", theme: 'A' },
+            { id: 'MB1', titre: 'Les ressources en eau', theme: 'B' },
+            { id: 'MB2', titre: 'Le risque majeur', theme: 'B' },
+            { id: 'MB3', titre: "Les ressources en énergie", theme: 'B' },
+            { id: 'MB4', titre: 'Le bruit au quotidien', theme: 'B' },
+            { id: 'MC1', titre: 'Les différents contrats de travail', theme: 'C' },
+            { id: 'MC2', titre: 'Les enjeux de la santé et sécurité au travail', theme: 'C' },
+            { id: 'MC3', titre: 'La démarche de prévention (activité)', theme: 'C' },
+            { id: 'MC4', titre: 'La démarche de prévention (risque spécifique)', theme: 'C' },
+            { id: 'MC5', titre: "Les risques liés à l'activité physique", theme: 'C' },
+            { id: 'MC6', titre: 'Les acteurs et organismes de prévention', theme: 'C' },
+            { id: 'MC7', titre: 'Le suivi médical et la vaccination', theme: 'C' },
+            { id: 'MD1', titre: "L'assurance", theme: 'D' },
+            { id: 'MD2', titre: 'Le budget', theme: 'D' },
+            { id: 'MD3', titre: 'Les achats', theme: 'D' }
+        ],
+        'BAC_PRO_2NDE': [
+            { id: 'A1', titre: 'Le système de santé', theme: 'A' },
+            { id: 'A2', titre: 'Les rythmes biologiques – Le sommeil', theme: 'A' },
+            { id: 'A3', titre: "L'activité physique", theme: 'A' },
+            { id: 'A4', titre: 'Les addictions', theme: 'A' },
+            { id: 'A5', titre: 'La sexualité – La contraception', theme: 'A' },
+            { id: 'B1', titre: "L'alimentation écoresponsable", theme: 'B' },
+            { id: 'B2', titre: 'Les risques majeurs', theme: 'B' },
+            { id: 'C1', titre: 'Les enjeux de la santé et sécurité au travail', theme: 'C' },
+            { id: 'C2', titre: 'Les notions de base en prévention', theme: 'C' }
+        ],
+        'BAC_PRO_1ERE': [
+            { id: 'A6', titre: 'Les infections sexuellement transmissibles', theme: 'A' },
+            { id: 'A7', titre: 'Les pratiques alimentaires', theme: 'A' },
+            { id: 'A8', titre: 'Le stress au quotidien', theme: 'A' },
+            { id: 'B3', titre: 'Le bruit au quotidien', theme: 'B' },
+            { id: 'B4', titre: "L'eau et le développement durable", theme: 'B' },
+            { id: 'C3', titre: 'Les acteurs de prévention', theme: 'C' },
+            { id: 'C4', titre: "L'assistance et le secours en milieu professionnel", theme: 'C' },
+            { id: 'C5', titre: "L'analyse des risques professionnels", theme: 'C' },
+            { id: 'C6', titre: "L'analyse d'un risque spécifique", theme: 'C' }
+        ],
+        'BAC_PRO_TERM': [
+            { id: 'A9', titre: 'La sécurité alimentaire', theme: 'A' },
+            { id: 'B5', titre: 'Les ressources en énergie et développement durable', theme: 'B' },
+            { id: 'C7', titre: 'Le suivi de la santé au travail', theme: 'C' },
+            { id: 'C8', titre: 'Déclaration et réparation des AT/MP', theme: 'C' },
+            { id: 'C9', titre: 'Les risques psychosociaux', theme: 'C' },
+            { id: 'C10', titre: "Les risques liés à l'activité physique", theme: 'C' },
+            { id: 'C11', titre: "L'analyse d'une situation de travail", theme: 'C' },
+            { id: 'C12', titre: "L'égalité de traitement au travail", theme: 'C' }
+        ]
+    };
+
+    var THEME_LABELS = {
+        'A': 'Thème A — Santé', 'B': 'Thème B — Environnement',
+        'C': 'Thème C — Travail', 'D': 'Thème D — Consommation'
+    };
+
     // Emploi du temps — fallback statique (remplacé par Pronote si synchronisé)
     let EMPLOI_DU_TEMPS = [
         { jour: 1, heure: '09:30', classe: 'C2PSR', salle: '010' },
@@ -671,6 +794,12 @@
 
     // History state (for smart checklist)
     let currentClassLogs = [];
+
+    // Phase & module suivant state
+    let selectedPhase = 'cours';
+    let moduleSuivantEnabled = false;
+    let selectedModuleSuivant = '';
+    let selectedPhaseSuivant = 'cours';
 
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
@@ -767,6 +896,9 @@
         buildSeancePicker();
         // Build todo grid
         buildTodoGrid();
+        // Init phase & module suivant
+        buildPhaseSelector('phaseGrid', true);
+        initModuleSuivantToggle();
 
         // Bind classe change
         select.addEventListener('change', onClasseChange);
@@ -861,6 +993,108 @@
         };
     }
 
+    // ═══════ MODULE HELPERS ═══════
+    function extractModuleId(str) {
+        if (!str) return '';
+        str = str.trim();
+        var m = str.match(/^([A-Z]+\d+(\.\d+)?)/i);
+        return m ? m[1].toUpperCase() : str;
+    }
+
+    function populateModuleDropdown(selectEl, moduleList) {
+        var themes = {};
+        moduleList.forEach(function(mod) {
+            var t = mod.theme || '?';
+            if (!themes[t]) themes[t] = [];
+            themes[t].push(mod);
+        });
+        Object.keys(themes).sort().forEach(function(themeKey) {
+            var optgroup = document.createElement('optgroup');
+            optgroup.label = THEME_LABELS[themeKey] || ('Thème ' + themeKey);
+            themes[themeKey].forEach(function(mod) {
+                var opt = document.createElement('option');
+                opt.value = mod.id;
+                opt.textContent = mod.id + ' - ' + mod.titre;
+                optgroup.appendChild(opt);
+            });
+            selectEl.appendChild(optgroup);
+        });
+    }
+
+    function buildPhaseSelector(containerId, isPrimary) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        var phases = [
+            { id: 'cours', label: 'Cours', icon: '📖' },
+            { id: 'evaluation', label: 'Évaluation', icon: '📝' },
+            { id: 'correction', label: 'Correction', icon: '✅' }
+        ];
+        phases.forEach(function(phase) {
+            var btn = document.createElement('button');
+            var current = isPrimary ? selectedPhase : selectedPhaseSuivant;
+            btn.className = 'phase-btn' + (phase.id === current ? ' selected' : '');
+            btn.type = 'button';
+            btn.innerHTML = '<span class="phase-icon">' + phase.icon + '</span>' + phase.label;
+            btn.addEventListener('click', function() {
+                container.querySelectorAll('.phase-btn').forEach(function(b) { b.classList.remove('selected'); });
+                btn.classList.add('selected');
+                if (isPrimary) { selectedPhase = phase.id; }
+                else { selectedPhaseSuivant = phase.id; }
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    function resetModuleSuivant() {
+        moduleSuivantEnabled = false;
+        selectedModuleSuivant = '';
+        selectedPhaseSuivant = 'cours';
+        selectedPhase = 'cours';
+        var toggle = document.getElementById('moduleSuivantToggle');
+        if (toggle) { toggle.classList.remove('active'); }
+        var icon = document.getElementById('moduleSuivantIcon');
+        if (icon) { icon.textContent = '☐'; }
+        var section = document.getElementById('moduleSuivantSection');
+        if (section) { section.style.display = 'none'; }
+    }
+
+    function populateModuleSuivantDropdown() {
+        var selectSuivant = document.getElementById('selectModuleSuivant');
+        if (!selectSuivant) return;
+        selectSuivant.innerHTML = '<option value="">-- Sélectionner --</option>';
+        var classeDocId = document.getElementById('selectClasse').value;
+        if (!classeDocId) return;
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue) return;
+        var niveau = CLASSES_CONFIG[prevue.classeId] || null;
+        if (niveau && MODULES_PSE[niveau]) {
+            populateModuleDropdown(selectSuivant, MODULES_PSE[niveau]);
+        }
+        selectSuivant.onchange = function() {
+            selectedModuleSuivant = selectSuivant.value;
+        };
+    }
+
+    function initModuleSuivantToggle() {
+        var toggle = document.getElementById('moduleSuivantToggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', function() {
+            moduleSuivantEnabled = !moduleSuivantEnabled;
+            toggle.classList.toggle('active', moduleSuivantEnabled);
+            document.getElementById('moduleSuivantIcon').textContent = moduleSuivantEnabled ? '☑' : '☐';
+            var section = document.getElementById('moduleSuivantSection');
+            section.style.display = moduleSuivantEnabled ? 'block' : 'none';
+            if (moduleSuivantEnabled) {
+                populateModuleSuivantDropdown();
+                buildPhaseSelector('phaseSuivantGrid', false);
+            } else {
+                selectedModuleSuivant = '';
+                selectedPhaseSuivant = 'cours';
+            }
+        });
+    }
+
     // ═══════ FIND CURRENT WEEK FROM PROGRESSION PREVUE ═══════
     function findCurrentWeekPrevue(classeDocId) {
         if (!classeDocId) return null;
@@ -918,39 +1152,61 @@
         var selectModule = document.getElementById('selectModule');
         selectModule.innerHTML = '<option value="">-- Sélectionner --</option>';
 
+        // Reset phase & module suivant
+        resetModuleSuivant();
+        buildPhaseSelector('phaseGrid', true);
+
         if (!classeDocId) return;
 
         // Get the prevue for this class
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue) return;
 
-        // Extract unique modules from the semaines
-        var modules = [];
-        var seen = {};
-        (prevue.semaines || []).forEach(function(s) {
-            var m = (s.module || '').trim();
-            if (m && m !== 'N/A' && m !== 'Présentation PSE' && !seen[m]) {
-                var baseName = m;
-                seen[m] = true;
-                modules.push(baseName);
-            }
-        });
+        // Determine niveau from CLASSES_CONFIG
+        var niveau = CLASSES_CONFIG[prevue.classeId] || null;
 
-        modules.forEach(function(m) {
-            var opt = document.createElement('option');
-            opt.value = m;
-            opt.textContent = m;
-            selectModule.appendChild(opt);
-        });
+        if (niveau && MODULES_PSE[niveau]) {
+            // ── NEW: Populate from complete module list ──
+            populateModuleDropdown(selectModule, MODULES_PSE[niveau]);
+        } else {
+            // ── FALLBACK: Extract from prevue.semaines (legacy) ──
+            var modules = [];
+            var seen = {};
+            (prevue.semaines || []).forEach(function(s) {
+                var m = (s.module || '').trim();
+                if (m && m !== 'N/A' && m !== 'Présentation PSE' && !seen[m]) {
+                    seen[m] = true;
+                    modules.push(m);
+                }
+            });
+            modules.forEach(function(m) {
+                var opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                selectModule.appendChild(opt);
+            });
+        }
 
         // ── AUTO-SELECT MODULE from progression_prevue (current week) ──
         var weekInfo = findCurrentWeekPrevue(classeDocId);
         if (weekInfo && weekInfo.week.module) {
-            var expectedModule = weekInfo.week.module.trim();
+            var expectedId = extractModuleId(weekInfo.week.module);
+            var matched = false;
             for (var i = 0; i < selectModule.options.length; i++) {
-                if (selectModule.options[i].value === expectedModule) {
+                if (selectModule.options[i].value === expectedId) {
                     selectModule.selectedIndex = i;
+                    matched = true;
                     break;
+                }
+            }
+            // Fallback: try full string match (legacy format)
+            if (!matched) {
+                var expectedFull = weekInfo.week.module.trim();
+                for (var i = 0; i < selectModule.options.length; i++) {
+                    if (selectModule.options[i].value === expectedFull) {
+                        selectModule.selectedIndex = i;
+                        break;
+                    }
                 }
             }
         }
@@ -1008,9 +1264,15 @@
                 }
             }
 
+            var lastPhaseTag = last.phase && last.phase !== 'cours' ?
+                ' <span class="phase-badge ' + last.phase + '">' + last.phase + '</span>' : '';
+            var lastSuivantTag = '';
+            if (last.moduleSuivant && last.moduleSuivant.moduleId) {
+                lastSuivantTag = ' + ' + last.moduleSuivant.moduleId;
+            }
             infoDiv.style.display = 'block';
             infoDiv.innerHTML = '<strong>Dernière saisie (' + last.date + ')</strong><br>' +
-                (last.moduleId || '') + ' — ' + (last.seance || '') +
+                (last.moduleId || '') + lastPhaseTag + lastSuivantTag + ' — ' + (last.seance || '') +
                 (last.statut ? ' [' + last.statut + ']' : '') +
                 (todoDisplay ? '<br>📌 Prévu : ' + todoDisplay : '');
 
@@ -1050,15 +1312,22 @@
                 });
 
                 var icon = statutIcons[log.statut] || '';
+                var logPhaseTag = log.phase && log.phase !== 'cours' ?
+                    '<span class="phase-badge ' + log.phase + '">' + log.phase + '</span>' : '';
+                var logSuivantTag = '';
+                if (log.moduleSuivant && log.moduleSuivant.moduleId) {
+                    logSuivantTag = ' + ' + log.moduleSuivant.moduleId;
+                }
                 card.innerHTML =
                     '<div class="history-card-header">' +
                         '<span class="history-date">' + (log.date || '') + '</span>' +
                         '<span class="history-statut">' + icon + ' ' + (log.statut || '') + '</span>' +
                     '</div>' +
                     '<div class="history-detail">' +
-                        (log.moduleId || '') + ' — ' + (log.seance || '') +
+                        (log.moduleId || '') + logSuivantTag + ' — ' + (log.seance || '') +
                         (log.arret ? ' | Arrêt: ' + log.arret : '') +
                     '</div>' +
+                    (logPhaseTag ? '<div style="margin-top:4px;">' + logPhaseTag + '</div>' : '') +
                     (badges ? '<div class="history-badges">' + badges + '</div>' : '');
 
                 historyList.appendChild(card);
@@ -1068,8 +1337,9 @@
             if (last.moduleId) {
                 var selectMod = document.getElementById('selectModule');
                 if (!selectMod.value) {
+                    var lastId = extractModuleId(last.moduleId);
                     for (var i = 0; i < selectMod.options.length; i++) {
-                        if (selectMod.options[i].value === last.moduleId) {
+                        if (selectMod.options[i].value === lastId || selectMod.options[i].value === last.moduleId) {
                             selectMod.selectedIndex = i;
                             break;
                         }
@@ -1138,8 +1408,9 @@
         var currentModule = document.getElementById('selectModule').value;
         if (!currentModule || !currentClassLogs) return distributed;
 
+        var currentId = extractModuleId(currentModule);
         currentClassLogs.forEach(function(log) {
-            if (log.moduleId !== currentModule) return;
+            if (extractModuleId(log.moduleId) !== currentId) return;
             var cl = log.checklist || {};
 
             // New format: object with seanceNum
@@ -1647,6 +1918,11 @@
             classeDocId: classeDocId,
             classeId: classeLabel,
             moduleId: moduleId,
+            phase: selectedPhase,
+            moduleSuivant: moduleSuivantEnabled && selectedModuleSuivant ? {
+                moduleId: selectedModuleSuivant,
+                phase: selectedPhaseSuivant
+            } : null,
             seance: selectedSeance,
             statut: selectedStatut,
             situation: selectedSituation || 'Normal',
@@ -1948,7 +2224,7 @@
 
         // Determine if there's a delay
         var delayInfo = '';
-        if (lastModule !== expectedModule) {
+        if (extractModuleId(lastModule) !== extractModuleId(expectedModule)) {
             delayInfo = 'Module prévu : <strong>' + expectedModule + '</strong><br>' +
                 'Dernier module logué : <strong>' + lastModule + '</strong>';
         } else if (expectedSeance && lastSeance && expectedSeance !== 'N/A') {
