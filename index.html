@@ -212,11 +212,73 @@
         .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
         .empty .icon { font-size: 2.5em; margin-bottom: 10px; }
 
+        /* ── EMPLOI DU TEMPS ── */
+        .edt-today { margin-bottom: 20px; }
+        .edt-slot {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px; border-radius: 12px; margin-bottom: 8px;
+            background: white; border: 2px solid var(--border); transition: all 0.15s;
+        }
+        .edt-slot.is-now { border-color: var(--primary); background: var(--primary-light); }
+        .edt-slot.is-past { opacity: 0.5; }
+        .edt-heure { font-size: 0.85em; font-weight: 800; min-width: 50px; color: var(--primary); }
+        .edt-info { flex: 1; }
+        .edt-classe { font-weight: 700; font-size: 0.95em; }
+        .edt-matiere { font-size: 0.78em; color: var(--muted); }
+        .edt-salle { font-size: 0.75em; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--bg); color: var(--muted); }
+        .edt-sync-bar {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
+        }
+        .btn-sync {
+            padding: 10px 20px; border: 2px solid var(--primary); border-radius: 10px;
+            background: var(--primary-light); color: var(--primary);
+            font-weight: 700; font-size: 0.85em; cursor: pointer; font-family: inherit;
+            transition: all 0.15s;
+        }
+        .btn-sync:hover { background: var(--primary); color: white; }
+        .btn-sync:disabled { opacity: 0.4; cursor: not-allowed; }
+        .sync-status { font-size: 0.8em; color: var(--muted); }
+        .edt-day-group { margin-bottom: 20px; }
+        .edt-day-title { font-weight: 700; font-size: 0.9em; margin-bottom: 8px; color: var(--primary); }
+
+        /* ── QR CODES ── */
+        .qr-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .qr-card {
+            background: white; border-radius: var(--radius); padding: 25px;
+            text-align: center; border: 2px solid var(--border);
+        }
+        .qr-card h3 { font-size: 1.1em; font-weight: 800; margin-bottom: 4px; }
+        .qr-card .qr-sub { font-size: 0.8em; color: var(--muted); margin-bottom: 15px; }
+        .qr-card img { border-radius: 10px; margin-bottom: 12px; }
+        .qr-url { font-size: 0.65em; color: var(--muted); word-break: break-all; padding: 8px; background: var(--bg); border-radius: 8px; }
+        .btn-print {
+            display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+            padding: 8px 18px; border: 2px solid var(--border); border-radius: 8px;
+            background: white; font-size: 0.8em; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: all 0.15s;
+        }
+        .btn-print:hover { border-color: var(--primary); background: var(--primary-light); }
+
         @media (max-width: 600px) {
             .container { padding: 12px; }
             .header h1 { font-size: 1.2em; }
             .quick-actions { grid-template-columns: 1fr 1fr; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
+            .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .tab { font-size: 0.75em; padding: 8px 10px; white-space: nowrap; min-width: fit-content; }
+            .qr-grid { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            body { background: white; }
+            .header, .tabs, .quick-actions, .stats-grid, #tabOverview, #tabImport, #tabClasses, #tabEdt, .toast { display: none !important; }
+            #tabQr { display: block !important; }
+            .qr-card { break-inside: avoid; border: 3px solid #000; page-break-inside: avoid; }
+            .qr-url { font-size: 0.8em; }
+            .btn-print { display: none; }
         }
     </style>
 </head>
@@ -291,9 +353,11 @@
 
     <!-- TABS -->
     <div class="tabs">
-        <button class="tab active" onclick="showTab('overview')">Accueil</button>
-        <button class="tab" onclick="showTab('import')">Import CSV</button>
-        <button class="tab" onclick="showTab('classes')">Classes</button>
+        <button class="tab active" data-tab="overview">Accueil</button>
+        <button class="tab" data-tab="import">Import CSV</button>
+        <button class="tab" data-tab="classes">Classes</button>
+        <button class="tab" data-tab="edt">Emploi du temps</button>
+        <button class="tab" data-tab="qr">QR Codes</button>
     </div>
 
     <!-- ── TAB: OVERVIEW ── -->
@@ -358,6 +422,39 @@
         </div>
     </div>
 
+    <!-- ── TAB: EMPLOI DU TEMPS ── -->
+    <div id="tabEdt" class="section">
+        <div class="card">
+            <div class="card-title">📅 Emploi du temps Pronote</div>
+            <div class="edt-sync-bar">
+                <button class="btn-sync" id="btnSync">🔄 Synchroniser Pronote</button>
+                <span class="sync-status" id="syncStatus">Non synchronisé</span>
+            </div>
+            <p style="color:var(--muted); font-size:0.82em; margin-bottom:15px;">
+                La synchronisation récupère votre emploi du temps depuis Pronote et le stocke dans l'application.<br>
+                Il sera utilisé pour pré-remplir automatiquement la classe dans la saisie rapide.
+            </p>
+            <div id="edtContent">
+                <div class="empty">
+                    <div class="icon">📅</div>
+                    <p>Cliquez sur "Synchroniser Pronote" pour charger votre emploi du temps.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TAB: QR CODES ── -->
+    <div id="tabQr" class="section">
+        <div class="card">
+            <div class="card-title">📱 QR Codes par salle</div>
+            <p style="color:var(--muted); font-size:0.82em; margin-bottom:18px;">
+                Imprimez ces QR codes et collez-les dans chaque salle. En scannant, la saisie rapide s'ouvre avec la bonne salle pré-remplie.
+            </p>
+            <button class="btn-print" onclick="window.print()" style="margin-bottom:18px;">🖨️ Imprimer tous les QR codes</button>
+            <div class="qr-grid" id="qrGrid"></div>
+        </div>
+    </div>
+
 </div>
 </div>
 
@@ -397,7 +494,7 @@
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'block';
             document.getElementById('userEmail').textContent = user.email;
-            loadData();
+            loadDataAndEdt();
         } else {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('mainScreen').style.display = 'none';
@@ -420,12 +517,16 @@
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
     // ═══════ TABS ═══════
-    window.showTab = function(tabName) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
-        event.target.classList.add('active');
-    };
+    document.querySelectorAll('.tab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+            btn.classList.add('active');
+            var tabName = btn.dataset.tab;
+            var sectionId = 'tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+            document.getElementById(sectionId).classList.add('active');
+        });
+    });
 
     // ═══════ TOAST ═══════
     function showToast(msg, duration) {
@@ -832,6 +933,301 @@
                 '<span class="status ok">✓</span>';
             list.appendChild(div);
         });
+    }
+
+    // ═══════════════════════════════════════════
+    // EMPLOI DU TEMPS — PRONOTE iCal
+    // ═══════════════════════════════════════════
+
+    const ICS_URL = 'https://0692390y.index-education.net/pronote/ical/mesinformations.ics?icalsecurise=5FCC8714D0288D0C735DBB51F2A682873D9407D68F403E748C4860B26B18CFA16BE48C43C48C24A416FA30C689813A61&version=2025.2.9&param=900A75DF9ED8C62E212781A9E4DCC937';
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+    document.getElementById('btnSync').addEventListener('click', syncPronote);
+
+    async function syncPronote() {
+        var btn = document.getElementById('btnSync');
+        var status = document.getElementById('syncStatus');
+        btn.disabled = true;
+        btn.textContent = '⏳ Synchronisation...';
+        status.textContent = 'Chargement...';
+
+        try {
+            var response = await fetch(CORS_PROXY + encodeURIComponent(ICS_URL));
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            var icsText = await response.text();
+
+            var events = parseICS(icsText);
+            if (events.length === 0) throw new Error('Aucun événement trouvé');
+
+            // Save to Firestore
+            await setDoc(doc(db, 'progression_config', 'emploi_du_temps'), {
+                events: events,
+                syncedAt: serverTimestamp(),
+                syncedBy: currentUser.uid,
+                eventCount: events.length
+            });
+
+            status.textContent = '✅ ' + events.length + ' cours synchronisés (' + new Date().toLocaleString('fr-FR') + ')';
+            showToast('✅ ' + events.length + ' cours synchronisés !');
+            renderEdt(events);
+
+        } catch (err) {
+            console.error('Sync error:', err);
+            status.textContent = '❌ Erreur: ' + err.message;
+            showToast('Erreur synchronisation');
+        }
+
+        btn.disabled = false;
+        btn.textContent = '🔄 Synchroniser Pronote';
+    }
+
+    function parseICS(text) {
+        var events = [];
+        var blocks = text.split('BEGIN:VEVENT');
+
+        for (var i = 1; i < blocks.length; i++) {
+            var block = blocks[i].split('END:VEVENT')[0];
+            var ev = {};
+
+            var lines = block.split('\n');
+            var currentKey = '';
+            var currentVal = '';
+
+            for (var j = 0; j < lines.length; j++) {
+                var line = lines[j].replace(/\r$/, '');
+                // Continuation line (starts with space or tab)
+                if (line.match(/^[\s\t]/)) {
+                    currentVal += line.substring(1);
+                    continue;
+                }
+                // Save previous field
+                if (currentKey) {
+                    ev[currentKey] = currentVal;
+                }
+                // Parse new field
+                var colonIdx = line.indexOf(':');
+                if (colonIdx > 0) {
+                    var rawKey = line.substring(0, colonIdx);
+                    // Remove parameters (e.g., DTSTART;TZID=...)
+                    var semiIdx = rawKey.indexOf(';');
+                    currentKey = semiIdx > 0 ? rawKey.substring(0, semiIdx) : rawKey;
+                    currentVal = line.substring(colonIdx + 1);
+                }
+            }
+            if (currentKey) ev[currentKey] = currentVal;
+
+            // Parse dates
+            var dtStart = parseICSDate(ev.DTSTART || '');
+            var dtEnd = parseICSDate(ev.DTEND || '');
+            var summary = (ev.SUMMARY || '').replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
+            var location = (ev.LOCATION || '').replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
+            var description = (ev.DESCRIPTION || '').replace(/\\,/g, ',').replace(/\\n/g, '\n').trim();
+
+            if (!dtStart || !summary) continue;
+
+            // Extract classe from description or summary
+            var classe = '';
+            var descLines = description.split('\n');
+            for (var k = 0; k < descLines.length; k++) {
+                var dl = descLines[k].trim();
+                if (dl.match(/^(C[12]|B[12T]|CPSE|BPSE|TAG)/)) {
+                    classe = dl;
+                    break;
+                }
+            }
+            // Also check summary
+            if (!classe) {
+                var sumMatch = summary.match(/(C[12]\w+|B[12T]\w+|CPSE\d|BPSE\d|TAG\w+)/);
+                if (sumMatch) classe = sumMatch[1];
+            }
+
+            // Extract salle from location
+            var salle = location.replace(/^SALLE\s*/i, '').trim();
+
+            events.push({
+                start: dtStart.toISOString(),
+                end: dtEnd ? dtEnd.toISOString() : '',
+                summary: summary,
+                location: salle,
+                classe: classe,
+                description: description.substring(0, 200)
+            });
+        }
+
+        return events;
+    }
+
+    function parseICSDate(str) {
+        if (!str) return null;
+        // Format: 20250901T073000Z or 20250901T093000
+        str = str.replace(/[^\dTZ]/g, '');
+        if (str.length < 15) return null;
+        var y = parseInt(str.substring(0, 4));
+        var m = parseInt(str.substring(4, 6)) - 1;
+        var d = parseInt(str.substring(6, 8));
+        var h = parseInt(str.substring(9, 11));
+        var min = parseInt(str.substring(11, 13));
+        var s = parseInt(str.substring(13, 15));
+
+        if (str.endsWith('Z')) {
+            return new Date(Date.UTC(y, m, d, h, min, s));
+        }
+        return new Date(y, m, d, h, min, s);
+    }
+
+    // Load EDT from Firestore on startup
+    async function loadEdt() {
+        try {
+            var edtDoc = await getDoc(doc(db, 'progression_config', 'emploi_du_temps'));
+            if (edtDoc.exists()) {
+                var data = edtDoc.data();
+                var syncDate = data.syncedAt ? new Date(data.syncedAt.seconds * 1000).toLocaleString('fr-FR') : '';
+                document.getElementById('syncStatus').textContent = '✅ ' + (data.eventCount || 0) + ' cours (' + syncDate + ')';
+                renderEdt(data.events || []);
+            }
+        } catch (e) { console.error('loadEdt error:', e); }
+    }
+
+    function renderEdt(events) {
+        var container = document.getElementById('edtContent');
+        if (!events || events.length === 0) {
+            container.innerHTML = '<div class="empty"><div class="icon">📅</div><p>Aucun cours.</p></div>';
+            return;
+        }
+
+        // Group by day
+        var byDay = {};
+        var jourNoms = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+        var now = new Date();
+
+        events.forEach(function(ev) {
+            var d = new Date(ev.start);
+            var key = d.toISOString().split('T')[0];
+            if (!byDay[key]) byDay[key] = [];
+            byDay[key].push(ev);
+        });
+
+        // Sort days
+        var days = Object.keys(byDay).sort();
+
+        // Find today and this week
+        var todayKey = now.toISOString().split('T')[0];
+        var weekStart = new Date(now);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+        var weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        var weekStartKey = weekStart.toISOString().split('T')[0];
+        var weekEndKey = weekEnd.toISOString().split('T')[0];
+
+        // Show this week's events
+        var weekDays = days.filter(function(d) { return d >= weekStartKey && d <= weekEndKey; });
+        if (weekDays.length === 0) {
+            // Show next available days
+            var futureDays = days.filter(function(d) { return d >= todayKey; });
+            weekDays = futureDays.slice(0, 5);
+        }
+
+        container.innerHTML = '';
+
+        if (weekDays.length === 0) {
+            container.innerHTML = '<div class="empty"><div class="icon">📅</div><p>Aucun cours cette semaine.</p></div>';
+            return;
+        }
+
+        weekDays.forEach(function(dayKey) {
+            var dayEvents = byDay[dayKey];
+            dayEvents.sort(function(a, b) { return a.start.localeCompare(b.start); });
+
+            var d = new Date(dayKey + 'T12:00:00');
+            var dayName = jourNoms[d.getDay()];
+            var dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+            var isToday = dayKey === todayKey;
+
+            var group = document.createElement('div');
+            group.className = 'edt-day-group';
+            group.innerHTML = '<div class="edt-day-title">' +
+                (isToday ? '📍 ' : '') + dayName.charAt(0).toUpperCase() + dayName.slice(1) + ' ' + dateStr +
+                (isToday ? ' (aujourd\'hui)' : '') + '</div>';
+
+            dayEvents.forEach(function(ev) {
+                var startDate = new Date(ev.start);
+                var endDate = ev.end ? new Date(ev.end) : null;
+                var heure = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                var heureFin = endDate ? endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+                var isNow = isToday && now >= startDate && endDate && now <= endDate;
+                var isPast = isToday && endDate && now > endDate;
+
+                var slot = document.createElement('div');
+                slot.className = 'edt-slot' + (isNow ? ' is-now' : '') + (isPast ? ' is-past' : '');
+                slot.innerHTML =
+                    '<div class="edt-heure">' + heure + (heureFin ? '<br><span style="font-size:0.8em;color:var(--muted);">' + heureFin + '</span>' : '') + '</div>' +
+                    '<div class="edt-info">' +
+                        '<div class="edt-classe">' + (ev.classe || ev.summary) + '</div>' +
+                        '<div class="edt-matiere">' + ev.summary + '</div>' +
+                    '</div>' +
+                    (ev.location ? '<div class="edt-salle">' + ev.location + '</div>' : '');
+
+                group.appendChild(slot);
+            });
+
+            container.appendChild(group);
+        });
+    }
+
+    // ═══════════════════════════════════════════
+    // QR CODES GENERATOR
+    // ═══════════════════════════════════════════
+
+    var BASE_URL = 'https://preventionsanteenvironnement.github.io/CockpitProgression/';
+
+    var QR_ROOMS = [
+        { room: '205', label: 'Salle 205 TECHNO', desc: 'Lundi, Mardi, Jeudi, Vendredi' },
+        { room: '118', label: 'Salle 118', desc: 'Vendredi matin' },
+        { room: '010', label: 'Salle 010 PSR', desc: 'Lundi (PSR)' },
+        { room: '', label: 'Saisie libre', desc: 'Sans salle pré-remplie' }
+    ];
+
+    function renderQrCodes() {
+        var grid = document.getElementById('qrGrid');
+        grid.innerHTML = '';
+
+        QR_ROOMS.forEach(function(r) {
+            var url = BASE_URL + 'log.html' + (r.room ? '?room=' + r.room : '');
+            var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&data=' + encodeURIComponent(url);
+
+            var card = document.createElement('div');
+            card.className = 'qr-card';
+            card.innerHTML =
+                '<h3>' + r.label + '</h3>' +
+                '<div class="qr-sub">' + r.desc + '</div>' +
+                '<img src="' + qrApiUrl + '" alt="QR ' + r.label + '" width="200" height="200">' +
+                '<div class="qr-url">' + url + '</div>' +
+                '<button class="btn-print" onclick="printSingleQr(this)">🖨️ Imprimer</button>';
+
+            grid.appendChild(card);
+        });
+    }
+
+    window.printSingleQr = function(btn) {
+        var card = btn.closest('.qr-card');
+        var title = card.querySelector('h3').textContent;
+        var imgSrc = card.querySelector('img').src;
+        var url = card.querySelector('.qr-url').textContent;
+        var w = window.open('', '_blank');
+        w.document.write('<html><head><title>QR ' + title + '</title>' +
+            '<style>body{font-family:sans-serif;text-align:center;padding:40px;}h1{font-size:2em;}p{color:#666;font-size:0.9em;word-break:break-all;}</style></head>' +
+            '<body><h1>' + title + '</h1><img src="' + imgSrc + '" width="300" height="300"><p>' + url + '</p>' +
+            '<script>setTimeout(function(){window.print();},500)<\/script></body></html>');
+    };
+
+    // Init QR codes on load
+    renderQrCodes();
+
+    // ═══════ LOAD EDT ON STARTUP ═══════
+    async function loadDataAndEdt() {
+        await loadData();
+        await loadEdt();
     }
 
 </script>

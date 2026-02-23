@@ -407,8 +407,8 @@
     // Séance options
     const SEANCES = ['Séance 1', 'Séance 2', 'Séance 3', 'Séance 4', 'Séance 5', 'Séance 6', 'Évaluation', 'Correction', 'Corr.+séance 1'];
 
-    // Emploi du temps (from PDF analysis)
-    const EMPLOI_DU_TEMPS = [
+    // Emploi du temps — fallback statique (remplacé par Pronote si synchronisé)
+    let EMPLOI_DU_TEMPS = [
         { jour: 1, heure: '09:30', classe: 'C2PSR', salle: '010' },
         { jour: 1, heure: '10:30', classe: 'C1PSR', salle: '010' },
         { jour: 1, heure: '17:00', classe: 'B2GATL', salle: '205' },
@@ -424,6 +424,9 @@
         { jour: 5, heure: '11:30', classe: 'C1PSR', salle: '205' },
         { jour: 5, heure: '15:00', classe: 'C1CAN', salle: '205' }
     ];
+
+    // Try to load Pronote EDT from Firestore for smarter auto-detect
+    let pronoteEvents = [];
 
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
@@ -481,33 +484,74 @@
             select.appendChild(opt);
         });
 
-        // Auto-detect class from room + time
+        // Load Pronote events from Firestore
+        try {
+            var edtDoc = await getDoc(doc(db, 'progression_config', 'emploi_du_temps'));
+            if (edtDoc.exists()) {
+                pronoteEvents = edtDoc.data().events || [];
+            }
+        } catch (e) { console.error('Load EDT error:', e); }
+
+        // Auto-detect class from room + time (Pronote first, then static fallback)
         if (room) {
-            var dayOfWeek = now.getDay(); // 0=dim, 1=lun...
-            var currentHour = now.getHours();
-            var currentMin = now.getMinutes();
-            var currentTime = currentHour * 60 + currentMin;
+            var detectedClasse = '';
 
-            // Find best match: same room, same day, closest time that's <= now or within 30min after
-            var bestMatch = null;
-            var bestDiff = Infinity;
-            EMPLOI_DU_TEMPS.forEach(function(e) {
-                if (e.jour !== dayOfWeek) return;
-                if (!room.includes(e.salle) && !e.salle.includes(room)) return;
-                var parts = e.heure.split(':');
-                var eTime = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                var diff = currentTime - eTime;
-                if (diff >= -30 && diff < 120 && Math.abs(diff) < bestDiff) {
-                    bestDiff = Math.abs(diff);
-                    bestMatch = e;
+            // 1) Try Pronote events: find today's event matching room + time
+            if (pronoteEvents.length > 0) {
+                var todayStr = now.toISOString().split('T')[0];
+                var currentMs = now.getTime();
+
+                var bestPronote = null;
+                var bestPronoteDiff = Infinity;
+
+                pronoteEvents.forEach(function(ev) {
+                    if (!ev.start) return;
+                    var evDate = new Date(ev.start);
+                    var evDateStr = evDate.toISOString().split('T')[0];
+                    if (evDateStr !== todayStr) return;
+
+                    // Check room match
+                    var evSalle = (ev.location || '').toLowerCase();
+                    if (!evSalle.includes(room.toLowerCase()) && !room.toLowerCase().includes(evSalle)) return;
+
+                    // Time proximity: event start within -30 to +120 minutes of now
+                    var diffMin = (currentMs - evDate.getTime()) / 60000;
+                    if (diffMin >= -30 && diffMin < 120 && Math.abs(diffMin) < bestPronoteDiff) {
+                        bestPronoteDiff = Math.abs(diffMin);
+                        bestPronote = ev;
+                    }
+                });
+
+                if (bestPronote && bestPronote.classe) {
+                    detectedClasse = bestPronote.classe;
                 }
-            });
+            }
 
-            if (bestMatch) {
-                // Find matching classe in dropdown
+            // 2) Fallback: static EMPLOI_DU_TEMPS
+            if (!detectedClasse) {
+                var dayOfWeek = now.getDay();
+                var currentTime = now.getHours() * 60 + now.getMinutes();
+                var bestMatch = null;
+                var bestDiff = Infinity;
+                EMPLOI_DU_TEMPS.forEach(function(e) {
+                    if (e.jour !== dayOfWeek) return;
+                    if (!room.includes(e.salle) && !e.salle.includes(room)) return;
+                    var parts = e.heure.split(':');
+                    var eTime = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                    var diff = currentTime - eTime;
+                    if (diff >= -30 && diff < 120 && Math.abs(diff) < bestDiff) {
+                        bestDiff = Math.abs(diff);
+                        bestMatch = e;
+                    }
+                });
+                if (bestMatch) detectedClasse = bestMatch.classe;
+            }
+
+            // 3) Apply detection to dropdown
+            if (detectedClasse) {
                 for (var i = 0; i < select.options.length; i++) {
                     var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
-                    if (prevue && prevue.classeId.includes(bestMatch.classe)) {
+                    if (prevue && (prevue.classeId.includes(detectedClasse) || detectedClasse.includes(prevue.classeId))) {
                         select.selectedIndex = i;
                         onClasseChange();
                         break;
