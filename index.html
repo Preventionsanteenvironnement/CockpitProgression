@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cockpit Progression PSE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --primary: #6366f1;
+            --primary-light: #e0e7ff;
+            --success: #22c55e;
+            --success-light: #dcfce7;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #dc2626;
+            --danger-light: #fee2e2;
+            --border: #e2e8f0;
+            --radius: 14px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        /* ── LOGIN ── */
+        .login-screen {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+        .login-card {
+            background: var(--card); border-radius: 20px; padding: 50px 40px;
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            max-width: 400px; width: 100%;
+        }
+        .login-icon { font-size: 3.5em; margin-bottom: 15px; }
+        .login-card h2 { font-size: 1.6em; font-weight: 800; margin-bottom: 8px; }
+        .login-card p { color: var(--muted); margin-bottom: 30px; }
+        .btn-google {
+            display: inline-flex; align-items: center; gap: 12px;
+            padding: 14px 30px; border: 2px solid var(--border); border-radius: 50px;
+            background: white; font-size: 1em; font-weight: 600; cursor: pointer;
+            font-family: inherit; transition: all 0.2s;
+        }
+        .btn-google:hover { border-color: var(--primary); background: var(--primary-light); }
+        .btn-google svg { width: 20px; height: 20px; }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; flex-wrap: wrap; gap: 10px;
+        }
+        .header h1 { font-size: 1.5em; font-weight: 800; }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .user-email { font-size: 0.8em; color: var(--muted); }
+        .btn-logout {
+            padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
+            background: white; font-size: 0.8em; cursor: pointer; font-family: inherit;
+        }
+        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+
+        /* ── QUICK ACTIONS ── */
+        .quick-actions {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 25px;
+        }
+        .btn-quick {
+            display: flex; align-items: center; gap: 12px;
+            padding: 18px 16px; background: var(--card); border-radius: var(--radius);
+            text-decoration: none; color: var(--text);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .btn-quick:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .btn-quick .icon { font-size: 1.8em; }
+        .btn-quick .label { font-weight: 700; font-size: 0.85em; }
+        .btn-quick .sub { font-size: 0.75em; color: var(--muted); }
+        .btn-quick.primary-action { background: linear-gradient(135deg, var(--primary), #818cf8); color: white; }
+        .btn-quick.primary-action .sub { color: rgba(255,255,255,0.7); }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--card); border-radius: var(--radius); padding: 22px;
+            margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-weight: 700; font-size: 1em; margin-bottom: 18px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-title .count {
+            background: var(--primary-light); color: var(--primary);
+            padding: 2px 10px; border-radius: 20px; font-size: 0.8em;
+        }
+
+        /* ── STATS ── */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px; margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--card); border-radius: var(--radius); padding: 18px;
+            text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .stat-value { font-size: 2em; font-weight: 800; }
+        .stat-label { font-size: 0.75em; color: var(--muted); font-weight: 600; margin-top: 4px; }
+        .stat-card.success .stat-value { color: var(--success); }
+        .stat-card.warning .stat-value { color: var(--warning); }
+        .stat-card.danger .stat-value { color: var(--danger); }
+        .stat-card.primary .stat-value { color: var(--primary); }
+
+        /* ── IMPORT ── */
+        .import-zone {
+            border: 3px dashed var(--border); border-radius: var(--radius);
+            padding: 40px 20px; text-align: center; cursor: pointer;
+            transition: all 0.2s; position: relative;
+        }
+        .import-zone:hover, .import-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
+        .import-zone .icon { font-size: 2.5em; margin-bottom: 10px; }
+        .import-zone p { color: var(--muted); font-size: 0.9em; }
+        .import-zone input[type="file"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+        .import-progress { margin-top: 15px; }
+        .import-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 15px; background: var(--bg); border-radius: 10px;
+            margin-bottom: 6px; font-size: 0.85em;
+        }
+        .import-item .status { font-weight: 700; }
+        .import-item .status.ok { color: var(--success); }
+        .import-item .status.err { color: var(--danger); }
+
+        /* ── RECENT LOGS ── */
+        .log-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
+        }
+        .log-item:last-child { border-bottom: none; }
+        .log-badge {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+        }
+        .log-badge.terminee { background: var(--success); }
+        .log-badge.en_cours { background: var(--warning); }
+        .log-badge.non_commencee { background: var(--border); }
+        .log-info { flex: 1; }
+        .log-classe { font-weight: 700; font-size: 0.9em; }
+        .log-module { font-size: 0.8em; color: var(--muted); }
+        .log-date { font-size: 0.75em; color: var(--muted); white-space: nowrap; }
+
+        /* ── ALERT ITEMS ── */
+        .alert-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-radius: 10px; margin-bottom: 6px;
+            font-size: 0.85em; font-weight: 500;
+        }
+        .alert-item.warn { background: var(--warning-light); color: #92400e; }
+        .alert-item.err { background: var(--danger-light); color: #991b1b; }
+        .alert-item .alert-icon { font-size: 1.2em; }
+
+        /* ── CLASSES LIST ── */
+        .classes-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .class-card {
+            padding: 14px; border-radius: 10px; border: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .class-name { font-weight: 700; font-size: 0.9em; }
+        .class-badge {
+            padding: 3px 10px; border-radius: 20px; font-size: 0.7em; font-weight: 700;
+        }
+        .class-badge.cap { background: #dbeafe; color: #1e40af; }
+        .class-badge.bac { background: #dcfce7; color: #166534; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success); color: white;
+            padding: 14px 30px; border-radius: 14px;
+            font-weight: 700; z-index: 1000; opacity: 0;
+            transition: all 0.3s ease; font-size: 0.95em;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* ── TABS ── */
+        .tabs {
+            display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg);
+            border-radius: 12px; padding: 4px; border: 1px solid var(--border);
+        }
+        .tab {
+            flex: 1; padding: 10px 15px; border: none; border-radius: 10px;
+            background: transparent; font-family: inherit; font-size: 0.85em;
+            font-weight: 600; cursor: pointer; color: var(--muted); transition: all 0.2s;
+        }
+        .tab.active { background: white; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* ── EMPTY STATE ── */
+        .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+        .empty .icon { font-size: 2.5em; margin-bottom: 10px; }
+
+        @media (max-width: 600px) {
+            .container { padding: 12px; }
+            .header h1 { font-size: 1.2em; }
+            .quick-actions { grid-template-columns: 1fr 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════ LOGIN ════════ -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-card">
+        <div class="login-icon">📊</div>
+        <h2>Cockpit Progression</h2>
+        <p>Suivi de progression PSE</p>
+        <button class="btn-google" id="btnGoogle">
+            <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Connexion Google
+        </button>
+    </div>
+</div>
+
+<!-- ════════ MAIN ════════ -->
+<div id="mainScreen" style="display:none;">
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1>📊 Cockpit Progression</h1>
+        <div class="header-actions">
+            <span class="user-email" id="userEmail"></span>
+            <button class="btn-logout" id="btnLogout">Déco</button>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+        <a href="log.html" class="btn-quick primary-action">
+            <div>
+                <div class="icon">📝</div>
+            </div>
+            <div>
+                <div class="label">Saisie rapide</div>
+                <div class="sub">Logger une séance</div>
+            </div>
+        </a>
+        <a href="log.html?room=205" class="btn-quick">
+            <div class="icon">🏫</div>
+            <div>
+                <div class="label">Salle 205</div>
+                <div class="sub">QR salle 205</div>
+            </div>
+        </a>
+        <a href="log.html?room=118" class="btn-quick">
+            <div class="icon">🏫</div>
+            <div>
+                <div class="label">Salle 118</div>
+                <div class="sub">QR salle 118</div>
+            </div>
+        </a>
+        <a href="log.html?room=010" class="btn-quick">
+            <div class="icon">🏫</div>
+            <div>
+                <div class="label">Salle 010</div>
+                <div class="sub">QR salle 010</div>
+            </div>
+        </a>
+        <a href="dashboard.html" class="btn-quick">
+            <div class="icon">📈</div>
+            <div>
+                <div class="label">Dashboard</div>
+                <div class="sub">Vue complète</div>
+            </div>
+        </a>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('overview')">Accueil</button>
+        <button class="tab" onclick="showTab('import')">Import CSV</button>
+        <button class="tab" onclick="showTab('classes')">Classes</button>
+    </div>
+
+    <!-- ── TAB: OVERVIEW ── -->
+    <div id="tabOverview" class="section active">
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card primary"><div class="stat-value" id="statClasses">-</div><div class="stat-label">Classes</div></div>
+            <div class="stat-card success"><div class="stat-value" id="statValidees">-</div><div class="stat-label">Semaines validées</div></div>
+            <div class="stat-card warning"><div class="stat-value" id="statLogs">-</div><div class="stat-label">Saisies</div></div>
+            <div class="stat-card danger"><div class="stat-value" id="statAlertes">-</div><div class="stat-label">Alertes</div></div>
+        </div>
+
+        <!-- ALERTS -->
+        <div class="card" id="alertsCard" style="display:none;">
+            <div class="card-title">⚠️ Alertes <span class="count" id="alertsCount"></span></div>
+            <div id="alertsList"></div>
+        </div>
+
+        <!-- RECENT LOGS -->
+        <div class="card">
+            <div class="card-title">📋 Dernières saisies</div>
+            <div id="recentList">
+                <div class="empty">
+                    <div class="icon">📝</div>
+                    <p>Aucune saisie pour l'instant.<br>Scannez un QR code ou utilisez la saisie rapide.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TAB: IMPORT CSV ── -->
+    <div id="tabImport" class="section">
+        <div class="card">
+            <div class="card-title">📥 Importer les progressions Numbers</div>
+            <p style="color:var(--muted); font-size:0.85em; margin-bottom:15px;">
+                Exportez chaque onglet de Numbers en CSV, puis glissez-les ici.<br>
+                Vous pouvez importer plusieurs fichiers à la fois.
+            </p>
+            <div class="import-zone" id="importZone">
+                <input type="file" id="fileInput" multiple accept=".csv,.txt">
+                <div class="icon">📂</div>
+                <p><strong>Glissez vos CSV ici</strong> ou cliquez pour sélectionner</p>
+            </div>
+            <div class="import-progress" id="importProgress"></div>
+        </div>
+
+        <div class="card" id="importedCard" style="display:none;">
+            <div class="card-title">✅ Progressions importées <span class="count" id="importedCount"></span></div>
+            <div id="importedList"></div>
+        </div>
+    </div>
+
+    <!-- ── TAB: CLASSES ── -->
+    <div id="tabClasses" class="section">
+        <div class="card">
+            <div class="card-title">🎓 Classes enregistrées</div>
+            <div id="classesList" class="classes-grid">
+                <div class="empty">
+                    <div class="icon">📥</div>
+                    <p>Importez d'abord vos CSV Numbers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import {
+        getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc,
+        collection, query, orderBy, limit, serverTimestamp, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import {
+        getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect,
+        getRedirectResult, GoogleAuthProvider, signOut
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    // ═══════ FIREBASE INIT ═══════
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWdCMvOiAJln3eT9LIAQD3RWJUD0lQcLI",
+        authDomain: "devoirs-pse.firebaseapp.com",
+        projectId: "devoirs-pse",
+        storageBucket: "devoirs-pse.firebasestorage.app",
+        messagingSenderId: "614730413904",
+        appId: "1:614730413904:web:a5dd478af5de30f6bede55"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+    let currentUser = null;
+
+    // ═══════ AUTH ═══════
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('userEmail').textContent = user.email;
+            loadData();
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainScreen').style.display = 'none';
+        }
+    });
+
+    document.getElementById('btnGoogle').addEventListener('click', async () => {
+        try {
+            await signInWithPopup(auth, googleProvider);
+        } catch (e) {
+            if (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request') {
+                await signInWithRedirect(auth, googleProvider);
+            } else {
+                console.error('Auth error:', e);
+                alert('Erreur connexion : ' + e.message);
+            }
+        }
+    });
+    getRedirectResult(auth).catch(e => console.error('Redirect result error:', e));
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+
+    // ═══════ TABS ═══════
+    window.showTab = function(tabName) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+        event.target.classList.add('active');
+    };
+
+    // ═══════ TOAST ═══════
+    function showToast(msg, duration) {
+        duration = duration || 2500;
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, duration);
+    }
+
+    // ═══════ CSV PARSER ═══════
+    function parseCSV(text, filename) {
+        // Detect separator
+        var sep = ';';
+        var lines = text.split('\n');
+        if (lines.length < 2) return null;
+
+        // Parse header
+        var header = lines[0].split(sep).map(function(h) { return h.trim(); });
+
+        // Find module column (the one that's NOT always N/A)
+        var moduleColCandidates = [];
+        var suiteColCandidates = [];
+        for (var h = 0; h < header.length; h++) {
+            if (header[h].match(/^Modules\s/i)) moduleColCandidates.push(h);
+            if (header[h].match(/^Suite\s/i)) suiteColCandidates.push(h);
+        }
+
+        // Find key column indices
+        var colMap = {};
+        header.forEach(function(name, idx) {
+            var n = name.toLowerCase().trim();
+            if (n === 'semaines' || n.startsWith('semaines')) colMap.semaine = idx;
+            if (n === 's') colMap.s = idx;
+            if (n === 'a/b') colMap.ab = idx;
+            if (n === 'situation') colMap.situation = idx;
+            if (n === 'dates' || n.startsWith('dates')) colMap.dates = idx;
+            if (n === 'classe') colMap.classe = idx;
+            if (n.startsWith('objectif du module')) colMap.objectifModule = idx;
+            if (n.startsWith('objectif de la')) colMap.objectifSeance = idx;
+            if (n === 'nb de séances prévues' || n.match(/nb.*s.ances/i)) colMap.nbSeances = idx;
+            if (n.startsWith('séances') || n.startsWith('seances')) colMap.seance = idx;
+            if (n === 'statut') colMap.statut = idx;
+            if (n === 'validé' || n === 'valide') colMap.valide = idx;
+            if (n.match(/évaluations? diagn/i) || n.match(/evaluations? diagn/i)) colMap.evalDiag = idx;
+            if (n.match(/évaluations? form/i) || n.match(/evaluations? form/i)) colMap.evalForm = idx;
+            if (n.match(/^évaluation$/) || n.match(/^evaluation$/)) colMap.evaluation = idx;
+        });
+
+        // Parse rows - handle multi-line CSV values (quoted fields)
+        var rows = [];
+        var currentRow = [];
+        var inQuote = false;
+        var currentField = '';
+
+        for (var i = 1; i < lines.length; i++) {
+            var line = lines[i];
+            if (!inQuote) {
+                currentRow = [];
+                currentField = '';
+            }
+
+            for (var c = 0; c < line.length; c++) {
+                var ch = line[c];
+                if (ch === '"') {
+                    inQuote = !inQuote;
+                } else if (ch === sep && !inQuote) {
+                    currentRow.push(currentField.trim());
+                    currentField = '';
+                } else {
+                    currentField += ch;
+                }
+            }
+
+            if (inQuote) {
+                currentField += '\n';
+                continue;
+            }
+
+            currentRow.push(currentField.trim());
+            if (currentRow.length > 1 && currentRow[0]) {
+                rows.push(currentRow);
+            }
+        }
+
+        // Determine which module column has actual data (not N/A)
+        var activeModuleCol = -1;
+        for (var mc = 0; mc < moduleColCandidates.length; mc++) {
+            var col = moduleColCandidates[mc];
+            for (var r = 0; r < Math.min(rows.length, 15); r++) {
+                var val = (rows[r][col] || '').trim();
+                if (val && val !== 'N/A' && val !== 'Vacances scolaires' && val !== 'PFMP') {
+                    activeModuleCol = col;
+                    break;
+                }
+            }
+            if (activeModuleCol >= 0) break;
+        }
+
+        // Also find the active "suite module" column
+        var activeSuiteCol = -1;
+        for (var sc = 0; sc < suiteColCandidates.length; sc++) {
+            var col2 = suiteColCandidates[sc];
+            for (var r2 = 0; r2 < Math.min(rows.length, 20); r2++) {
+                var val2 = (rows[r2][col2] || '').trim();
+                if (val2 && val2 !== 'N/A' && val2.match(/[➩➫⇨]/)) {
+                    activeSuiteCol = col2;
+                    break;
+                }
+            }
+            if (activeSuiteCol >= 0) break;
+        }
+
+        // Detect classe from data or filename
+        var classeId = '';
+        if (colMap.classe !== undefined) {
+            for (var r3 = 0; r3 < rows.length; r3++) {
+                var cv = (rows[r3][colMap.classe] || '').trim();
+                if (cv && cv !== 'Vacances scolaires' && cv !== 'PFMP') {
+                    classeId = cv;
+                    break;
+                }
+            }
+        }
+        if (!classeId) {
+            // Extract from filename: "CAP CAN 1-Tableau 1.csv" → "CAP CAN 1"
+            classeId = filename.replace(/-Tableau.*$/i, '').replace(/\.csv$/i, '').trim();
+        }
+
+        // Detect niveau from module column header
+        var niveau = 'INCONNU';
+        if (activeModuleCol >= 0) {
+            var colHeader = header[activeModuleCol] || '';
+            if (colHeader.match(/CAP/i)) niveau = 'CAP';
+            else if (colHeader.match(/BACPRO\s*T/i)) niveau = 'BAC_PRO_TERM';
+            else if (colHeader.match(/BACPRO\s*1/i)) niveau = 'BAC_PRO_1ERE';
+            else if (colHeader.match(/BACPRO\s*2/i)) niveau = 'BAC_PRO_2NDE';
+        }
+
+        // Build semaines array
+        var semaines = [];
+        for (var r4 = 0; r4 < rows.length; r4++) {
+            var row = rows[r4];
+            var dateStr = (row[colMap.semaine] || '').trim();
+            if (!dateStr) continue;
+
+            var situation = (row[colMap.situation] || '').trim();
+            var moduleVal = activeModuleCol >= 0 ? (row[activeModuleCol] || '').trim() : '';
+            var suiteVal = activeSuiteCol >= 0 ? (row[activeSuiteCol] || '').trim() : '';
+
+            // Clean module name (remove trailing newlines)
+            moduleVal = moduleVal.replace(/\n/g, ' ').trim();
+            suiteVal = suiteVal.replace(/\n/g, ' ').trim();
+
+            // Skip if module is same as situation (vacances etc)
+            if (moduleVal === situation) moduleVal = '';
+
+            var sem = {
+                date: dateStr,
+                semaine: (row[colMap.s] || '').trim(),
+                ab: (row[colMap.ab] || '').trim(),
+                situation: situation,
+                module: moduleVal || '',
+                suiteModule: suiteVal || '',
+                seance: colMap.seance !== undefined ? (row[colMap.seance] || '').trim() : '',
+                nbSeancesPrevues: colMap.nbSeances !== undefined ? parseInt(row[colMap.nbSeances]) || 0 : 0,
+                objectifModule: colMap.objectifModule !== undefined ? (row[colMap.objectifModule] || '').trim() : '',
+                objectifSeance: colMap.objectifSeance !== undefined ? (row[colMap.objectifSeance] || '').trim() : '',
+                statut: colMap.statut !== undefined ? (row[colMap.statut] || '').trim() : '',
+                valide: colMap.valide !== undefined ? (row[colMap.valide] || '').trim().toUpperCase() === 'VRAI' : false
+            };
+
+            // Add evaluation columns if present
+            if (colMap.evalDiag !== undefined) sem.evalDiag = (row[colMap.evalDiag] || '').trim();
+            if (colMap.evalForm !== undefined) sem.evalForm = (row[colMap.evalForm] || '').trim();
+            if (colMap.evaluation !== undefined) sem.evaluation = (row[colMap.evaluation] || '').trim();
+
+            semaines.push(sem);
+        }
+
+        return {
+            classeId: classeId,
+            csvFilename: filename,
+            niveau: niveau,
+            semaines: semaines
+        };
+    }
+
+    // ═══════ CSV IMPORT HANDLER ═══════
+    var importZone = document.getElementById('importZone');
+    var fileInput = document.getElementById('fileInput');
+
+    importZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        importZone.classList.add('dragover');
+    });
+    importZone.addEventListener('dragleave', function() {
+        importZone.classList.remove('dragover');
+    });
+    importZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        importZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+
+    async function handleFiles(files) {
+        var progressDiv = document.getElementById('importProgress');
+        progressDiv.innerHTML = '';
+
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
+                addImportItem(progressDiv, file.name, 'Pas un CSV', 'err');
+                continue;
+            }
+
+            // Skip vierge files
+            if (file.name.toLowerCase().includes('vierge')) {
+                addImportItem(progressDiv, file.name, 'Ignoré (vierge)', 'err');
+                continue;
+            }
+
+            try {
+                var text = await file.text();
+                var parsed = parseCSV(text, file.name);
+                if (!parsed || parsed.semaines.length === 0) {
+                    addImportItem(progressDiv, file.name, 'Aucune donnée', 'err');
+                    continue;
+                }
+
+                // Save to Firestore
+                var docId = parsed.classeId.replace(/[\/\s]+/g, '_');
+                await setDoc(doc(db, 'progression_prevue', docId), {
+                    classeId: parsed.classeId,
+                    csvFilename: parsed.csvFilename,
+                    niveau: parsed.niveau,
+                    semaines: parsed.semaines,
+                    importedAt: serverTimestamp(),
+                    importedBy: currentUser.uid
+                });
+
+                addImportItem(progressDiv, parsed.classeId + ' (' + parsed.semaines.length + ' sem.)', '✓ Importé', 'ok');
+            } catch (err) {
+                console.error('Import error:', err);
+                addImportItem(progressDiv, file.name, 'Erreur: ' + err.message, 'err');
+            }
+        }
+
+        showToast('Import terminé !');
+        loadData();
+    }
+
+    function addImportItem(container, name, status, type) {
+        var div = document.createElement('div');
+        div.className = 'import-item';
+        div.innerHTML = '<span>' + name + '</span><span class="status ' + type + '">' + status + '</span>';
+        container.appendChild(div);
+    }
+
+    // ═══════ LOAD DATA ═══════
+    var allPrevue = [];
+    var allLogs = [];
+
+    async function loadData() {
+        try {
+            // Load progression prevue
+            var prevueSnap = await getDocs(collection(db, 'progression_prevue'));
+            allPrevue = [];
+            prevueSnap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
+
+            // Load logs
+            var logsSnap = await getDocs(collection(db, 'progression_logs'));
+            allLogs = [];
+            logsSnap.forEach(function(d) { allLogs.push({ id: d.id, ...d.data() }); });
+            allLogs.sort(function(a, b) {
+                var ta = a.timestamp ? a.timestamp.seconds : 0;
+                var tb = b.timestamp ? b.timestamp.seconds : 0;
+                return tb - ta;
+            });
+
+            renderOverview();
+            renderClasses();
+            renderImported();
+        } catch (err) {
+            console.error('loadData error:', err);
+        }
+    }
+
+    // ═══════ RENDER OVERVIEW ═══════
+    function renderOverview() {
+        // Stats
+        document.getElementById('statClasses').textContent = allPrevue.length;
+        document.getElementById('statLogs').textContent = allLogs.length;
+
+        // Count validated weeks
+        var totalValidees = 0;
+        allPrevue.forEach(function(p) {
+            (p.semaines || []).forEach(function(s) {
+                if (s.valide) totalValidees++;
+            });
+        });
+        document.getElementById('statValidees').textContent = totalValidees;
+
+        // Alerts
+        var alerts = [];
+        allLogs.forEach(function(log) {
+            var cl = log.checklist || {};
+            if (cl.copies_ramassees && !cl.copies_corrigees) {
+                alerts.push({ type: 'warn', text: log.classeId + ' — Copies à corriger (' + log.date + ')' });
+            }
+            if (cl.copies_corrigees && !cl.copies_rendues) {
+                alerts.push({ type: 'warn', text: log.classeId + ' — Copies à rendre (' + log.date + ')' });
+            }
+            if (cl.eval_passee && !cl.eval_corrigee) {
+                alerts.push({ type: 'err', text: log.classeId + ' — Évaluation à corriger (' + log.date + ')' });
+            }
+            if (cl.eval_corrigee && !cl.eval_rendue) {
+                alerts.push({ type: 'warn', text: log.classeId + ' — Évaluation à rendre (' + log.date + ')' });
+            }
+        });
+
+        document.getElementById('statAlertes').textContent = alerts.length;
+
+        var alertsCard = document.getElementById('alertsCard');
+        var alertsList = document.getElementById('alertsList');
+        if (alerts.length > 0) {
+            alertsCard.style.display = 'block';
+            document.getElementById('alertsCount').textContent = alerts.length;
+            alertsList.innerHTML = '';
+            alerts.forEach(function(a) {
+                var div = document.createElement('div');
+                div.className = 'alert-item ' + a.type;
+                div.innerHTML = '<span class="alert-icon">' + (a.type === 'err' ? '🔴' : '🟡') + '</span>' + a.text;
+                alertsList.appendChild(div);
+            });
+        } else {
+            alertsCard.style.display = 'none';
+        }
+
+        // Recent logs
+        var recentDiv = document.getElementById('recentList');
+        if (allLogs.length === 0) {
+            recentDiv.innerHTML = '<div class="empty"><div class="icon">📝</div><p>Aucune saisie pour l\'instant.</p></div>';
+            return;
+        }
+
+        recentDiv.innerHTML = '';
+        var shown = allLogs.slice(0, 10);
+        shown.forEach(function(log) {
+            var div = document.createElement('div');
+            div.className = 'log-item';
+            var dateDisplay = log.date || '';
+            div.innerHTML = '<div class="log-badge ' + (log.statut || '') + '"></div>' +
+                '<div class="log-info">' +
+                '<div class="log-classe">' + (log.classeId || '') + '</div>' +
+                '<div class="log-module">' + (log.moduleId || '') + ' — ' + (log.seance || '') + '</div>' +
+                '</div>' +
+                '<div class="log-date">' + dateDisplay + '</div>';
+            recentDiv.appendChild(div);
+        });
+    }
+
+    // ═══════ RENDER CLASSES ═══════
+    function renderClasses() {
+        var container = document.getElementById('classesList');
+        if (allPrevue.length === 0) {
+            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Importez d\'abord vos CSV Numbers.</p></div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        allPrevue.sort(function(a, b) { return a.classeId.localeCompare(b.classeId); });
+        allPrevue.forEach(function(p) {
+            var div = document.createElement('div');
+            div.className = 'class-card';
+            var niveauClass = p.niveau === 'CAP' ? 'cap' : 'bac';
+            var niveauLabel = p.niveau === 'CAP' ? 'CAP' : 'BAC PRO';
+            div.innerHTML = '<span class="class-name">' + p.classeId + '</span>' +
+                '<span class="class-badge ' + niveauClass + '">' + niveauLabel + '</span>';
+            container.appendChild(div);
+        });
+    }
+
+    // ═══════ RENDER IMPORTED ═══════
+    function renderImported() {
+        var card = document.getElementById('importedCard');
+        var list = document.getElementById('importedList');
+        if (allPrevue.length === 0) {
+            card.style.display = 'none';
+            return;
+        }
+        card.style.display = 'block';
+        document.getElementById('importedCount').textContent = allPrevue.length;
+        list.innerHTML = '';
+        allPrevue.forEach(function(p) {
+            var nbNormal = (p.semaines || []).filter(function(s) { return s.situation === 'Normal'; }).length;
+            var nbValide = (p.semaines || []).filter(function(s) { return s.valide; }).length;
+            var div = document.createElement('div');
+            div.className = 'import-item';
+            div.innerHTML = '<span>' + p.classeId + ' — ' + p.niveau + ' (' + nbNormal + ' cours, ' + nbValide + ' validés)</span>' +
+                '<span class="status ok">✓</span>';
+            list.appendChild(div);
+        });
+    }
+
+</script>
+</body>
+</html>
