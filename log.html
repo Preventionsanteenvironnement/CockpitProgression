@@ -583,7 +583,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
-        getFirestore, doc, setDoc, getDoc, getDocs,
+        getFirestore, doc, setDoc, getDoc, getDocs, updateDoc,
         collection, query, orderBy, limit, serverTimestamp, where
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import {
@@ -885,6 +885,31 @@
             }
         }
         return null;
+    }
+
+    // ═══════ SYNC PREVUE AFTER LOG SAVE ═══════
+    async function syncPrevue(classeDocId, statut, situation) {
+        var weekInfo = findCurrentWeekPrevue(classeDocId);
+        if (!weekInfo) return; // Pas de semaine correspondante (vacances, etc.)
+
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) return;
+
+        var sem = prevue.semaines[weekInfo.index];
+
+        // Mapping statut (sans accent = convention CSV)
+        if (statut === 'Réalisé') { sem.valide = true; sem.statut = 'Realise'; }
+        else if (statut === 'Reporté') { sem.valide = false; sem.statut = 'Reporte'; }
+        else if (statut === 'Non réalisé') { sem.valide = false; sem.statut = 'Non realise'; }
+        else if (statut === 'Prévu') { sem.valide = false; sem.statut = 'Prevu'; }
+
+        // Situation spéciale (Annulé, PFMP, etc.)
+        if (situation && situation !== 'Normal') {
+            sem.situation = situation;
+            sem.valide = false;
+        }
+
+        await updateDoc(doc(db, 'progression_prevue', classeDocId), { semaines: prevue.semaines });
     }
 
     // ═══════ CLASSE CHANGE ═══════
@@ -1659,6 +1684,14 @@
         try {
             var docId = today + '_' + classeDocId;
             await setDoc(doc(db, 'progression_logs', docId), data);
+
+            // Sync progression_prevue pour le dashboard
+            try {
+                await syncPrevue(classeDocId, selectedStatut, selectedSituation);
+            } catch (syncErr) {
+                console.warn('Prevue sync failed (log saved):', syncErr);
+            }
+
             showToast('✅ Enregistré !');
             setTimeout(function() { window.location.href = 'index.html'; }, 1500);
         } catch (err) {
