@@ -111,21 +111,24 @@
         .seance-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
 
         /* ── STATUS BUTTONS ── */
-        .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+        .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
         .status-btn {
-            padding: 22px 8px; border: 3px solid var(--border);
+            padding: 18px 8px; border: 3px solid var(--border);
             border-radius: 14px; background: white; cursor: pointer;
             text-align: center; transition: all 0.15s; font-family: inherit;
             -webkit-tap-highlight-color: transparent;
         }
         .status-btn:active { transform: scale(0.96); }
-        .status-btn .emoji { font-size: 2em; display: block; margin-bottom: 6px; }
+        .status-btn .emoji { font-size: 1.6em; display: block; margin-bottom: 4px; }
         .status-btn .label { font-size: 0.72em; font-weight: 700; color: var(--muted); }
-        .status-btn.selected.s-terminee { border-color: var(--success); background: var(--success-light); }
-        .status-btn.selected.s-terminee .label { color: var(--success); }
-        .status-btn.selected.s-en_cours { border-color: var(--warning); background: var(--warning-light); }
-        .status-btn.selected.s-en_cours .label { color: #92400e; }
-        .status-btn.selected.s-non_commencee { border-color: #94a3b8; background: #f1f5f9; }
+        .status-btn.selected.s-realise { border-color: var(--success); background: var(--success-light); }
+        .status-btn.selected.s-realise .label { color: var(--success); }
+        .status-btn.selected.s-prevu { border-color: #6366f1; background: #e0e7ff; }
+        .status-btn.selected.s-prevu .label { color: #6366f1; }
+        .status-btn.selected.s-reporte { border-color: var(--warning); background: var(--warning-light); }
+        .status-btn.selected.s-reporte .label { color: #92400e; }
+        .status-btn.selected.s-non_realise { border-color: var(--danger); background: var(--danger-light); }
+        .status-btn.selected.s-non_realise .label { color: var(--danger); }
 
         /* ── SITUATION RAPIDE ── */
         .situation-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
@@ -211,6 +214,31 @@
         }
         .last-log strong { color: #1e40af; }
 
+        /* ── VALIDE TOGGLE ── */
+        .valide-toggle {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+            padding: 14px; border-radius: 12px; border: 3px solid var(--border);
+            background: white; cursor: pointer; transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .valide-toggle:active { transform: scale(0.98); }
+        .valide-toggle.checked { border-color: var(--success); background: var(--success-light); }
+        .valide-toggle .toggle-check { font-size: 1.8em; }
+        .valide-toggle .toggle-text { font-weight: 700; font-size: 0.9em; }
+        .valide-toggle.checked .toggle-text { color: var(--success); }
+
+        /* ── CPS SMILEYS ── */
+        .cps-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .cps-label { font-size: 0.72em; font-weight: 700; color: var(--muted); min-width: 70px; }
+        .cps-btns { display: flex; gap: 6px; flex: 1; }
+        .cps-btn {
+            flex: 1; padding: 8px 4px; border: 2px solid var(--border); border-radius: 10px;
+            background: white; cursor: pointer; text-align: center; font-size: 1.4em;
+            transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+        }
+        .cps-btn:active { transform: scale(0.92); }
+        .cps-btn.selected { border-color: var(--primary); background: var(--primary-light); }
+
         /* ── MISSED REMINDER ── */
         .missed-banner {
             padding: 14px; border-radius: 12px; margin-bottom: 10px;
@@ -220,6 +248,34 @@
         .missed-banner:active { transform: scale(0.98); }
         .missed-title { font-weight: 700; font-size: 0.85em; color: #c2410c; margin-bottom: 4px; }
         .missed-detail { font-size: 0.78em; color: #9a3412; }
+
+        /* ── QR SCANNER ── */
+        .qr-scanner-card {
+            background: var(--card); border-radius: var(--radius); padding: 16px;
+            margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            text-align: center;
+        }
+        .btn-scan {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 28px; border: 2px solid var(--primary);
+            border-radius: 14px; background: var(--primary-light);
+            color: var(--primary-dark); font-size: 1em; font-weight: 700;
+            cursor: pointer; font-family: inherit; transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-scan:active { transform: scale(0.96); }
+        .btn-scan.scanning { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+        #qrReader {
+            width: 100%; max-width: 350px; margin: 12px auto 0;
+            border-radius: 12px; overflow: hidden; display: none;
+        }
+        #qrReader video { border-radius: 12px; }
+        .qr-result {
+            margin-top: 10px; padding: 10px 14px; border-radius: 10px;
+            background: var(--success-light); border: 1px solid var(--success);
+            font-weight: 600; font-size: 0.85em; color: var(--success);
+            display: none;
+        }
 
         /* ── TOAST ── */
         .toast {
@@ -264,6 +320,13 @@
     </div>
     <div class="date-display" id="dateJour"></div>
 
+    <!-- QR SCANNER -->
+    <div class="qr-scanner-card">
+        <button class="btn-scan" id="btnScan" onclick="toggleQrScanner()">📷 Scanner un QR code</button>
+        <div id="qrReader"></div>
+        <div class="qr-result" id="qrResult"></div>
+    </div>
+
     <!-- MISSED CLASSES REMINDER -->
     <div id="missedReminder" style="display:none;"></div>
 
@@ -292,15 +355,24 @@
     <div class="card">
         <div class="card-title">📌 Statut</div>
         <div class="status-grid">
-            <button class="status-btn s-non_commencee" onclick="selectStatut('non_commencee', this)">
-                <span class="emoji">⬜</span><span class="label">Non commencée</span>
+            <button class="status-btn s-realise" onclick="selectStatut('Réalisé', this)">
+                <span class="emoji">✅</span><span class="label">Réalisé</span>
             </button>
-            <button class="status-btn s-en_cours" onclick="selectStatut('en_cours', this)">
-                <span class="emoji">🔶</span><span class="label">En cours</span>
+            <button class="status-btn s-prevu" onclick="selectStatut('Prévu', this)">
+                <span class="emoji">📋</span><span class="label">Prévu</span>
             </button>
-            <button class="status-btn s-terminee" onclick="selectStatut('terminee', this)">
-                <span class="emoji">✅</span><span class="label">Terminée</span>
+            <button class="status-btn s-reporte" onclick="selectStatut('Reporté', this)">
+                <span class="emoji">🔄</span><span class="label">Reporté</span>
             </button>
+            <button class="status-btn s-non_realise" onclick="selectStatut('Non réalisé', this)">
+                <span class="emoji">❌</span><span class="label">Non réalisé</span>
+            </button>
+        </div>
+
+        <!-- VALIDÉ TOGGLE -->
+        <div class="valide-toggle" id="valideToggle" onclick="toggleValide()">
+            <span class="toggle-check" id="valideIcon">☐</span>
+            <span class="toggle-text">Marquer comme validé</span>
         </div>
 
         <label class="field-label">Arrêt précis (où on en est)</label>
@@ -311,12 +383,15 @@
             <button class="situation-btn" onclick="toggleSituation('Annulé', this)">Annulé</button>
             <button class="situation-btn" onclick="toggleSituation('Sortie scolaire', this)">Sortie</button>
             <button class="situation-btn" onclick="toggleSituation('Jours fériés', this)">Férié</button>
+            <button class="situation-btn" onclick="toggleSituation('PFMP', this)">PFMP</button>
+            <button class="situation-btn" onclick="toggleSituation('Parcours Y', this)">Parcours Y</button>
+            <button class="situation-btn" onclick="toggleSituation('Autres', this)">Autres</button>
         </div>
     </div>
 
-    <!-- CARD 3: CHECKLIST -->
+    <!-- CARD 3: DISTRIBUTION + ÉVALUATIONS -->
     <div class="card">
-        <div class="card-title">✅ Checklist</div>
+        <div class="card-title">📄 Distribution et évaluations</div>
         <div class="checklist-grid" id="checklistGrid"></div>
     </div>
 
@@ -345,13 +420,48 @@
         </div>
     </div>
 
-    <!-- CARD 5: NOTES -->
+    <!-- CARD 5: CPS — Compétences Psycho-Sociales -->
+    <div class="card">
+        <div class="card-title">🧠 Mon ressenti (CPS)</div>
+        <div class="cps-row">
+            <span class="cps-label">Cognitif</span>
+            <div class="cps-btns" id="cpsCognitif">
+                <button class="cps-btn" onclick="selectCps('cognitif','1',this)">😩</button>
+                <button class="cps-btn" onclick="selectCps('cognitif','2',this)">😐</button>
+                <button class="cps-btn" onclick="selectCps('cognitif','3',this)">🙂</button>
+                <button class="cps-btn" onclick="selectCps('cognitif','4',this)">😊</button>
+                <button class="cps-btn" onclick="selectCps('cognitif','5',this)">🤩</button>
+            </div>
+        </div>
+        <div class="cps-row">
+            <span class="cps-label">Émotionnel</span>
+            <div class="cps-btns" id="cpsEmotionnel">
+                <button class="cps-btn" onclick="selectCps('emotionnel','1',this)">😩</button>
+                <button class="cps-btn" onclick="selectCps('emotionnel','2',this)">😐</button>
+                <button class="cps-btn" onclick="selectCps('emotionnel','3',this)">🙂</button>
+                <button class="cps-btn" onclick="selectCps('emotionnel','4',this)">😊</button>
+                <button class="cps-btn" onclick="selectCps('emotionnel','5',this)">🤩</button>
+            </div>
+        </div>
+        <div class="cps-row">
+            <span class="cps-label">Social</span>
+            <div class="cps-btns" id="cpsSocial">
+                <button class="cps-btn" onclick="selectCps('social','1',this)">😩</button>
+                <button class="cps-btn" onclick="selectCps('social','2',this)">😐</button>
+                <button class="cps-btn" onclick="selectCps('social','3',this)">🙂</button>
+                <button class="cps-btn" onclick="selectCps('social','4',this)">😊</button>
+                <button class="cps-btn" onclick="selectCps('social','5',this)">🤩</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD 6: NOTES -->
     <div class="card">
         <div class="card-title">💬 Notes</div>
         <label class="field-label">Remarque (optionnel)</label>
         <textarea id="remarque" placeholder="Note libre..."></textarea>
-        <label class="field-label">Todo prochain cours (optionnel)</label>
-        <input type="text" id="todoNext" placeholder="ex: finir exercice 4">
+        <label class="field-label">Prévoir pour la prochaine séance</label>
+        <input type="text" id="todoNext" placeholder="ex: finir exercice 4, préparer éval...">
     </div>
 
 </div>
@@ -405,20 +515,26 @@
 
     // Checklist items
     const CHECKLIST = [
-        { key: 'cours_distribue', label: 'Cours distribué', icon: '📄' },
+        { key: 'cours_complet', label: 'Cours complet distribué', icon: '📄' },
+        { key: 'cours_seance', label: 'Cours séance seule', icon: '📃' },
         { key: 'docs_distribues', label: 'Docs distribués', icon: '📋' },
         { key: 'devoir_donne', label: 'Devoir donné', icon: '📝' },
         { key: 'copies_ramassees', label: 'Copies ramassées', icon: '📥' },
         { key: 'copies_corrigees', label: 'Copies corrigées', icon: '✏️' },
         { key: 'copies_rendues', label: 'Copies rendues', icon: '📤' },
-        { key: 'eval_prevue', label: 'Éval prévue', icon: '📅' },
-        { key: 'eval_passee', label: 'Éval passée', icon: '📝' },
+        { key: 'auto_eval_ligne', label: 'Auto-éval en ligne', icon: '💻' },
+        { key: 'eval_formative', label: 'Éval formative', icon: '📊' },
+        { key: 'eval_sommative', label: 'Éval sommative', icon: '📝' },
         { key: 'eval_corrigee', label: 'Éval corrigée', icon: '✅' },
         { key: 'eval_rendue', label: 'Éval rendue', icon: '📤' }
     ];
 
+    // CPS state
+    let cps = { cognitif: '', emotionnel: '', social: '' };
+    let isValide = false;
+
     // Séance options
-    const SEANCES = ['Séance 1', 'Séance 2', 'Séance 3', 'Séance 4', 'Séance 5', 'Séance 6', 'Évaluation', 'Correction', 'Corr.+séance 1'];
+    const SEANCES = ['Séance 1', 'Séance 1-2', 'Séance 2', 'Séance 2-3', 'Séance 3', 'Séance 3-4', 'Séance 4', 'Séance 4-5', 'Séance 5', 'Séance 6', 'Évaluation', 'Correction', 'Corr.+séance 1'];
 
     // Emploi du temps — fallback statique (remplacé par Pronote si synchronisé)
     let EMPLOI_DU_TEMPS = [
@@ -626,6 +742,9 @@
 
         // Load last log for this class to show info
         await loadLastLog(classeDocId, prevue.classeId);
+
+        // Check for module delay vs planned progression
+        await checkModuleDelay(classeDocId);
     }
 
     // ═══════ LAST LOG ═══════
@@ -730,6 +849,24 @@
         document.getElementById('absCount').textContent = absences;
     };
 
+    window.toggleValide = function() {
+        isValide = !isValide;
+        var el = document.getElementById('valideToggle');
+        el.classList.toggle('checked', isValide);
+        document.getElementById('valideIcon').textContent = isValide ? '☑' : '☐';
+    };
+
+    window.selectCps = function(dimension, value, btn) {
+        var container = btn.parentElement;
+        container.querySelectorAll('.cps-btn').forEach(function(b) { b.classList.remove('selected'); });
+        if (cps[dimension] === value) {
+            cps[dimension] = '';
+        } else {
+            btn.classList.add('selected');
+            cps[dimension] = value;
+        }
+    };
+
     // ═══════ SAVE ═══════
     async function saveLog() {
         var classeDocId = document.getElementById('selectClasse').value;
@@ -759,9 +896,12 @@
             classeId: classeLabel,
             moduleId: moduleId,
             seance: selectedSeance,
-            statut: selectedSituation || selectedStatut,
+            statut: selectedStatut,
+            situation: selectedSituation || 'Normal',
+            isValide: isValide,
             arret: document.getElementById('inputArret').value.trim(),
             checklist: Object.assign({}, checklist),
+            cps: Object.assign({}, cps),
             absences: absences,
             qualite: selectedQualite,
             remarque: document.getElementById('remarque').value.trim(),
@@ -870,6 +1010,177 @@
 
             container.appendChild(banner);
         });
+    }
+
+    // ═══════ QR SCANNER ═══════
+    let html5QrCode = null;
+    let scannerRunning = false;
+
+    window.toggleQrScanner = async function() {
+        var btnScan = document.getElementById('btnScan');
+        var readerDiv = document.getElementById('qrReader');
+
+        if (scannerRunning) {
+            stopQrScanner();
+            return;
+        }
+
+        // Load html5-qrcode library dynamically if not already loaded
+        if (typeof Html5Qrcode === 'undefined') {
+            try {
+                await new Promise(function(resolve, reject) {
+                    var script = document.createElement('script');
+                    script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            } catch (e) {
+                showToast('Erreur chargement scanner');
+                return;
+            }
+        }
+
+        readerDiv.style.display = 'block';
+        btnScan.innerHTML = '⏹ Arrêter la caméra';
+        btnScan.classList.add('scanning');
+        scannerRunning = true;
+
+        html5QrCode = new Html5Qrcode('qrReader');
+        try {
+            await html5QrCode.start(
+                { facingMode: 'environment' },
+                { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+                onQrCodeScanned,
+                function() {} // ignore scan failures
+            );
+        } catch (err) {
+            showToast('Caméra non disponible');
+            stopQrScanner();
+        }
+    };
+
+    function onQrCodeScanned(decodedText) {
+        // Stop the scanner
+        stopQrScanner();
+
+        // Parse QR code URL
+        var resultDiv = document.getElementById('qrResult');
+        resultDiv.style.display = 'block';
+
+        try {
+            var url = new URL(decodedText);
+            var qrRoom = url.searchParams.get('room') || '';
+            resultDiv.textContent = '✅ QR détecté' + (qrRoom ? ' — Salle ' + qrRoom : ' — Universel');
+
+            // Update room badge
+            if (qrRoom) {
+                document.getElementById('roomBadge').style.display = 'block';
+                document.getElementById('roomNum').textContent = qrRoom;
+            }
+
+            showToast('QR scanné !');
+        } catch (e) {
+            resultDiv.textContent = '📎 ' + decodedText;
+        }
+    }
+
+    function stopQrScanner() {
+        var btnScan = document.getElementById('btnScan');
+        var readerDiv = document.getElementById('qrReader');
+
+        if (html5QrCode && scannerRunning) {
+            html5QrCode.stop().then(function() {
+                html5QrCode.clear();
+            }).catch(function() {});
+        }
+
+        readerDiv.style.display = 'none';
+        btnScan.innerHTML = '📷 Scanner un QR code';
+        btnScan.classList.remove('scanning');
+        scannerRunning = false;
+    }
+
+    // ═══════ MODULE DELAY DETECTION ═══════
+    async function checkModuleDelay(classeDocId) {
+        if (!classeDocId) return;
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) return;
+
+        var today = new Date();
+        var todayStr = today.toISOString().split('T')[0];
+
+        // Find expected week in prevue
+        var currentWeek = null;
+        var currentIndex = -1;
+        for (var i = 0; i < prevue.semaines.length; i++) {
+            var sem = prevue.semaines[i];
+            if (!sem.date) continue;
+            var semDate = new Date(sem.date);
+            // Check if we're in this week (within 7 days after)
+            var diffDays = (today - semDate) / (1000 * 60 * 60 * 24);
+            if (diffDays >= 0 && diffDays < 7) {
+                currentWeek = sem;
+                currentIndex = i;
+                break;
+            }
+        }
+
+        if (!currentWeek) return;
+
+        // Get latest log for this class
+        var classeLabel = prevue.classeId;
+        var logsSnap = null;
+        try {
+            logsSnap = await getDocs(collection(db, 'progression_logs'));
+        } catch (e) { return; }
+
+        var classLogs = [];
+        logsSnap.forEach(function(d) {
+            var data = d.data();
+            if (data.classeId === classeLabel || data.classeDocId === classeDocId) {
+                classLogs.push(data);
+            }
+        });
+
+        if (classLogs.length === 0) return;
+
+        classLogs.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+        var lastLog = classLogs[0];
+
+        // Compare expected module/seance vs last logged
+        var expectedModule = currentWeek.module || '';
+        var expectedSeance = currentWeek.seance || '';
+        var lastModule = lastLog.moduleId || '';
+        var lastSeance = lastLog.seance || '';
+
+        if (!expectedModule || expectedModule === 'N/A') return;
+
+        // Determine if there's a delay
+        var delayInfo = '';
+        if (lastModule !== expectedModule) {
+            delayInfo = 'Module prévu : <strong>' + expectedModule + '</strong><br>' +
+                'Dernier module logué : <strong>' + lastModule + '</strong>';
+        } else if (expectedSeance && lastSeance && expectedSeance !== 'N/A') {
+            // Same module, check seance progression
+            var expectedNum = parseInt(expectedSeance.replace(/[^\d]/g, '')) || 0;
+            var lastNum = parseInt(lastSeance.replace(/[^\d]/g, '')) || 0;
+            if (lastNum < expectedNum - 1) {
+                delayInfo = 'Séance prévue : <strong>' + expectedSeance + '</strong><br>' +
+                    'Dernière séance loguée : <strong>' + lastSeance + '</strong>';
+            }
+        }
+
+        if (!delayInfo) return;
+
+        // Show delay alert
+        var infoDiv = document.getElementById('lastLogInfo');
+        infoDiv.style.display = 'block';
+        infoDiv.innerHTML = infoDiv.innerHTML +
+            '<div style="margin-top:10px;padding:10px;border-radius:8px;background:#fef3c7;border:1px solid #f59e0b;font-size:0.82em;">' +
+            '<strong style="color:#92400e;">⚠️ Retard détecté</strong><br>' +
+            '<span style="color:#78350f;">' + delayInfo + '</span>' +
+            '</div>';
     }
 
     // ═══════ TOAST ═══════
