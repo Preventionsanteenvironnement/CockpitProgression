@@ -1182,10 +1182,10 @@
     var BASE_URL = 'https://preventionsanteenvironnement.github.io/CockpitProgression/';
 
     var QR_ROOMS = [
-        { room: '205', label: 'Salle 205 TECHNO', desc: 'Lundi, Mardi, Jeudi, Vendredi' },
-        { room: '118', label: 'Salle 118', desc: 'Vendredi matin' },
-        { room: '010', label: 'Salle 010 PSR', desc: 'Lundi (PSR)' },
-        { room: '', label: 'Saisie libre', desc: 'Sans salle pré-remplie' }
+        { room: '', label: 'QR Universel', desc: 'Detecte automatiquement la classe via Pronote (heure + jour)', primary: true },
+        { room: '205', label: 'Salle 205 TECHNO', desc: 'Filtre par salle 205' },
+        { room: '118', label: 'Salle 118', desc: 'Filtre par salle 118' },
+        { room: '010', label: 'Salle 010 PSR', desc: 'Filtre par salle 010' }
     ];
 
     function renderQrCodes() {
@@ -1198,7 +1198,12 @@
 
             var card = document.createElement('div');
             card.className = 'qr-card';
+            if (r.primary) {
+                card.style.borderColor = 'var(--primary)';
+                card.style.background = 'var(--primary-light)';
+            }
             card.innerHTML =
+                (r.primary ? '<div style="font-size:0.7em;font-weight:700;color:var(--primary);margin-bottom:6px;">⭐ RECOMMANDE</div>' : '') +
                 '<h3>' + r.label + '</h3>' +
                 '<div class="qr-sub">' + r.desc + '</div>' +
                 '<img src="' + qrApiUrl + '" alt="QR ' + r.label + '" width="200" height="200">' +

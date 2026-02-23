@@ -211,6 +211,16 @@
         }
         .last-log strong { color: #1e40af; }
 
+        /* ── MISSED REMINDER ── */
+        .missed-banner {
+            padding: 14px; border-radius: 12px; margin-bottom: 10px;
+            background: #fff7ed; border: 2px solid #fb923c; cursor: pointer;
+            transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+        }
+        .missed-banner:active { transform: scale(0.98); }
+        .missed-title { font-weight: 700; font-size: 0.85em; color: #c2410c; margin-bottom: 4px; }
+        .missed-detail { font-size: 0.78em; color: #9a3412; }
+
         /* ── TOAST ── */
         .toast {
             position: fixed; bottom: 90px; left: 50%;
@@ -253,6 +263,9 @@
         <div class="room-badge" id="roomBadge" style="display:none;">Salle <span id="roomNum"></span></div>
     </div>
     <div class="date-display" id="dateJour"></div>
+
+    <!-- MISSED CLASSES REMINDER -->
+    <div id="missedReminder" style="display:none;"></div>
 
     <!-- LAST LOG -->
     <div class="last-log" id="lastLogInfo" style="display:none;"></div>
@@ -492,73 +505,80 @@
             }
         } catch (e) { console.error('Load EDT error:', e); }
 
-        // Auto-detect class from room + time (Pronote first, then static fallback)
-        if (room) {
-            var detectedClasse = '';
+        // ── AUTO-DETECT CLASS (works with or without room param) ──
+        var detectedClasse = '';
+        var todayStr = now.toISOString().split('T')[0];
+        var currentMs = now.getTime();
 
-            // 1) Try Pronote events: find today's event matching room + time
-            if (pronoteEvents.length > 0) {
-                var todayStr = now.toISOString().split('T')[0];
-                var currentMs = now.getTime();
+        // 1) Pronote events: find today's event closest to current time
+        if (pronoteEvents.length > 0) {
+            var bestPronote = null;
+            var bestPronoteDiff = Infinity;
 
-                var bestPronote = null;
-                var bestPronoteDiff = Infinity;
+            pronoteEvents.forEach(function(ev) {
+                if (!ev.start) return;
+                var evDate = new Date(ev.start);
+                var evDateStr = evDate.toISOString().split('T')[0];
+                if (evDateStr !== todayStr) return;
 
-                pronoteEvents.forEach(function(ev) {
-                    if (!ev.start) return;
-                    var evDate = new Date(ev.start);
-                    var evDateStr = evDate.toISOString().split('T')[0];
-                    if (evDateStr !== todayStr) return;
-
-                    // Check room match
+                // If room param, filter by room
+                if (room) {
                     var evSalle = (ev.location || '').toLowerCase();
                     if (!evSalle.includes(room.toLowerCase()) && !room.toLowerCase().includes(evSalle)) return;
-
-                    // Time proximity: event start within -30 to +120 minutes of now
-                    var diffMin = (currentMs - evDate.getTime()) / 60000;
-                    if (diffMin >= -30 && diffMin < 120 && Math.abs(diffMin) < bestPronoteDiff) {
-                        bestPronoteDiff = Math.abs(diffMin);
-                        bestPronote = ev;
-                    }
-                });
-
-                if (bestPronote && bestPronote.classe) {
-                    detectedClasse = bestPronote.classe;
                 }
-            }
 
-            // 2) Fallback: static EMPLOI_DU_TEMPS
-            if (!detectedClasse) {
-                var dayOfWeek = now.getDay();
-                var currentTime = now.getHours() * 60 + now.getMinutes();
-                var bestMatch = null;
-                var bestDiff = Infinity;
-                EMPLOI_DU_TEMPS.forEach(function(e) {
-                    if (e.jour !== dayOfWeek) return;
-                    if (!room.includes(e.salle) && !e.salle.includes(room)) return;
-                    var parts = e.heure.split(':');
-                    var eTime = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                    var diff = currentTime - eTime;
-                    if (diff >= -30 && diff < 120 && Math.abs(diff) < bestDiff) {
-                        bestDiff = Math.abs(diff);
-                        bestMatch = e;
-                    }
-                });
-                if (bestMatch) detectedClasse = bestMatch.classe;
-            }
+                // Time proximity: event start within -30 to +120 minutes of now
+                var diffMin = (currentMs - evDate.getTime()) / 60000;
+                if (diffMin >= -30 && diffMin < 120 && Math.abs(diffMin) < bestPronoteDiff) {
+                    bestPronoteDiff = Math.abs(diffMin);
+                    bestPronote = ev;
+                }
+            });
 
-            // 3) Apply detection to dropdown
-            if (detectedClasse) {
-                for (var i = 0; i < select.options.length; i++) {
-                    var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
-                    if (prevue && (prevue.classeId.includes(detectedClasse) || detectedClasse.includes(prevue.classeId))) {
-                        select.selectedIndex = i;
-                        onClasseChange();
-                        break;
-                    }
+            if (bestPronote && bestPronote.classe) {
+                detectedClasse = bestPronote.classe;
+                // Show room badge from Pronote detection
+                if (!room && bestPronote.location) {
+                    document.getElementById('roomBadge').style.display = 'block';
+                    document.getElementById('roomNum').textContent = bestPronote.location;
                 }
             }
         }
+
+        // 2) Fallback: static EMPLOI_DU_TEMPS (only if room is provided)
+        if (!detectedClasse && room) {
+            var dayOfWeek = now.getDay();
+            var currentTime = now.getHours() * 60 + now.getMinutes();
+            var bestMatch = null;
+            var bestDiff = Infinity;
+            EMPLOI_DU_TEMPS.forEach(function(e) {
+                if (e.jour !== dayOfWeek) return;
+                if (!room.includes(e.salle) && !e.salle.includes(room)) return;
+                var parts = e.heure.split(':');
+                var eTime = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                var diff = currentTime - eTime;
+                if (diff >= -30 && diff < 120 && Math.abs(diff) < bestDiff) {
+                    bestDiff = Math.abs(diff);
+                    bestMatch = e;
+                }
+            });
+            if (bestMatch) detectedClasse = bestMatch.classe;
+        }
+
+        // 3) Apply detection to dropdown
+        if (detectedClasse) {
+            for (var i = 0; i < select.options.length; i++) {
+                var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
+                if (prevue && (prevue.classeId.includes(detectedClasse) || detectedClasse.includes(prevue.classeId))) {
+                    select.selectedIndex = i;
+                    onClasseChange();
+                    break;
+                }
+            }
+        }
+
+        // ── CHECK FOR MISSED CLASSES (séances oubliées) ──
+        await checkMissedClasses(todayStr, now);
 
         // Build checklist
         buildChecklist();
@@ -760,6 +780,96 @@
             btnSave.disabled = false;
             btnSave.textContent = '💾 ENREGISTRER';
         }
+    }
+
+    // ═══════ MISSED CLASSES CHECK ═══════
+    async function checkMissedClasses(todayStr, now) {
+        if (pronoteEvents.length === 0) return;
+
+        // Get today's past events
+        var pastEvents = [];
+        pronoteEvents.forEach(function(ev) {
+            if (!ev.start || !ev.classe) return;
+            var evDate = new Date(ev.start);
+            var evEnd = ev.end ? new Date(ev.end) : null;
+            var evDateStr = evDate.toISOString().split('T')[0];
+            if (evDateStr !== todayStr) return;
+            // Only past events (ended more than 5 min ago)
+            if (evEnd && now.getTime() - evEnd.getTime() > 5 * 60000) {
+                pastEvents.push(ev);
+            }
+        });
+
+        if (pastEvents.length === 0) return;
+
+        // Load today's logs
+        var todayLogs = [];
+        try {
+            var logsSnap = await getDocs(collection(db, 'progression_logs'));
+            logsSnap.forEach(function(d) {
+                var data = d.data();
+                if (data.date === todayStr) todayLogs.push(data);
+            });
+        } catch (e) { return; }
+
+        // Find events without matching logs
+        var missed = [];
+        pastEvents.forEach(function(ev) {
+            var hasLog = todayLogs.some(function(log) {
+                return ev.classe && (
+                    log.classeId.includes(ev.classe) ||
+                    ev.classe.includes(log.classeId)
+                );
+            });
+            if (!hasLog) missed.push(ev);
+        });
+
+        if (missed.length === 0) return;
+
+        // Show reminders
+        var container = document.getElementById('missedReminder');
+        container.style.display = 'block';
+        container.innerHTML = '';
+
+        missed.forEach(function(ev) {
+            var startDate = new Date(ev.start);
+            var endDate = ev.end ? new Date(ev.end) : null;
+            var heure = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            var heureFin = endDate ? endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+            var banner = document.createElement('div');
+            banner.className = 'missed-banner';
+            banner.innerHTML =
+                '<div class="missed-title">⚠️ Séance non saisie — ' + heure + (heureFin ? '→' + heureFin : '') + '</div>' +
+                '<div class="missed-detail">' + ev.classe + ' — ' + ev.summary +
+                (ev.location ? ' (Salle ' + ev.location + ')' : '') +
+                '<br>Appuyez pour saisir cette séance</div>';
+
+            banner.addEventListener('click', function() {
+                // Pre-fill the form with this missed class
+                var select = document.getElementById('selectClasse');
+                for (var i = 0; i < select.options.length; i++) {
+                    var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
+                    if (prevue && (prevue.classeId.includes(ev.classe) || ev.classe.includes(prevue.classeId))) {
+                        select.selectedIndex = i;
+                        onClasseChange();
+                        break;
+                    }
+                }
+                // Highlight the banner as selected
+                container.querySelectorAll('.missed-banner').forEach(function(b) {
+                    b.style.opacity = '0.4';
+                });
+                banner.style.opacity = '1';
+                banner.style.borderColor = '#22c55e';
+                banner.style.background = '#dcfce7';
+                banner.querySelector('.missed-title').textContent = '✅ Sélectionné — ' + heure + (heureFin ? '→' + heureFin : '');
+                // Scroll to form
+                document.getElementById('selectClasse').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+
+            container.appendChild(banner);
+        });
     }
 
     // ═══════ TOAST ═══════
