@@ -658,10 +658,34 @@
             }
         } catch (e) { console.error('Load EDT error:', e); }
 
-        // ── AUTO-DETECT CLASS (works with or without room param) ──
+        // ── AUTO-DETECT CLASS ──
+        detectCurrentClass(room);
+
+        // ── CHECK FOR MISSED CLASSES (séances oubliées) ──
+        await checkMissedClasses(todayStr, now);
+
+        // Build checklist
+        buildChecklist();
+        // Build seance picker
+        buildSeancePicker();
+        // Build todo grid
+        buildTodoGrid();
+
+        // Bind classe change
+        select.addEventListener('change', onClasseChange);
+
+        // Bind save
+        document.getElementById('btnSave').addEventListener('click', saveLog);
+    }
+
+    // ═══════ AUTO-DETECT CLASS ═══════
+    function detectCurrentClass(roomParam) {
+        var now = new Date();
         var detectedClasse = '';
+        var detectedEvent = null;
         var todayStr = now.toISOString().split('T')[0];
         var currentMs = now.getTime();
+        var select = document.getElementById('selectClasse');
 
         // 1) Pronote events: find today's event closest to current time
         if (pronoteEvents.length > 0) {
@@ -675,9 +699,9 @@
                 if (evDateStr !== todayStr) return;
 
                 // If room param, filter by room
-                if (room) {
+                if (roomParam) {
                     var evSalle = (ev.location || '').toLowerCase();
-                    if (!evSalle.includes(room.toLowerCase()) && !room.toLowerCase().includes(evSalle)) return;
+                    if (!evSalle.includes(roomParam.toLowerCase()) && !roomParam.toLowerCase().includes(evSalle)) return;
                 }
 
                 // Time proximity: event start within -30 to +120 minutes of now
@@ -690,8 +714,9 @@
 
             if (bestPronote && bestPronote.classe) {
                 detectedClasse = bestPronote.classe;
+                detectedEvent = bestPronote;
                 // Show room badge from Pronote detection
-                if (!room && bestPronote.location) {
+                if (bestPronote.location) {
                     document.getElementById('roomBadge').style.display = 'block';
                     document.getElementById('roomNum').textContent = bestPronote.location;
                 }
@@ -699,14 +724,14 @@
         }
 
         // 2) Fallback: static EMPLOI_DU_TEMPS (only if room is provided)
-        if (!detectedClasse && room) {
+        if (!detectedClasse && roomParam) {
             var dayOfWeek = now.getDay();
             var currentTime = now.getHours() * 60 + now.getMinutes();
             var bestMatch = null;
             var bestDiff = Infinity;
             EMPLOI_DU_TEMPS.forEach(function(e) {
                 if (e.jour !== dayOfWeek) return;
-                if (!room.includes(e.salle) && !e.salle.includes(room)) return;
+                if (!roomParam.includes(e.salle) && !e.salle.includes(roomParam)) return;
                 var parts = e.heure.split(':');
                 var eTime = parseInt(parts[0]) * 60 + parseInt(parts[1]);
                 var diff = currentTime - eTime;
@@ -730,21 +755,13 @@
             }
         }
 
-        // ── CHECK FOR MISSED CLASSES (séances oubliées) ──
-        await checkMissedClasses(todayStr, now);
-
-        // Build checklist
-        buildChecklist();
-        // Build seance picker
-        buildSeancePicker();
-        // Build todo grid
-        buildTodoGrid();
-
-        // Bind classe change
-        select.addEventListener('change', onClasseChange);
-
-        // Bind save
-        document.getElementById('btnSave').addEventListener('click', saveLog);
+        // Return detection info for QR scanner feedback
+        return {
+            classe: detectedClasse,
+            event: detectedEvent,
+            location: detectedEvent ? detectedEvent.location : '',
+            summary: detectedEvent ? detectedEvent.summary : ''
+        };
     }
 
     // ═══════ CLASSE CHANGE ═══════
@@ -1331,14 +1348,16 @@
         // Stop the scanner
         stopQrScanner();
 
-        // Parse QR code URL
         var resultDiv = document.getElementById('qrResult');
         resultDiv.style.display = 'block';
+        resultDiv.textContent = '🔄 Synchronisation emploi du temps...';
+        resultDiv.style.background = '#fef3c7';
+        resultDiv.style.borderColor = '#f59e0b';
+        resultDiv.style.color = '#92400e';
 
         try {
             var url = new URL(decodedText);
             var qrRoom = url.searchParams.get('room') || '';
-            resultDiv.textContent = '✅ QR détecté' + (qrRoom ? ' — Salle ' + qrRoom : ' — Universel');
 
             // Update room badge
             if (qrRoom) {
@@ -1346,9 +1365,35 @@
                 document.getElementById('roomNum').textContent = qrRoom;
             }
 
-            showToast('QR scanné !');
+            // Detect current class based on Pronote + time + room
+            var detection = detectCurrentClass(qrRoom);
+
+            if (detection.classe) {
+                // Success: class detected
+                var msg = '✅ ' + detection.classe;
+                if (detection.location) msg += ' — Salle ' + detection.location;
+                if (detection.summary) msg += '\n📚 ' + detection.summary;
+                resultDiv.textContent = msg;
+                resultDiv.style.background = '#dcfce7';
+                resultDiv.style.borderColor = '#16a34a';
+                resultDiv.style.color = '#166534';
+                showToast('Classe détectée !');
+
+                // Scroll to the form
+                document.getElementById('selectClasse').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                // No class found
+                resultDiv.textContent = '⚠️ Aucun cours détecté pour cette heure';
+                resultDiv.style.background = '#fef3c7';
+                resultDiv.style.borderColor = '#f59e0b';
+                resultDiv.style.color = '#92400e';
+                showToast('Pas de cours en ce moment');
+            }
         } catch (e) {
             resultDiv.textContent = '📎 ' + decodedText;
+            resultDiv.style.background = '';
+            resultDiv.style.borderColor = '';
+            resultDiv.style.color = '';
         }
     }
 
