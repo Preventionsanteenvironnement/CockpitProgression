@@ -701,7 +701,8 @@
                 code: code || '',
                 name: (name || '').trim(),
                 classe: (classe || '').trim(),
-                source: filename || 'import'
+                source: filename || 'import',
+                rowKey: (filename || 'import') + ':' + i
             });
         }
         return records;
@@ -712,6 +713,8 @@
         function keyOf(r) {
             var codeKey = normalizeKey(r.code || '');
             if (codeKey) return 'C:' + codeKey;
+            var rowKey = normalizeKey(r.rowKey || '');
+            if (rowKey) return 'R:' + rowKey;
             return 'N:' + normalizeKey(r.name || '') + '|K:' + normalizeKey(r.classe || '');
         }
         localStudents.forEach(function(r) { map[keyOf(r)] = Object.assign({}, r); });
