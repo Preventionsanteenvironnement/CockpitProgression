@@ -325,7 +325,7 @@
     <!-- STATS -->
     <div class="stats-row" id="statsRow">
         <div class="mini-stat s-primary"><div class="val" id="stClasses">-</div><div class="lbl">Classes</div></div>
-        <div class="mini-stat s-success"><div class="val" id="stRealise">-</div><div class="lbl">Semaines validees</div></div>
+        <div class="mini-stat s-success"><div class="val" id="stRealise">-</div><div class="lbl">Semaines validées</div></div>
         <div class="mini-stat s-warning"><div class="val" id="stEnCours">-</div><div class="lbl">En cours</div></div>
         <div class="mini-stat s-danger"><div class="val" id="stAlertes">-</div><div class="lbl">Alertes</div></div>
     </div>
@@ -686,7 +686,7 @@
             : allPrevue;
 
         if (classesToShow.length === 0) {
-            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Aucune classe importee.</p></div>';
+            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Aucune classe importée.</p></div>';
             return;
         }
 
@@ -969,7 +969,7 @@
 
         var moduleNames = Object.keys(moduleData).sort();
         if (moduleNames.length === 0) {
-            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Aucun module trouve.</p></div>';
+            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Aucun module trouvé.</p></div>';
             return;
         }
 
@@ -993,13 +993,13 @@
 
                 var statusLabel, badgeClass;
                 if (pct === 100) {
-                    statusLabel = info.evalDone ? 'Eval terminee' : 'Termine';
+                    statusLabel = info.evalDone ? 'Éval terminée' : 'Terminé';
                     badgeClass = info.evalDone ? 'b-eval' : 'b-terminee';
                 } else if (pct > 0) {
                     statusLabel = 'En cours';
                     badgeClass = 'b-en-cours';
                 } else {
-                    statusLabel = 'Non commence';
+                    statusLabel = 'Non commencé';
                     badgeClass = 'b-non-commence';
                 }
 
@@ -1051,7 +1051,7 @@
         var container = document.getElementById('timelineContent');
 
         if (allPrevue.length === 0) {
-            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Aucune donnee importee.</p></div>';
+            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Aucune donnée importée.</p></div>';
             return;
         }
 
@@ -1190,7 +1190,7 @@
             if (cl.copies_ramassees && !cl.copies_corrigees) {
                 alerts.push({
                     type: 'warn', icon: '📝',
-                    text: log.classeId + ' — Copies a corriger',
+                    text: log.classeId + ' — Copies à corriger',
                     detail: (log.moduleId || '') + (log.seance ? ' — ' + log.seance : ''),
                     date: log.date || '',
                     priority: 2
@@ -1199,7 +1199,7 @@
             if (cl.copies_corrigees && !cl.copies_rendues) {
                 alerts.push({
                     type: 'warn', icon: '📤',
-                    text: log.classeId + ' — Copies a rendre',
+                    text: log.classeId + ' — Copies à rendre',
                     detail: (log.moduleId || '') + (log.seance ? ' — ' + log.seance : ''),
                     date: log.date || '',
                     priority: 1
@@ -1208,7 +1208,7 @@
             if (cl.eval_passee && !cl.eval_corrigee) {
                 alerts.push({
                     type: 'err', icon: '🔴',
-                    text: log.classeId + ' — Evaluation a corriger',
+                    text: log.classeId + ' — Évaluation à corriger',
                     detail: (log.moduleId || ''),
                     date: log.date || '',
                     priority: 3
@@ -1217,7 +1217,7 @@
             if (cl.eval_corrigee && !cl.eval_rendue) {
                 alerts.push({
                     type: 'warn', icon: '📤',
-                    text: log.classeId + ' — Evaluation a rendre',
+                    text: log.classeId + ' — Évaluation à rendre',
                     detail: (log.moduleId || ''),
                     date: log.date || '',
                     priority: 2
@@ -1286,7 +1286,7 @@
         var alerts = computeAlerts();
 
         if (alerts.length === 0) {
-            container.innerHTML = '<div class="empty"><div class="icon">✅</div><p>Aucune alerte. Tout est a jour !</p></div>';
+            container.innerHTML = '<div class="empty"><div class="icon">✅</div><p>Aucune alerte. Tout est à jour !</p></div>';
             return;
         }
 
@@ -1308,7 +1308,7 @@
         if (warnAlerts.length > 0) {
             var card2 = document.createElement('div');
             card2.className = 'card';
-            card2.innerHTML = '<div class="card-title">🟡 A traiter <span class="count">' + warnAlerts.length + '</span></div>';
+            card2.innerHTML = '<div class="card-title">🟡 À traiter <span class="count">' + warnAlerts.length + '</span></div>';
             warnAlerts.forEach(function(a) { card2.appendChild(createAlertItem(a)); });
             container.appendChild(card2);
         }
