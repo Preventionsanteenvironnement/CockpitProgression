@@ -128,7 +128,7 @@
         .filter-bar label { font-size: 0.85em; font-weight: 700; color: var(--muted); }
         .btn-students {
             border: 1px solid var(--border);
-            background: #fff;
+            background: var(--surface-2);
             color: var(--text);
             border-radius: 10px;
             padding: 9px 12px;
@@ -163,10 +163,10 @@
             grid-template-columns: 1fr;
             gap: 6px;
             font-size: 0.78em;
-            color: #334155;
+            color: var(--text);
         }
         .student-item {
-            background: #fff;
+            background: var(--surface-2);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 7px 9px;
@@ -254,10 +254,10 @@
         }
         .mc-badge.b-terminee { background: var(--success-light); color: #166534; }
         .mc-badge.b-en-cours { background: var(--warning-light); color: #92400e; }
-        .mc-badge.b-non-commence { background: #f1f5f9; color: var(--muted); }
+        .mc-badge.b-non-commence { background: var(--surface-2); color: var(--muted); }
         .mc-badge.b-eval { background: #dbeafe; color: #1e40af; }
         .mc-detail { font-size: 0.78em; color: var(--muted); }
-        .mc-progress { margin-top: 8px; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+        .mc-progress { margin-top: 8px; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
         .mc-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
         .mc-progress-fill.p-success { background: var(--success); }
         .mc-progress-fill.p-warning { background: var(--warning); }
@@ -351,7 +351,7 @@
         .agenda-day-header { font-weight: 800; font-size: .88em; padding: 8px 12px; border-radius: 10px 10px 0 0; background: var(--bg); border: 1px solid var(--border); border-bottom: none; color: var(--muted); display: flex; align-items: center; gap: 8px; }
         .agenda-day-header.today { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
         .agenda-day-body { border: 1px solid var(--border); border-radius: 0 0 10px 10px; background: var(--surface-2); overflow: hidden; }
-        .agenda-slot { display: flex; align-items: stretch; border-bottom: 1px solid #f1f5f9; min-height: 70px; cursor: pointer; transition: all .15s; }
+        .agenda-slot { display: flex; align-items: stretch; border-bottom: 1px solid var(--border); min-height: 70px; cursor: pointer; transition: all .15s; }
         .agenda-slot:last-child { border-bottom: none; }
         .agenda-slot:hover { background: var(--bg); }
         .agenda-slot:active { transform: scale(.99); }
@@ -368,10 +368,10 @@
         .status-annule { background: var(--danger-light); color: var(--danger); }
         .status-vide { background: var(--bg); color: var(--muted); }
         .agenda-slot-log { font-size: .73em; color: var(--muted); }
-        .agenda-event { padding: 12px 14px; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; margin: 8px 12px; }
-        .agenda-event.ccf { background: #fce7f3; border-color: #ec4899; }
-        .agenda-event.bac { background: #fce7f3; border-color: #ec4899; }
-        .agenda-event.pfmp { background: #ede9fe; border-color: #8b5cf6; }
+        .agenda-event { padding: 12px 14px; background: rgba(245,158,11,0.15); border: 1px solid #fbbf24; border-radius: 8px; margin: 8px 12px; color: var(--text); }
+        .agenda-event.ccf { background: rgba(236,72,153,0.18); border-color: #ec4899; color: var(--text); }
+        .agenda-event.bac { background: rgba(236,72,153,0.18); border-color: #ec4899; color: var(--text); }
+        .agenda-event.pfmp { background: rgba(139,92,246,0.18); border-color: #8b5cf6; color: var(--text); }
         .agenda-event.reunion { background: rgba(99,102,241,0.12); border-color: #60a5fa; }
         .agenda-event-title { font-weight: 800; font-size: .85em; }
         .agenda-event-detail { font-size: .75em; color: var(--muted); margin-top: 2px; }
@@ -1703,9 +1703,9 @@
         order.forEach(function(name) {
             var info = moduleMap[name];
             var pct = info.total > 0 ? Math.round(info.realise / info.total * 100) : 0;
-            var bgColor = pct === 100 ? 'var(--success-light)' : pct > 0 ? 'var(--warning-light)' : '#f1f5f9';
+            var bgColor = pct === 100 ? 'rgba(16,185,129,0.18)' : pct > 0 ? 'rgba(245,158,11,0.18)' : 'var(--surface-2)';
             var borderColor = pct === 100 ? 'var(--success)' : pct > 0 ? 'var(--warning)' : 'var(--border)';
-            var textColor = pct === 100 ? '#166534' : pct > 0 ? '#92400e' : 'var(--muted)';
+            var textColor = pct === 100 ? '#6ee7b7' : pct > 0 ? '#fcd34d' : 'var(--muted)';
 
             // Short display name
             var shortName = name.length > 30 ? name.substring(0, 30) + '...' : name;
@@ -2328,13 +2328,13 @@
     ];
 
     var TYPE_COLORS = {
-        'CCF':        { bg:'#fce7f3', border:'#ec4899', cls:'ccf' },
-        'Bac blanc':  { bg:'#fce7f3', border:'#ec4899', cls:'bac' },
-        'PFMP':       { bg:'#ede9fe', border:'#8b5cf6', cls:'pfmp' },
+        'CCF':        { bg:'rgba(236,72,153,0.18)', border:'#ec4899', cls:'ccf' },
+        'Bac blanc':  { bg:'rgba(236,72,153,0.18)', border:'#ec4899', cls:'bac' },
+        'PFMP':       { bg:'rgba(139,92,246,0.18)', border:'#8b5cf6', cls:'pfmp' },
         'Réunion':    { bg:'rgba(99,102,241,0.12)', border:'#60a5fa', cls:'reunion' },
         'Férié':      { bg:'#1e293b', border:'#94a3b8', cls:'' },
         'Sortie scolaire':{ bg:'#ecfeff', border:'#06b6d4', cls:'' },
-        'Autre':      { bg:'#fef3c7', border:'#fbbf24', cls:'' }
+        'Autre':      { bg:'rgba(245,158,11,0.18)', border:'#fbbf24', cls:'' }
     };
 
     // Charger Pronote + événements perso depuis Firebase
@@ -2370,10 +2370,10 @@
 
     function setAgendaView(v) {
         agendaView = v;
-        document.getElementById('agendaViewDay').style.background = v === 'day' ? 'var(--primary)' : 'white';
+        document.getElementById('agendaViewDay').style.background = v === 'day' ? 'var(--primary)' : 'var(--surface-2)';
         document.getElementById('agendaViewDay').style.color = v === 'day' ? 'white' : 'var(--muted)';
         document.getElementById('agendaViewDay').style.borderColor = v === 'day' ? 'var(--primary)' : 'var(--border)';
-        document.getElementById('agendaViewWeek').style.background = v === 'week' ? 'var(--primary)' : 'white';
+        document.getElementById('agendaViewWeek').style.background = v === 'week' ? 'var(--primary)' : 'var(--surface-2)';
         document.getElementById('agendaViewWeek').style.color = v === 'week' ? 'white' : 'var(--muted)';
         document.getElementById('agendaViewWeek').style.borderColor = v === 'week' ? 'var(--primary)' : 'var(--border)';
         renderAgenda();
