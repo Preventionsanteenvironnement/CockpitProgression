@@ -1002,6 +1002,95 @@
         document.getElementById('btnSave').addEventListener('click', saveLog);
     }
 
+    // ═══════ CLASS MATCHING (Pronote aliases -> Cockpit classes) ═══════
+    const CLASS_ALIAS_GROUPS = {
+        CAP_VAN: ['CPSE1', 'CAPVAN', 'C1VAN', 'C2VAN', 'C1VANC2VAN'],
+        PREMIERE_AGORA: ['BPSE2', '1AGORA', '1EREAGORA', 'PREMIEREAGORA', 'B1AGO', 'B1AGORA', 'B1AGO1', 'B1AGO2'],
+        TERMINALE_AGORA: ['TAGORA', 'BTAGO', 'BTAGORA', 'BTAGO1', 'BTAGO2'],
+        B2_AGORA: ['B2GATL1', 'B2GATL2', 'B2AGO', 'B2AGORA']
+    };
+
+    function normalizeClassKey(v) {
+        return (v || '')
+            .toString()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '');
+    }
+
+    function detectClassGroup(rawClass) {
+        var norm = normalizeClassKey(rawClass);
+        if (!norm) return '';
+        var groups = Object.keys(CLASS_ALIAS_GROUPS);
+        for (var i = 0; i < groups.length; i++) {
+            var g = groups[i];
+            var aliases = CLASS_ALIAS_GROUPS[g];
+            for (var j = 0; j < aliases.length; j++) {
+                var aliasNorm = normalizeClassKey(aliases[j]);
+                if (!aliasNorm) continue;
+                if (norm === aliasNorm || norm.includes(aliasNorm) || aliasNorm.includes(norm)) {
+                    return g;
+                }
+            }
+        }
+        return '';
+    }
+
+    function classesMatch(a, b) {
+        var na = normalizeClassKey(a);
+        var nb = normalizeClassKey(b);
+        if (!na || !nb) return false;
+        if (na === nb) return true;
+        if (na.includes(nb) || nb.includes(na)) return true;
+
+        var ga = detectClassGroup(na);
+        var gb = detectClassGroup(nb);
+        if (ga && gb && ga === gb) return true;
+
+        return false;
+    }
+
+    function findBestClasseOptionIndex(rawClass, selectEl) {
+        if (!rawClass || !selectEl) return -1;
+        var targetNorm = normalizeClassKey(rawClass);
+        if (!targetNorm) return -1;
+
+        var bestIdx = -1;
+        var bestScore = -1;
+        var targetGroup = detectClassGroup(rawClass);
+
+        for (var i = 0; i < selectEl.options.length; i++) {
+            var prevue = allPrevue.find(function(p) { return p.id === selectEl.options[i].value; });
+            if (!prevue || !prevue.classeId) continue;
+
+            var candidateNorm = normalizeClassKey(prevue.classeId);
+            if (!candidateNorm) continue;
+            if (!classesMatch(rawClass, prevue.classeId)) continue;
+
+            var score = 10;
+            if (candidateNorm === targetNorm) score = 100;
+            else if (targetGroup && detectClassGroup(prevue.classeId) === targetGroup) score = 90;
+            else if (candidateNorm.includes(targetNorm) || targetNorm.includes(candidateNorm)) score = 80;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestIdx = i;
+            }
+        }
+        return bestIdx;
+    }
+
+    function selectClasseFromDetected(rawClass) {
+        var select = document.getElementById('selectClasse');
+        if (!select || !rawClass) return false;
+        var idx = findBestClasseOptionIndex(rawClass, select);
+        if (idx < 0) return false;
+        select.selectedIndex = idx;
+        onClasseChange();
+        return true;
+    }
+
     // ═══════ AUTO-DETECT CLASS ═══════
     function detectCurrentClass(roomParam) {
         var now = new Date();
@@ -1067,16 +1156,9 @@
             if (bestMatch) detectedClasse = bestMatch.classe;
         }
 
-        // 3) Apply detection to dropdown
+        // 3) Apply detection to dropdown (with aliases)
         if (detectedClasse) {
-            for (var i = 0; i < select.options.length; i++) {
-                var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
-                if (prevue && (prevue.classeId.includes(detectedClasse) || detectedClasse.includes(prevue.classeId))) {
-                    select.selectedIndex = i;
-                    onClasseChange();
-                    break;
-                }
-            }
+            selectClasseFromDetected(detectedClasse);
         }
 
         // Return detection info for QR scanner feedback
@@ -2017,17 +2099,9 @@
         courseNavIndex = newIdx;
         updateCourseNav();
 
-        // Select this class in the dropdown
+        // Select this class in the dropdown with alias-aware matching
         var ev = todayCourses[courseNavIndex];
-        var select = document.getElementById('selectClasse');
-        for (var i = 0; i < select.options.length; i++) {
-            var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
-            if (prevue && (prevue.classeId.includes(ev.classe) || ev.classe.includes(prevue.classeId))) {
-                select.selectedIndex = i;
-                onClasseChange();
-                break;
-            }
-        }
+        selectClasseFromDetected(ev.classe);
 
         // Update room badge
         if (ev.location) {
@@ -2230,10 +2304,7 @@
         var missed = [];
         pastEvents.forEach(function(ev) {
             var hasLog = todayLogs.some(function(log) {
-                return ev.classe && (
-                    log.classeId.includes(ev.classe) ||
-                    ev.classe.includes(log.classeId)
-                );
+                return ev.classe && log.classeId && classesMatch(ev.classe, log.classeId);
             });
             if (!hasLog) missed.push(ev);
         });
@@ -2261,15 +2332,7 @@
 
             banner.addEventListener('click', function() {
                 // Pre-fill the form with this missed class
-                var select = document.getElementById('selectClasse');
-                for (var i = 0; i < select.options.length; i++) {
-                    var prevue = allPrevue.find(function(p) { return p.id === select.options[i].value; });
-                    if (prevue && (prevue.classeId.includes(ev.classe) || ev.classe.includes(prevue.classeId))) {
-                        select.selectedIndex = i;
-                        onClasseChange();
-                        break;
-                    }
-                }
+                selectClasseFromDetected(ev.classe);
                 // Highlight the banner as selected
                 container.querySelectorAll('.missed-banner').forEach(function(b) {
                     b.style.opacity = '0.4';
