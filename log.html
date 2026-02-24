@@ -539,6 +539,12 @@
             <button class="situation-btn" onclick="toggleSituation('Jours fériés', this)">Férié</button>
             <button class="situation-btn" onclick="toggleSituation('PFMP', this)">PFMP</button>
             <button class="situation-btn" onclick="toggleSituation('Parcours Y', this)">Parcours Y</button>
+            <button class="situation-btn" onclick="toggleSituation('CCF', this)">CCF</button>
+            <button class="situation-btn" onclick="toggleSituation('BAC BLANC', this)">BAC BLANC</button>
+            <button class="situation-btn" onclick="toggleSituation('Epreuv.Prépa.BAC', this)">Épreuves BAC</button>
+            <button class="situation-btn" onclick="toggleSituation('Absence administrative', this)">Abs. admin</button>
+            <button class="situation-btn" onclick="toggleSituation('Formation', this)">Formation</button>
+            <button class="situation-btn" onclick="toggleSituation('Absence personnel', this)">Abs. perso</button>
             <button class="situation-btn" onclick="toggleSituation('Autres', this)">Autres</button>
         </div>
     </div>
@@ -547,6 +553,37 @@
     <div class="card">
         <div class="card-title">📄 Distribution et évaluations</div>
         <div class="checklist-grid" id="checklistGrid"></div>
+    </div>
+
+    <!-- CARD 3b: TYPE D'ÉVALUATION -->
+    <div class="card">
+        <div class="card-title">🔍 Type d'évaluation</div>
+        <label class="field-label">Évaluation diagnostique</label>
+        <div class="situation-grid" id="evalDiagGrid">
+            <button class="situation-btn" onclick="toggleEvalDiag('Quiz', this)">Quiz</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('QCM', this)">QCM</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('Brainstorming / Nuage de mots', this)">Brainstorming</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('Oral / Tour de table', this)">Oral</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('Carte mentale', this)">Carte mentale</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('Vrai/Faux', this)">Vrai/Faux</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('Auto-positionnement', this)">Auto-éval</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('Questionnaire', this)">Questionnaire</button>
+            <button class="situation-btn" onclick="toggleEvalDiag('Exercice mapse.fr', this)">mapse.fr</button>
+        </div>
+        <label class="field-label" style="margin-top:10px;">Évaluation formative</label>
+        <div class="situation-grid" id="evalFormGrid">
+            <button class="situation-btn" onclick="toggleEvalForm('Quiz', this)">Quiz</button>
+            <button class="situation-btn" onclick="toggleEvalForm('QCM', this)">QCM</button>
+            <button class="situation-btn" onclick="toggleEvalForm('Questionnaire', this)">Questionnaire</button>
+            <button class="situation-btn" onclick="toggleEvalForm('Exercice mapse.fr', this)">mapse.fr</button>
+            <button class="situation-btn" onclick="toggleEvalForm('Oral / Tour de table', this)">Oral</button>
+            <button class="situation-btn" onclick="toggleEvalForm('Carte mentale', this)">Carte mentale</button>
+        </div>
+        <label class="field-label" style="margin-top:10px;">Évaluation sommative / certificative</label>
+        <div class="situation-grid" id="evalSommGrid">
+            <button class="situation-btn" onclick="toggleEvalSomm('Évaluation sommative', this)">Sommative</button>
+            <button class="situation-btn" onclick="toggleEvalSomm('CCF', this)">CCF</button>
+        </div>
     </div>
 
     <!-- CARD 4: ABSENCES + QUALITÉ -->
@@ -691,42 +728,64 @@
     // CPS state
     let cps = { cognitif: '', emotionnel: '', social: '' };
     let isValide = false;
+    let selectedEvalDiag = '';
+    let selectedEvalForm = '';
+    let selectedEvalSomm = '';
 
     // Séance options
     const SEANCES = ['Séance 1', 'Séance 1-2', 'Séance 2', 'Séance 2-3', 'Séance 3', 'Séance 3-4', 'Séance 4', 'Séance 4-5', 'Séance 5', 'Séance 6', 'Évaluation', 'Correction', 'Corr.+séance 1'];
 
     // ═══════ MODULES PSE PAR NIVEAU (source: CockpitPSE/data_modules.js) ═══════
     var CLASSES_CONFIG = {
+        // CAP 1ère année
         'C1CAN': 'CAP', 'C1HORT': 'CAP', 'C1JP': 'CAP', 'C1PSR': 'CAP', 'C1VAN': 'CAP',
+        // CAP 2ème année
         'C2CAN': 'CAP', 'C2HORT': 'CAP', 'C2JP': 'CAP', 'C2PSR': 'CAP', 'C2VAN': 'CAP',
+        // BAC PRO 2nde
         'B2GATL1': 'BAC_PRO_2NDE', 'B2GATL2': 'BAC_PRO_2NDE', 'B2MELEC': 'BAC_PRO_2NDE',
-        'B1AGO1': 'BAC_PRO_1ERE', 'B1AGO2': 'BAC_PRO_1ERE', 'B1MELEC': 'BAC_PRO_1ERE',
-        'BTAGO1': 'BAC_PRO_TERM', 'BTAGO2': 'BAC_PRO_TERM', 'BTMELEC': 'BAC_PRO_TERM'
+        'B2AGO': 'BAC_PRO_2NDE', 'B2AGORA': 'BAC_PRO_2NDE',
+        // BAC PRO 1ère
+        'B1AGO1': 'BAC_PRO_1ERE', 'B1AGO2': 'BAC_PRO_1ERE', 'B1AGO': 'BAC_PRO_1ERE',
+        'B1MELEC': 'BAC_PRO_1ERE', 'B1AGORA': 'BAC_PRO_1ERE',
+        // BAC PRO Terminale
+        'BTAGO1': 'BAC_PRO_TERM', 'BTAGO2': 'BAC_PRO_TERM', 'BTAGO': 'BAC_PRO_TERM',
+        'BTMELEC': 'BAC_PRO_TERM', 'BTAGORA': 'BAC_PRO_TERM'
     };
 
     var MODULES_PSE = {
         'CAP': [
-            { id: 'MA1', titre: 'Le système de santé', theme: 'A' },
-            { id: 'MA2', titre: 'Le sommeil, un rythme biologique', theme: 'A' },
-            { id: 'MA3', titre: "L'activité physique", theme: 'A' },
-            { id: 'MA4', titre: 'Les addictions', theme: 'A' },
-            { id: 'MA5', titre: 'La sexualité – La contraception', theme: 'A' },
-            { id: 'MA6', titre: 'Prévenir les IST', theme: 'A' },
-            { id: 'MA7', titre: "L'alimentation adaptée à son activité", theme: 'A' },
-            { id: 'MB1', titre: 'Les ressources en eau', theme: 'B' },
-            { id: 'MB2', titre: 'Le risque majeur', theme: 'B' },
-            { id: 'MB3', titre: "Les ressources en énergie", theme: 'B' },
-            { id: 'MB4', titre: 'Le bruit au quotidien', theme: 'B' },
-            { id: 'MC1', titre: 'Les différents contrats de travail', theme: 'C' },
-            { id: 'MC2', titre: 'Les enjeux de la santé et sécurité au travail', theme: 'C' },
-            { id: 'MC3', titre: 'La démarche de prévention (activité)', theme: 'C' },
-            { id: 'MC4', titre: 'La démarche de prévention (risque spécifique)', theme: 'C' },
-            { id: 'MC5', titre: "Les risques liés à l'activité physique", theme: 'C' },
-            { id: 'MC6', titre: 'Les acteurs et organismes de prévention', theme: 'C' },
-            { id: 'MC7', titre: 'Le suivi médical et la vaccination', theme: 'C' },
-            { id: 'MD1', titre: "L'assurance", theme: 'D' },
-            { id: 'MD2', titre: 'Le budget', theme: 'D' },
-            { id: 'MD3', titre: 'Les achats', theme: 'D' },
+            { id: 'PRES', titre: 'Présentation PSE', theme: 'A' },
+            { id: 'A1', titre: 'Le système de santé', theme: 'A' },
+            { id: 'A2', titre: 'Le sommeil, un rythme biologique', theme: 'A' },
+            { id: 'A3', titre: "L'activité physique", theme: 'A' },
+            { id: 'A4', titre: 'Les addictions', theme: 'A' },
+            { id: 'A5', titre: 'La sexualité – La contraception', theme: 'A' },
+            { id: 'A6', titre: 'Prévenir les IST', theme: 'A' },
+            { id: 'A7', titre: "L'alimentation adaptée à son activité", theme: 'A' },
+            { id: 'B1', titre: 'Les ressources en eau', theme: 'B' },
+            { id: 'B2', titre: 'Le risque majeur', theme: 'B' },
+            { id: 'B3', titre: "Les ressources en énergie", theme: 'B' },
+            { id: 'B4', titre: 'Le bruit au quotidien', theme: 'B' },
+            { id: 'C1', titre: 'Les différents contrats de travail', theme: 'C' },
+            { id: 'C2', titre: 'Les enjeux de la santé et sécurité au travail', theme: 'C' },
+            { id: 'C3', titre: 'La démarche de prévention (activité de travail)', theme: 'C' },
+            { id: 'C4', titre: 'La démarche de prévention (risque spécifique au métier)', theme: 'C' },
+            { id: 'C4.1', titre: 'Le risque lié au bruit', theme: 'C' },
+            { id: 'C4.2', titre: 'Le risque lié aux poussières', theme: 'C' },
+            { id: 'C4.3', titre: 'Le risque chimique', theme: 'C' },
+            { id: 'C4.4', titre: 'Le risque mécanique', theme: 'C' },
+            { id: 'C4.5', titre: 'Le risque électrique', theme: 'C' },
+            { id: 'C4.6', titre: "Le risque lié à l'éclairage", theme: 'C' },
+            { id: 'C4.7', titre: 'Le risque de chute', theme: 'C' },
+            { id: 'C4.8', titre: 'Le risque incendie', theme: 'C' },
+            { id: 'C5', titre: "Les risques liés à l'activité physique du métier", theme: 'C' },
+            { id: 'C6', titre: 'Les acteurs et organismes de prévention', theme: 'C' },
+            { id: 'C7', titre: 'Le suivi médical des salariés et la vaccination', theme: 'C' },
+            { id: 'C8', titre: 'Fiches de secourisme', theme: 'C' },
+            { id: 'D1', titre: "L'assurance", theme: 'D' },
+            { id: 'D2', titre: 'Le budget', theme: 'D' },
+            { id: 'D3', titre: 'Les achats', theme: 'D' },
+            { id: 'CG1.1', titre: 'PSE (ESC)', theme: 'E' },
             { id: 'CDO', titre: "Chef d'œuvre", theme: 'E' }
         ],
         'BAC_PRO_2NDE': [
@@ -771,16 +830,22 @@
 
     // Emploi du temps — fallback statique (remplacé par Pronote si synchronisé)
     let EMPLOI_DU_TEMPS = [
+        // Lundi
         { jour: 1, heure: '09:30', classe: 'C2PSR', salle: '010' },
         { jour: 1, heure: '10:30', classe: 'C1PSR', salle: '010' },
-        { jour: 1, heure: '17:00', classe: 'B2GATL', salle: '205' },
+        { jour: 1, heure: '15:00', classe: 'C1PSR', salle: '010', note: "Chef d'œuvre" },
+        { jour: 1, heure: '17:00', classe: 'B2GATL1', salle: '205' },
+        // Mardi
         { jour: 2, heure: '08:30', classe: 'B1MELEC', salle: '205' },
         { jour: 2, heure: '09:30', classe: 'C2HORT', salle: '205' },
         { jour: 2, heure: '10:30', classe: 'BTAGO', salle: '205' },
+        { jour: 2, heure: '11:30', classe: 'BTAGO', salle: '205' },
+        // Jeudi
         { jour: 4, heure: '08:30', classe: 'B2GATL2', salle: '205' },
         { jour: 4, heure: '09:30', classe: 'C2JP', salle: '205' },
         { jour: 4, heure: '11:30', classe: 'BTMELEC', salle: '205' },
         { jour: 4, heure: '14:00', classe: 'C1JP', salle: '205' },
+        // Vendredi
         { jour: 5, heure: '08:30', classe: 'C1JP', salle: '118' },
         { jour: 5, heure: '09:30', classe: 'B2MELEC', salle: '118' },
         { jour: 5, heure: '11:30', classe: 'C1PSR', salle: '205' },
@@ -1126,18 +1191,32 @@
     // ═══════ SYNC PREVUE AFTER LOG SAVE ═══════
     async function syncPrevue(classeDocId, statut, situation) {
         var weekInfo = findCurrentWeekPrevue(classeDocId);
-        if (!weekInfo) return; // Pas de semaine correspondante (vacances, etc.)
+        if (!weekInfo) return;
 
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue || !prevue.semaines) return;
 
         var sem = prevue.semaines[weekInfo.index];
 
-        // Mapping statut (sans accent = convention CSV)
-        if (statut === 'Réalisé') { sem.valide = true; sem.statut = 'Realise'; }
-        else if (statut === 'Reporté') { sem.valide = false; sem.statut = 'Reporte'; }
-        else if (statut === 'Non réalisé') { sem.valide = false; sem.statut = 'Non realise'; }
-        else if (statut === 'Prévu') { sem.valide = false; sem.statut = 'Prevu'; }
+        // Mapping statut
+        if (statut === 'Réalisé') { sem.valide = true; sem.statut = 'Réalisé'; }
+        else if (statut === 'Reporté') { sem.valide = false; sem.statut = 'Reporté'; }
+        else if (statut === 'Non réalisé') { sem.valide = false; sem.statut = 'Non réalisé'; }
+        else if (statut === 'Prévu') { sem.valide = false; sem.statut = 'Prévu'; }
+
+        // Validé toggle override
+        if (isValide) sem.valide = true;
+
+        // Sync séance
+        if (selectedSeance) sem.seance = selectedSeance;
+
+        // Sync phase
+        if (selectedPhase) sem.phase = selectedPhase;
+
+        // Sync evaluations
+        if (selectedEvalDiag) sem.evalDiag = selectedEvalDiag;
+        if (selectedEvalForm) sem.evalForm = selectedEvalForm;
+        if (selectedEvalSomm) sem.evaluation = selectedEvalSomm;
 
         // Situation spéciale (Annulé, PFMP, etc.)
         if (situation && situation !== 'Normal') {
@@ -1869,6 +1948,23 @@
         }
     };
 
+    // ═══════ EVAL TOGGLES ═══════
+    function makeEvalToggle(gridId, stateGetter, stateSetter) {
+        return function(val, btn) {
+            if (stateGetter() === val) {
+                stateSetter('');
+                btn.classList.remove('selected');
+            } else {
+                document.querySelectorAll('#' + gridId + ' .situation-btn').forEach(function(b) { b.classList.remove('selected'); });
+                stateSetter(val);
+                btn.classList.add('selected');
+            }
+        };
+    }
+    window.toggleEvalDiag = makeEvalToggle('evalDiagGrid', function() { return selectedEvalDiag; }, function(v) { selectedEvalDiag = v; });
+    window.toggleEvalForm = makeEvalToggle('evalFormGrid', function() { return selectedEvalForm; }, function(v) { selectedEvalForm = v; });
+    window.toggleEvalSomm = makeEvalToggle('evalSommGrid', function() { return selectedEvalSomm; }, function(v) { selectedEvalSomm = v; });
+
     window.changeAbs = function(delta) {
         absences = Math.max(0, Math.min(35, absences + delta));
         document.getElementById('absCount').textContent = absences;
@@ -1939,6 +2035,9 @@
                 delete cl.cours_seance_num; // don't save temp field
                 return cl;
             })(),
+            evalDiag: selectedEvalDiag || '',
+            evalForm: selectedEvalForm || '',
+            evalSomm: selectedEvalSomm || '',
             cps: Object.assign({}, cps),
             absences: absences,
             qualite: selectedQualite,

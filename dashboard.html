@@ -149,13 +149,20 @@
         .timeline-cell.c-normal { background: #e2e8f0; color: var(--muted); }
         .timeline-cell.c-vacances { background: #f0f0f0; color: #ccc; }
         .timeline-cell.c-realise { background: var(--success); }
+        .timeline-cell.c-prevu { background: #6366f1; }
+        .timeline-cell.c-reporte { background: var(--warning); }
+        .timeline-cell.c-non-realise { background: var(--danger); }
         .timeline-cell.c-en-cours { background: var(--warning); }
         .timeline-cell.c-annule { background: var(--danger); }
         .timeline-cell.c-pfmp { background: #8b5cf6; }
         .timeline-cell.c-sortie { background: #06b6d4; }
         .timeline-cell.c-bac { background: #ec4899; }
+        .timeline-cell.c-ccf { background: #f472b6; }
         .timeline-cell.c-ferie { background: #a1a1aa; }
+        .timeline-cell.c-absence { background: #78716c; }
+        .timeline-cell.c-formation { background: #0ea5e9; }
         .timeline-cell.c-current { outline: 3px solid var(--primary); outline-offset: 1px; }
+        .timeline-cell .phase-icon { font-size: 1.1em; line-height: 1; }
 
         .timeline-cell .tooltip {
             display: none; position: absolute; bottom: 100%; left: 50%;
@@ -339,14 +346,19 @@
         </div>
 
         <div class="legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> Realise</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div> En cours</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0;"></div> Normal (a faire)</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Annule</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> Réalisé</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#6366f1;"></div> Prévu</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div> Reporté</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Non réalisé</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0;"></div> À faire</div>
             <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6;"></div> PFMP</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f0f0f0; border:1px solid #ddd;"></div> Vacances</div>
             <div class="legend-item"><div class="legend-dot" style="background:#06b6d4;"></div> Sortie</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#ec4899;"></div> BAC</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ec4899;"></div> BAC / Épreuves</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#f472b6;"></div> CCF</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#78716c;"></div> Absence</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a1a1aa;"></div> Férié</div>
+            <div class="legend-item" style="margin-left:10px; font-weight:700;">E=Éval · C=Corr · 1,2...=Séance</div>
         </div>
 
         <div id="classeContent">
@@ -369,12 +381,15 @@
     <!-- ── VUE 3 : TIMELINE ANNEE ── -->
     <div id="tabTimeline" class="section">
         <div class="legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> Realise</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div> En cours</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0;"></div> A faire</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> Réalisé</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#6366f1;"></div> Prévu</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div> Reporté</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Non réalisé</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0;"></div> À faire</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f0f0f0; border:1px solid #ddd;"></div> Vacances</div>
             <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6;"></div> PFMP</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Annule</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ec4899;"></div> BAC / Épreuves</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#f472b6;"></div> CCF</div>
         </div>
 
         <div class="card">
@@ -591,18 +606,52 @@
         return dd + '/' + mm + '/' + monday.getFullYear();
     }
 
+    // ═══════ STATUT HELPERS ═══════
+    function isRealise(sem) {
+        return sem.valide || sem.statut === 'Realise' || sem.statut === 'Réalisé';
+    }
+    function isPrevu(sem) {
+        return sem.statut === 'Prévu' || sem.statut === 'Prevu';
+    }
+    function isReporte(sem) {
+        return sem.statut === 'Reporté' || sem.statut === 'Reporte';
+    }
+    function isNonRealise(sem) {
+        return sem.statut === 'Non réalisé' || sem.statut === 'Non realise' || sem.statut === 'Non réalisé';
+    }
+
+    // ═══════ PHASE → LABEL DANS CELLULE ═══════
+    function phaseLabel(sem) {
+        var phase = (sem.phase || '').toLowerCase();
+        if (phase === 'evaluation') return 'E';
+        if (phase === 'correction') return 'C';
+        if (phase === 'presentation') return 'P';
+        // Séance number
+        var seance = (sem.seance || '').trim();
+        if (seance && seance !== 'N/A') {
+            var m = seance.match(/(\d[\d\-]*)/);
+            if (m) return m[1];
+        }
+        return '';
+    }
+
     // ═══════ SITUATION → COLOR CLASS ═══════
     function situationClass(sem) {
         var sit = (sem.situation || '').toLowerCase();
         if (sit.includes('vacances')) return 'c-vacances';
         if (sit.includes('pfmp')) return 'c-pfmp';
-        if (sit.includes('bac')) return 'c-bac';
+        if (sit.includes('bac blanc') || sit.includes('epreuv')) return 'c-bac';
+        if (sit.includes('ccf')) return 'c-ccf';
         if (sit.includes('sortie')) return 'c-sortie';
         if (sit.includes('annul')) return 'c-annule';
         if (sit.includes('feri') || sit.includes('féri')) return 'c-ferie';
+        if (sit.includes('absence') || sit.includes('formation')) return 'c-absence';
 
-        // Check if realized from CSV data
-        if (sem.valide || sem.statut === 'Realise' || sem.statut === 'Réalisé') return 'c-realise';
+        // Statut-based colors (CSV + logs)
+        if (isRealise(sem)) return 'c-realise';
+        if (isReporte(sem)) return 'c-reporte';
+        if (isNonRealise(sem)) return 'c-non-realise';
+        if (isPrevu(sem)) return 'c-prevu';
 
         return 'c-normal';
     }
@@ -612,11 +661,16 @@
         var sit = (sem.situation || '').toLowerCase();
         if (sit.includes('vacances')) return '#f0f0f0';
         if (sit.includes('pfmp')) return '#8b5cf6';
-        if (sit.includes('bac')) return '#ec4899';
+        if (sit.includes('bac blanc') || sit.includes('epreuv')) return '#ec4899';
+        if (sit.includes('ccf')) return '#f472b6';
         if (sit.includes('sortie')) return '#06b6d4';
         if (sit.includes('annul')) return '#dc2626';
         if (sit.includes('feri') || sit.includes('féri')) return '#a1a1aa';
-        if (sem.valide || sem.statut === 'Realise' || sem.statut === 'Réalisé') return '#22c55e';
+        if (sit.includes('absence') || sit.includes('formation')) return '#78716c';
+        if (isRealise(sem)) return '#22c55e';
+        if (isReporte(sem)) return '#f59e0b';
+        if (isNonRealise(sem)) return '#dc2626';
+        if (isPrevu(sem)) return '#6366f1';
         return '#e2e8f0';
     }
 
@@ -659,18 +713,47 @@
                 var cls = situationClass(sem);
                 var isCurrent = sem.date === currentMonday;
 
-                // Determine display text
+                // Determine display text — show phase icon or week number
                 var label = sem.semaine || '';
                 var module = cleanModuleName(sem.module || '');
+                var moduleBaseClean = (sem.moduleBase || module || '').replace(/\n/g, ' ').trim();
                 if (module && module !== 'N/A') currentModule = module;
 
+                // Cell content: phase label (E/C/number) or week number
+                var cellContent = '';
+                var pLabel = phaseLabel(sem);
+                var sit = (sem.situation || '').toLowerCase();
+                var isSpecialSit = sit.includes('vacances') || sit.includes('pfmp') || sit.includes('feri') || sit.includes('féri');
+
+                if (!isSpecialSit && module && module !== 'N/A' && pLabel) {
+                    cellContent = '<span class="phase-icon">' + pLabel + '</span>';
+                } else {
+                    cellContent = label.replace('S', '');
+                }
+
+                // Build rich tooltip
                 var tooltipText = sem.date + ' (' + sem.semaine + ')';
-                if (module && module !== 'N/A') tooltipText += '\\n' + module;
-                if (sem.seance && sem.seance !== 'N/A') tooltipText += ' — ' + sem.seance;
-                if (sem.situation && sem.situation !== 'Normal') tooltipText += '\\n' + sem.situation;
+                if (sem.ab) tooltipText += ' — Sem. ' + sem.ab;
+                if (module && module !== 'N/A') tooltipText += '\\n📚 ' + module;
+                if (sem.phase && sem.phase !== 'cours' && module && module !== 'N/A') {
+                    tooltipText += '\\n🔖 Phase : ' + sem.phase.charAt(0).toUpperCase() + sem.phase.slice(1);
+                }
+                if (sem.transition) {
+                    tooltipText += ' → ' + sem.transition.replace(/_/g, ' ');
+                }
+                if (sem.suiteModule && sem.suiteModule !== 'N/A') {
+                    tooltipText += '\\n➩ ' + sem.suiteModule.replace(/[➩➫⇨]\s*/g, '');
+                }
+                if (sem.seance && sem.seance !== 'N/A') tooltipText += '\\n📝 ' + sem.seance;
+                if (sem.statut && sem.statut !== 'N/A') tooltipText += '\\n📌 ' + sem.statut;
+                if (sem.nbSeancesPrevues && sem.nbSeancesPrevues > 0) tooltipText += '\\n🔢 ' + sem.nbSeancesPrevues + ' séances prévues';
+                if (sem.evalDiag && sem.evalDiag !== 'N/A') tooltipText += '\\n🔍 Diag: ' + sem.evalDiag;
+                if (sem.evalForm && sem.evalForm !== 'N/A') tooltipText += '\\n📊 Form: ' + sem.evalForm;
+                if (sem.evaluation && sem.evaluation !== 'N/A') tooltipText += '\\n📝 Éval: ' + sem.evaluation;
+                if (sem.situation && sem.situation !== 'Normal') tooltipText += '\\n⚡ ' + sem.situation;
 
                 cellsHtml += '<div class="timeline-cell ' + cls + (isCurrent ? ' c-current' : '') + '">' +
-                    label.replace('S', '') +
+                    cellContent +
                     '<div class="tooltip">' + tooltipText.replace(/\\n/g, '<br>') + '</div>' +
                     '</div>';
             });
@@ -732,15 +815,49 @@
             var base = baseModuleName(m);
             if (!base) return;
             if (!moduleMap[base]) {
-                moduleMap[base] = { total: 0, realise: 0, hasEval: false, evalDone: false };
+                moduleMap[base] = {
+                    total: 0, realise: 0, reporte: 0, prevu: 0,
+                    hasEval: false, evalDone: false, hasCorrection: false, correctionDone: false,
+                    nbSeancesPrevues: 0, seancesRealisees: 0, lastSeance: '',
+                    evalDiag: '', evalForm: '', evaluation: '',
+                    currentPhase: ''
+                };
                 order.push(base);
             }
-            moduleMap[base].total++;
-            if (s.valide || s.statut === 'Realise' || s.statut === 'Réalisé') moduleMap[base].realise++;
-            if (m.match(/[eéE]valuation/i)) {
-                moduleMap[base].hasEval = true;
-                if (s.valide || s.statut === 'Realise' || s.statut === 'Réalisé') moduleMap[base].evalDone = true;
+            var info = moduleMap[base];
+            info.total++;
+
+            // Track nb séances prévues (take the max found)
+            if (s.nbSeancesPrevues && s.nbSeancesPrevues > info.nbSeancesPrevues) {
+                info.nbSeancesPrevues = s.nbSeancesPrevues;
             }
+
+            var phase = (s.phase || 'cours').toLowerCase();
+
+            if (isRealise(s)) {
+                info.realise++;
+                if (phase === 'cours' || phase === 'presentation') info.seancesRealisees++;
+                if (s.seance && s.seance !== 'N/A') info.lastSeance = s.seance;
+            }
+            if (isReporte(s)) info.reporte++;
+            if (isPrevu(s)) info.prevu++;
+
+            if (phase === 'evaluation') {
+                info.hasEval = true;
+                if (isRealise(s)) info.evalDone = true;
+            }
+            if (phase === 'correction') {
+                info.hasCorrection = true;
+                if (isRealise(s)) info.correctionDone = true;
+            }
+
+            // Track evaluations types
+            if (s.evalDiag && s.evalDiag !== 'N/A') info.evalDiag = s.evalDiag;
+            if (s.evalForm && s.evalForm !== 'N/A') info.evalForm = s.evalForm;
+            if (s.evaluation && s.evaluation !== 'N/A') info.evaluation = s.evaluation;
+
+            // Track current phase (last non-realized)
+            if (!isRealise(s)) info.currentPhase = phase;
         });
 
         if (order.length === 0) return '';
@@ -758,9 +875,29 @@
             // Short display name
             var shortName = name.length > 30 ? name.substring(0, 30) + '...' : name;
 
-            html += '<div style="padding:5px 10px; border-radius:8px; font-size:0.72em; font-weight:600; ' +
+            // Build detail line
+            var detail = '';
+            if (info.nbSeancesPrevues > 0) {
+                detail += info.seancesRealisees + '/' + info.nbSeancesPrevues + ' séances';
+            } else {
+                detail += info.realise + '/' + info.total + ' sem.';
+            }
+            if (info.hasEval) detail += info.evalDone ? ' · ✅ Éval' : ' · ⏳ Éval';
+            if (info.hasCorrection) detail += info.correctionDone ? ' · ✅ Corr' : ' · ⏳ Corr';
+            if (info.reporte > 0) detail += ' · 🔄' + info.reporte;
+
+            // Evaluation types
+            var evalDetail = '';
+            if (info.evalDiag) evalDetail += '🔍' + info.evalDiag + ' ';
+            if (info.evalForm) evalDetail += '📊' + info.evalForm + ' ';
+            if (info.evaluation) evalDetail += '📝' + info.evaluation;
+
+            html += '<div style="padding:6px 10px; border-radius:8px; font-size:0.72em; font-weight:600; ' +
                 'background:' + bgColor + '; border:1px solid ' + borderColor + '; color:' + textColor + ';">' +
-                shortName + ' <span style="opacity:0.7;">(' + pct + '%)</span></div>';
+                shortName +
+                '<div style="font-weight:500; font-size:0.9em; opacity:0.8; margin-top:2px;">' + detail + '</div>' +
+                (evalDetail ? '<div style="font-weight:500; font-size:0.85em; opacity:0.7; margin-top:1px;">' + evalDetail + '</div>' : '') +
+                '</div>';
         });
         html += '</div></div>';
         return html;
@@ -793,21 +930,40 @@
                         niveau: prevue.niveau,
                         total: 0,
                         realise: 0,
+                        reporte: 0,
                         lastSeance: '',
                         evalDone: false,
-                        hasEval: false
+                        hasEval: false,
+                        hasCorrection: false,
+                        correctionDone: false,
+                        nbSeancesPrevues: 0,
+                        evalDiag: '',
+                        evalForm: '',
+                        evaluation: ''
                     };
                 }
                 var entry = moduleData[base][prevue.classeId];
                 entry.total++;
-                if (sem.valide || sem.statut === 'Realise' || sem.statut === 'Réalisé') {
+                if (sem.nbSeancesPrevues && sem.nbSeancesPrevues > entry.nbSeancesPrevues) {
+                    entry.nbSeancesPrevues = sem.nbSeancesPrevues;
+                }
+                if (isRealise(sem)) {
                     entry.realise++;
                     if (sem.seance && sem.seance !== 'N/A') entry.lastSeance = sem.seance;
                 }
-                if (m.match(/[eéE]valuation/i)) {
+                if (isReporte(sem)) entry.reporte++;
+                var phase = (sem.phase || 'cours').toLowerCase();
+                if (phase === 'evaluation') {
                     entry.hasEval = true;
-                    if (sem.valide || sem.statut === 'Realise' || sem.statut === 'Réalisé') entry.evalDone = true;
+                    if (isRealise(sem)) entry.evalDone = true;
                 }
+                if (phase === 'correction') {
+                    entry.hasCorrection = true;
+                    if (isRealise(sem)) entry.correctionDone = true;
+                }
+                if (sem.evalDiag && sem.evalDiag !== 'N/A') entry.evalDiag = sem.evalDiag;
+                if (sem.evalForm && sem.evalForm !== 'N/A') entry.evalForm = sem.evalForm;
+                if (sem.evaluation && sem.evaluation !== 'N/A') entry.evaluation = sem.evaluation;
             });
         });
 
@@ -847,7 +1003,26 @@
                     badgeClass = 'b-non-commence';
                 }
 
-                var detail = info.lastSeance ? 'Dernier : ' + info.lastSeance : pct + '% complete';
+                // Build detail line
+                var detail = '';
+                if (info.nbSeancesPrevues > 0) {
+                    var seancesR = info.realise - (info.hasEval && info.evalDone ? 1 : 0) - (info.hasCorrection && info.correctionDone ? 1 : 0);
+                    detail = seancesR + '/' + info.nbSeancesPrevues + ' séances';
+                } else if (info.lastSeance) {
+                    detail = 'Dernier : ' + info.lastSeance;
+                } else {
+                    detail = pct + '% complété';
+                }
+                if (info.hasEval) detail += info.evalDone ? ' · ✅ Éval' : ' · ⏳ Éval';
+                if (info.hasCorrection) detail += info.correctionDone ? ' · ✅ Corr' : ' · ⏳ Corr';
+                if (info.reporte > 0) detail += ' · 🔄 ' + info.reporte + ' reporté';
+
+                // Eval types
+                var evalLine = '';
+                if (info.evalDiag) evalLine += '🔍 ' + info.evalDiag + ' ';
+                if (info.evalForm) evalLine += '📊 ' + info.evalForm + ' ';
+                if (info.evaluation) evalLine += '📝 ' + info.evaluation;
+
                 var progressClass = pct === 100 ? 'p-success' : 'p-warning';
 
                 var itemDiv = document.createElement('div');
@@ -858,6 +1033,7 @@
                     '<span class="mc-badge ' + badgeClass + '">' + statusLabel + '</span>' +
                     '</div>' +
                     '<div class="mc-detail">' + detail + '</div>' +
+                    (evalLine ? '<div class="mc-detail" style="font-size:0.78em; margin-top:2px;">' + evalLine + '</div>' : '') +
                     '<div class="mc-progress"><div class="mc-progress-fill ' + progressClass + '" style="width:' + pct + '%;"></div></div>';
 
                 grid.appendChild(itemDiv);
@@ -1049,25 +1225,49 @@
             }
         });
 
-        // 2. Retard vs prevue: semaines before today that are Normal but not validated
+        // 2. Retard vs prevue + statuts problematiques
         var today = new Date();
         allPrevue.forEach(function(prevue) {
             var behindCount = 0;
+            var reporteCount = 0;
+            var prevuRetardCount = 0;
             (prevue.semaines || []).forEach(function(sem) {
-                if (sem.situation !== 'Normal') return;
+                var sit = (sem.situation || '').toLowerCase();
+                if (sit.includes('vacances') || sit.includes('pfmp') || sit.includes('feri') || sit.includes('féri')) return;
                 var d = parseDate(sem.date);
                 if (!d || d >= today) return;
-                if (!sem.valide && sem.statut !== 'Realise' && sem.statut !== 'Réalisé') {
+
+                if (!isRealise(sem) && !isReporte(sem) && !isNonRealise(sem) && !isPrevu(sem) && sit === 'normal') {
                     behindCount++;
                 }
+                if (isReporte(sem)) reporteCount++;
+                if (isPrevu(sem)) prevuRetardCount++;
             });
             if (behindCount > 0) {
                 alerts.push({
                     type: 'info', icon: '⏰',
                     text: prevue.classeId + ' — ' + behindCount + ' semaine' + (behindCount > 1 ? 's' : '') + ' en retard',
-                    detail: 'Semaines normales passees non validees',
+                    detail: 'Semaines passées non renseignées',
                     date: '',
                     priority: 1
+                });
+            }
+            if (reporteCount > 0) {
+                alerts.push({
+                    type: 'warn', icon: '🔄',
+                    text: prevue.classeId + ' — ' + reporteCount + ' séance' + (reporteCount > 1 ? 's' : '') + ' reportée' + (reporteCount > 1 ? 's' : ''),
+                    detail: 'Séances reportées à replanifier',
+                    date: '',
+                    priority: 2
+                });
+            }
+            if (prevuRetardCount > 0) {
+                alerts.push({
+                    type: 'warn', icon: '⚠️',
+                    text: prevue.classeId + ' — ' + prevuRetardCount + ' séance' + (prevuRetardCount > 1 ? 's' : '') + ' prévue' + (prevuRetardCount > 1 ? 's' : '') + ' non réalisée' + (prevuRetardCount > 1 ? 's' : ''),
+                    detail: 'Statut "Prévu" sur des semaines passées',
+                    date: '',
+                    priority: 2
                 });
             }
         });

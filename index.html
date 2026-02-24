@@ -663,13 +663,68 @@
             // Skip if module is same as situation (vacances etc)
             if (moduleVal === situation) moduleVal = '';
 
+            // ── Parse phase & transition from module text ──
+            // Examples: "C3 – Les acteurs de prévention" → phase=cours
+            //           "C3 – Évaluation" → phase=evaluation
+            //           "A7 – Correction + module suivant" → phase=correction, transition=module_suivant
+            //           "Présentation PSE" → phase=presentation
+            var phase = 'cours';
+            var transition = '';
+            var moduleBase = moduleVal;
+
+            if (moduleVal) {
+                // Detect transition first (+ module suivant / + suite module)
+                var transMatch = moduleVal.match(/\+\s*(module suivant|suite module)/i);
+                if (transMatch) {
+                    transition = transMatch[1].toLowerCase().replace(/\s+/g, '_');
+                }
+
+                // Detect phase from module text
+                if (moduleVal.match(/[–\-]\s*[ÉéEe]valuation/i)) {
+                    phase = 'evaluation';
+                } else if (moduleVal.match(/[–\-]\s*Corr(ection|\.)/i)) {
+                    phase = 'correction';
+                } else if (moduleVal.match(/Pr[ée]sentation\s+PSE/i)) {
+                    phase = 'presentation';
+                } else if (moduleVal.match(/^(Évaluation|Evaluation)$/i)) {
+                    phase = 'evaluation';
+                } else if (moduleVal.match(/^Correction/i)) {
+                    phase = 'correction';
+                }
+
+                // Extract base module name (without phase/transition suffixes)
+                moduleBase = moduleVal
+                    .replace(/\s*[–\-]\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, '')
+                    .replace(/^\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, moduleVal)
+                    .trim();
+                // If the whole string was a phase keyword, keep original as moduleBase
+                if (!moduleBase || moduleBase === moduleVal) {
+                    // Try to extract just the module code + title
+                    var codeMatch = moduleVal.match(/^([A-Z]+\d+(?:\.\d+)?)\s*[–\-]\s*/i);
+                    if (codeMatch) {
+                        moduleBase = moduleVal.replace(/\s*[–\-]\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, '').trim();
+                    }
+                }
+            }
+
+            // ── Parse suite module transition type ──
+            var suiteTransition = '';
+            if (suiteVal) {
+                if (suiteVal.match(/Module suivant/i)) suiteTransition = 'module_suivant';
+                else if (suiteVal.match(/Suite module/i)) suiteTransition = 'suite_module';
+            }
+
             var sem = {
                 date: dateStr,
                 semaine: (row[colMap.s] || '').trim(),
                 ab: (row[colMap.ab] || '').trim(),
                 situation: situation,
                 module: moduleVal || '',
+                moduleBase: moduleBase || '',
+                phase: phase,
+                transition: transition,
                 suiteModule: suiteVal || '',
+                suiteTransition: suiteTransition,
                 seance: colMap.seance !== undefined ? (row[colMap.seance] || '').trim() : '',
                 nbSeancesPrevues: colMap.nbSeances !== undefined ? parseInt(row[colMap.nbSeances]) || 0 : 0,
                 objectifModule: colMap.objectifModule !== undefined ? (row[colMap.objectifModule] || '').trim() : '',
