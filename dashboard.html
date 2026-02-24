@@ -987,7 +987,10 @@
         });
     });
 
-    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function capitalize(s) {
+        if (s === 'agenda') return 'Agenda';
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
 
     // ═══════ LOAD ALL DATA (real-time) ═══════
     function refreshViews() {
@@ -1159,12 +1162,9 @@
     }
 
     // ═══════ HELPER : clean module name ═══════
-    function cleanModuleName(raw) {
-        if (!raw) return '';
-        // Remove evaluation/correction suffixes to get base module
-        var cleaned = raw.replace(/\n/g, ' ').trim();
-        // Remove trailing " – Évaluation", " – Correction" etc for grouping
-        return cleaned;
+    function cleanModuleName(str) {
+        if (!str) return '';
+        return str.replace(/\n/g,' ').replace(/\s+/g,' ').trim().substring(0,60);
     }
 
     // Get base module name (without Évaluation/Correction)
@@ -2354,11 +2354,6 @@
         return null;
     }
 
-    function cleanModuleName(str) {
-        if (!str) return '';
-        return str.replace(/\n/g,' ').replace(/\s+/g,' ').trim().substring(0,60);
-    }
-
     function computeCountdown(dateStr) {
         if (!dateStr) return '';
         var today = new Date(); today.setHours(0,0,0,0);
@@ -2575,12 +2570,7 @@
         });
     }
 
-    // Fix capitalize pour "agenda"
-    var _origCapitalize = capitalize;
-    function capitalize(s) {
-        if (s === 'agenda') return 'Agenda';
-        return s.charAt(0).toUpperCase() + s.slice(1);
-    }
+    // capitalize deja definie plus haut avec support "agenda"
 
 
     // Patch tabs après init
