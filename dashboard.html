@@ -2380,7 +2380,7 @@
     }
     window.setAgendaView = setAgendaView;
 
-    function getCoursForDay(date) {
+    function getAgendaCoursForDay(date) {
         var dateStr = date.toISOString().split('T')[0];
         var courses = [];
 
@@ -2462,7 +2462,7 @@
         var label = jourNoms[d.getDay()] + ' ' + d.getDate() + ' ' + moisNoms[d.getMonth()] + ' ' + d.getFullYear();
         document.getElementById('agendaDateLabel').textContent = label;
         var dateStr = d.toISOString().split('T')[0];
-        var courses = getCoursForDay(d);
+        var courses = getAgendaCoursForDay(d);
         var events = getEventsForDay(d);
         var container = document.getElementById('agendaContent');
         container.innerHTML = '';
@@ -2543,7 +2543,7 @@
         for (var dd = 0; dd < 5; dd++) {
             var dayDate = new Date(monday);
             dayDate.setDate(monday.getDate() + dd);
-            var dayCourses = getCoursForDay(dayDate);
+            var dayCourses = getAgendaCoursForDay(dayDate);
             var dayEvents = getEventsForDay(dayDate);
             var isT = dayDate.getTime() === today.getTime();
             var card = document.createElement('div');
@@ -2575,7 +2575,7 @@
         for (var d2 = 0; d2 < 5; d2++) {
             var dayDate2 = new Date(monday);
             dayDate2.setDate(monday.getDate() + d2);
-            var courses2 = getCoursForDay(dayDate2);
+            var courses2 = getAgendaCoursForDay(dayDate2);
             var events2 = getEventsForDay(dayDate2);
             if (courses2.length === 0 && events2.length === 0) continue;
             var dateStr2 = dayDate2.toISOString().split('T')[0];
