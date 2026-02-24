@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Saisie Progression PSE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #f1f5f9;
@@ -25,7 +25,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'DM Sans', -apple-system, sans-serif;
             background: var(--bg); color: var(--text);
             min-height: 100vh; padding: 15px; padding-bottom: 110px;
         }
@@ -410,6 +410,69 @@
             .status-btn { padding: 16px 6px; }
             .status-btn .emoji { font-size: 1.6em; }
         }
+
+        /* ── MULTI-CHIP (remplace seance-btn) ── */
+        .chip { padding:9px 14px; border:2px solid var(--border); border-radius:22px; background:white; font-size:.8em; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; color:var(--muted); -webkit-tap-highlight-color:transparent; white-space:nowrap; }
+        .chip:active { transform:scale(.95); }
+        .chip.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
+        .chip.autre { border-style:dashed; }
+        .chip.autre.selected { border-style:solid; border-color:#6366f1; background:#e0e7ff; color:#4338ca; }
+        .chip-autre-input { width:100%; padding:10px 13px; border:2px solid #6366f1; border-radius:10px; font-size:.9em; font-family:inherit; margin-top:4px; margin-bottom:8px; color:var(--text); display:none; }
+        .chip-autre-input:focus { outline:none; }
+
+        /* ── HISTORIQUE TOP ── */
+        .history-compact { padding:11px 13px; border-radius:10px; border:1px solid var(--border); background:white; margin-bottom:7px; font-size:.82em; }
+        .history-compact:first-child { border-color:var(--primary); background:#f0fdf9; }
+        .history-compact-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+        .history-compact-date { font-weight:800; color:var(--muted); }
+        .history-compact-statut { font-weight:700; font-size:.9em; }
+        .history-compact-detail { color:var(--muted); line-height:1.4; }
+
+        /* ── BANNERS ── */
+        .banner { padding:12px 14px; border-radius:11px; margin-bottom:8px; }
+        .banner-warn { background:#fff7ed; border:2px solid #fb923c; }
+        .banner-info { background:#eff6ff; border:2px solid #60a5fa; }
+        .banner-situation { background:#fef3c7; border:2px solid #fbbf24; }
+        .banner-title { font-weight:800; font-size:.84em; margin-bottom:2px; }
+        .banner-warn .banner-title { color:#c2410c; }
+        .banner-info .banner-title { color:#1e40af; }
+        .banner-situation .banner-title { color:#b45309; }
+        .banner-detail { font-size:.77em; }
+        .banner-warn .banner-detail { color:#9a3412; }
+        .banner-info .banner-detail { color:#1e3a8a; }
+        .banner-situation .banner-detail { color:#92400e; }
+
+        /* ── QUALITÉ ÉTENDUE ── */
+        .quality-dim { margin-bottom:10px; }
+        .quality-dim-title { font-size:.72em; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
+        .quality-chips { display:flex; flex-wrap:wrap; gap:6px; }
+        .q-chip { padding:7px 12px; border:2px solid var(--border); border-radius:18px; background:white; font-size:.77em; font-weight:700; cursor:pointer; font-family:inherit; color:var(--muted); transition:all .15s; -webkit-tap-highlight-color:transparent; }
+        .q-chip:active { transform:scale(.95); }
+        .q-chip.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
+
+        /* ── MÉTÉO GLOBALE ── */
+        .meteo-grid { display:flex; gap:7px; margin-bottom:12px; }
+        .meteo-btn { flex:1; padding:10px 4px; border:2px solid var(--border); border-radius:11px; background:white; cursor:pointer; text-align:center; font-family:inherit; transition:all .15s; -webkit-tap-highlight-color:transparent; }
+        .meteo-btn:active { transform:scale(.95); }
+        .meteo-btn .m-emoji { font-size:1.5em; display:block; margin-bottom:2px; }
+        .meteo-btn .m-label { font-size:.58em; font-weight:700; color:var(--muted); line-height:1.2; }
+        .meteo-btn.selected { border-color:var(--primary); background:var(--primary-light); }
+        .meteo-btn.selected .m-label { color:var(--primary-dark); }
+
+        /* ── CPS MOTS-CLES ── */
+        .cps-mots { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; margin-bottom:8px; }
+        .cps-mot { padding:5px 10px; border:2px solid var(--border); border-radius:14px; background:white; font-size:.72em; font-weight:700; cursor:pointer; font-family:inherit; color:var(--muted); transition:all .14s; -webkit-tap-highlight-color:transparent; }
+        .cps-mot.selected { border-color:#6366f1; background:#e0e7ff; color:#4338ca; }
+
+        /* ── STATUT LABEL ── */
+        .statut-info { font-size:.82em; color:var(--muted); padding:7px 11px; background:var(--bg); border-radius:8px; margin-bottom:10px; display:none; }
+        .statut-info strong { color:var(--success); }
+
+        /* ── STUDENTS GRID ── */
+        .students-checklist { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:9px; max-height:200px; overflow-y:auto; }
+        .student-item { display:flex; align-items:center; gap:6px; padding:7px 9px; border:2px solid var(--border); border-radius:8px; background:white; cursor:pointer; font-size:.78em; font-weight:600; transition:all .12s; -webkit-tap-highlight-color:transparent; }
+        .student-item.absent { border-color:var(--danger); background:var(--danger-light); color:var(--danger); }
+        .student-item.no-cours { border-color:var(--warning); background:var(--warning-light); color:#92400e; }
     </style>
 </head>
 <body>
@@ -446,11 +509,11 @@
             <label class="field-label">Date cible</label>
             <input type="date" id="planifDate" style="width:100%; padding:12px; border:2px solid var(--border); border-radius:12px; font-size:1em; font-family:inherit; margin-bottom:10px;">
             <label class="field-label">Type</label>
-            <div class="situation-grid">
-                <button class="situation-btn" onclick="selectPlanifType('CCF', this)">CCF</button>
-                <button class="situation-btn" onclick="selectPlanifType('Réunion', this)">Réunion</button>
-                <button class="situation-btn" onclick="selectPlanifType('Événement', this)">Événement</button>
-                <button class="situation-btn" onclick="selectPlanifType('Rattrapage', this)">Rattrapage</button>
+            <div class="chip-grid">
+                <button class="chip" onclick="selectPlanifType('CCF', this)">CCF</button>
+                <button class="chip" onclick="selectPlanifType('Réunion', this)">Réunion</button>
+                <button class="chip" onclick="selectPlanifType('Événement', this)">Événement</button>
+                <button class="chip" onclick="selectPlanifType('Rattrapage', this)">Rattrapage</button>
             </div>
         </div>
     </div>
@@ -490,6 +553,21 @@
         </div>
     </div>
 
+    <!-- SITUATION AUTO -->
+    <div id="situationAutoCard" style="display:none;"></div>
+
+    <!-- HISTORIQUE + RAPPELS (en haut) -->
+    <div id="historyTopCard" style="display:none;">
+        <div class="card">
+            <div class="card-title">📋 Dernière séance <span style="background:var(--primary-light);color:var(--primary-dark);padding:2px 9px;border-radius:20px;font-size:.75em;font-weight:700;" id="historyClasseLabel"></span></div>
+            <div id="lastLogBannerNew"></div>
+            <div id="remindersBannerNew"></div>
+            <div id="historyShortListNew"></div>
+            <button id="historyToggleBtnNew" onclick="toggleFullHistoryNew()" style="background:none;border:none;color:var(--muted);font-size:.78em;font-weight:700;cursor:pointer;padding:4px 0;font-family:inherit;display:none;">▼ Voir tout l'historique</button>
+            <div id="historyFullListNew" style="display:none;margin-top:8px;"></div>
+        </div>
+    </div>
+
     <!-- CARD 1: SÉANCE -->
     <div class="card">
         <div class="card-title">📚 Séance</div>
@@ -504,8 +582,15 @@
             <option value="">-- Sélectionner --</option>
         </select>
 
-        <label class="field-label">Phase</label>
-        <div class="phase-grid" id="phaseGrid"></div>
+        <div class="toggle-row" id="moduleAutreToggle" style="margin-top:-4px;margin-bottom:10px;">
+            <span id="moduleAutreIcon">☐</span>
+            <span>Module non listé — saisir manuellement</span>
+        </div>
+        <input type="text" id="moduleAutreInput" class="chip-autre-input" placeholder="Décrire le module..." style="display:none;">
+
+        <label class="field-label">Phase(s) — plusieurs choix possibles</label>
+        <div class="chip-grid" id="phaseGrid"></div>
+        <input type="text" id="phaseAutreInput" class="chip-autre-input" placeholder="Autre phase...">
 
         <div class="module-suivant-toggle" id="moduleSuivantToggle">
             <span id="moduleSuivantIcon">☐</span>
@@ -520,8 +605,9 @@
             <div class="phase-grid" id="phaseSuivantGrid"></div>
         </div>
 
-        <label class="field-label">Séance / étape</label>
-        <div class="seance-grid" id="seanceGrid"></div>
+        <label class="field-label">Séance(s) — plusieurs choix possibles</label>
+        <div class="chip-grid" id="seanceGrid"></div>
+        <input type="text" id="seanceAutreInput" class="chip-autre-input" placeholder="Autre séance...">
     </div>
 
     <!-- CARD 2: STATUT -->
@@ -552,19 +638,19 @@
         <input type="text" id="inputArret" placeholder="ex: exercice 3 question 2">
 
         <label class="field-label">Situation particulière</label>
-        <div class="situation-grid">
-            <button class="situation-btn" onclick="toggleSituation('Annulé', this)">Annulé</button>
-            <button class="situation-btn" onclick="toggleSituation('Sortie scolaire', this)">Sortie</button>
-            <button class="situation-btn" onclick="toggleSituation('Jours fériés', this)">Férié</button>
-            <button class="situation-btn" onclick="toggleSituation('PFMP', this)">PFMP</button>
-            <button class="situation-btn" onclick="toggleSituation('Parcours Y', this)">Parcours Y</button>
-            <button class="situation-btn" onclick="toggleSituation('CCF', this)">CCF</button>
-            <button class="situation-btn" onclick="toggleSituation('BAC BLANC', this)">BAC BLANC</button>
-            <button class="situation-btn" onclick="toggleSituation('Epreuv.Prépa.BAC', this)">Épreuves BAC</button>
-            <button class="situation-btn" onclick="toggleSituation('Absence administrative', this)">Abs. admin</button>
-            <button class="situation-btn" onclick="toggleSituation('Formation', this)">Formation</button>
-            <button class="situation-btn" onclick="toggleSituation('Absence personnel', this)">Abs. perso</button>
-            <button class="situation-btn" onclick="toggleSituation('Autres', this)">Autres</button>
+        <div class="chip-grid">
+            <button class="chip" onclick="toggleSituation('Annulé', this)">Annulé</button>
+            <button class="chip" onclick="toggleSituation('Sortie scolaire', this)">Sortie</button>
+            <button class="chip" onclick="toggleSituation('Jours fériés', this)">Férié</button>
+            <button class="chip" onclick="toggleSituation('PFMP', this)">PFMP</button>
+            <button class="chip" onclick="toggleSituation('Parcours Y', this)">Parcours Y</button>
+            <button class="chip" onclick="toggleSituation('CCF', this)">CCF</button>
+            <button class="chip" onclick="toggleSituation('BAC BLANC', this)">BAC BLANC</button>
+            <button class="chip" onclick="toggleSituation('Epreuv.Prépa.BAC', this)">Épreuves BAC</button>
+            <button class="chip" onclick="toggleSituation('Absence administrative', this)">Abs. admin</button>
+            <button class="chip" onclick="toggleSituation('Formation', this)">Formation</button>
+            <button class="chip" onclick="toggleSituation('Absence personnel', this)">Abs. perso</button>
+            <button class="chip" onclick="toggleSituation('Autres', this)">Autres</button>
         </div>
     </div>
 
@@ -578,30 +664,33 @@
     <div class="card">
         <div class="card-title">🔍 Type d'évaluation</div>
         <label class="field-label">Évaluation diagnostique</label>
-        <div class="situation-grid" id="evalDiagGrid">
-            <button class="situation-btn" onclick="toggleEvalDiag('Quiz', this)">Quiz</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('QCM', this)">QCM</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('Brainstorming / Nuage de mots', this)">Brainstorming</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('Oral / Tour de table', this)">Oral</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('Carte mentale', this)">Carte mentale</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('Vrai/Faux', this)">Vrai/Faux</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('Auto-positionnement', this)">Auto-éval</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('Questionnaire', this)">Questionnaire</button>
-            <button class="situation-btn" onclick="toggleEvalDiag('Exercice mapse.fr', this)">mapse.fr</button>
+        <div class="chip-grid" id="evalDiagGrid">
+            <button class="chip" onclick="toggleEvalDiag('Quiz', this)">Quiz</button>
+            <button class="chip" onclick="toggleEvalDiag('QCM', this)">QCM</button>
+            <button class="chip" onclick="toggleEvalDiag('Brainstorming / Nuage de mots', this)">Brainstorming</button>
+            <button class="chip" onclick="toggleEvalDiag('Oral / Tour de table', this)">Oral</button>
+            <button class="chip" onclick="toggleEvalDiag('Carte mentale', this)">Carte mentale</button>
+            <button class="chip" onclick="toggleEvalDiag('Vrai/Faux', this)">Vrai/Faux</button>
+            <button class="chip" onclick="toggleEvalDiag('Auto-positionnement', this)">Auto-éval</button>
+            <button class="chip" onclick="toggleEvalDiag('Questionnaire', this)">Questionnaire</button>
+            <button class="chip" onclick="toggleEvalDiag('Exercice mapse.fr', this)">mapse.fr</button>
+            <button class="chip" onclick="toggleEvalDiag('En ligne', this)">🌐 En ligne</button>
         </div>
         <label class="field-label" style="margin-top:10px;">Évaluation formative</label>
-        <div class="situation-grid" id="evalFormGrid">
-            <button class="situation-btn" onclick="toggleEvalForm('Quiz', this)">Quiz</button>
-            <button class="situation-btn" onclick="toggleEvalForm('QCM', this)">QCM</button>
-            <button class="situation-btn" onclick="toggleEvalForm('Questionnaire', this)">Questionnaire</button>
-            <button class="situation-btn" onclick="toggleEvalForm('Exercice mapse.fr', this)">mapse.fr</button>
-            <button class="situation-btn" onclick="toggleEvalForm('Oral / Tour de table', this)">Oral</button>
-            <button class="situation-btn" onclick="toggleEvalForm('Carte mentale', this)">Carte mentale</button>
+        <div class="chip-grid" id="evalFormGrid">
+            <button class="chip" onclick="toggleEvalForm('Quiz', this)">Quiz</button>
+            <button class="chip" onclick="toggleEvalForm('QCM', this)">QCM</button>
+            <button class="chip" onclick="toggleEvalForm('Questionnaire', this)">Questionnaire</button>
+            <button class="chip" onclick="toggleEvalForm('Exercice mapse.fr', this)">mapse.fr</button>
+            <button class="chip" onclick="toggleEvalForm('Oral / Tour de table', this)">Oral</button>
+            <button class="chip" onclick="toggleEvalForm('Carte mentale', this)">Carte mentale</button>
+            <button class="chip" onclick="toggleEvalForm('En ligne', this)">🌐 En ligne</button>
         </div>
         <label class="field-label" style="margin-top:10px;">Évaluation sommative / certificative</label>
-        <div class="situation-grid" id="evalSommGrid">
-            <button class="situation-btn" onclick="toggleEvalSomm('Évaluation sommative', this)">Sommative</button>
-            <button class="situation-btn" onclick="toggleEvalSomm('CCF', this)">CCF</button>
+        <div class="chip-grid" id="evalSommGrid">
+            <button class="chip" onclick="toggleEvalSomm('Évaluation sommative', this)">Sommative</button>
+            <button class="chip" onclick="toggleEvalSomm('CCF', this)">CCF</button>
+            <button class="chip" onclick="toggleEvalSomm('En ligne', this)">🌐 En ligne</button>
         </div>
     </div>
 
@@ -618,16 +707,34 @@
         <input type="text" id="absencesNoms" placeholder="Noms des absents (optionnel)" style="margin-bottom:14px;">
 
         <label class="field-label">Qualité de la séance</label>
-        <div class="quality-grid">
-            <button class="quality-btn q-tres_bien" onclick="selectQualite('tres_bien', this)">
-                <span class="emoji">👍</span><span class="label">Très bien</span>
-            </button>
-            <button class="quality-btn q-correct" onclick="selectQualite('correct', this)">
-                <span class="emoji">👌</span><span class="label">Correct</span>
-            </button>
-            <button class="quality-btn q-difficile" onclick="selectQualite('difficile', this)">
-                <span class="emoji">😓</span><span class="label">Difficile</span>
-            </button>
+        <div class="quality-dim">
+            <div class="quality-dim-title">Engagement des élèves</div>
+            <div class="quality-chips">
+                <button class="q-chip" onclick="toggleQualityDim('engagement','tres_actifs',this)">🙋 Très actifs</button>
+                <button class="q-chip" onclick="toggleQualityDim('engagement','actifs',this)">👍 Actifs</button>
+                <button class="q-chip" onclick="toggleQualityDim('engagement','passifs',this)">😐 Passifs</button>
+                <button class="q-chip" onclick="toggleQualityDim('engagement','difficile',this)">😤 Difficile</button>
+            </div>
+        </div>
+        <div class="quality-dim">
+            <div class="quality-dim-title">Ambiance</div>
+            <div class="quality-chips">
+                <button class="q-chip" onclick="toggleQualityDim('ambiance','excellente',this)">🌟 Excellente</button>
+                <button class="q-chip" onclick="toggleQualityDim('ambiance','bonne',this)">😊 Bonne</button>
+                <button class="q-chip" onclick="toggleQualityDim('ambiance','tendue',this)">😬 Tendue</button>
+                <button class="q-chip" onclick="toggleQualityDim('ambiance','agitee',this)">🌪 Agitée</button>
+            </div>
+        </div>
+        <div class="quality-dim">
+            <div class="quality-dim-title">Rythme & Compréhension</div>
+            <div class="quality-chips">
+                <button class="q-chip" onclick="toggleQualityDim('rythme','fluide',this)">🏄 Fluide</button>
+                <button class="q-chip" onclick="toggleQualityDim('rythme','adapte',this)">⚖️ Adapté</button>
+                <button class="q-chip" onclick="toggleQualityDim('rythme','lent',this)">🐢 Lent</button>
+                <button class="q-chip" onclick="toggleQualityDim('comprehension','bonne',this)">💡 Bien compris</button>
+                <button class="q-chip" onclick="toggleQualityDim('comprehension','partielle',this)">🤔 Partiel</button>
+                <button class="q-chip" onclick="toggleQualityDim('comprehension','difficile',this)">😵 Difficile</button>
+            </div>
         </div>
     </div>
 
@@ -638,42 +745,74 @@
         <textarea id="remarque" placeholder="Note libre..."></textarea>
 
         <label class="field-label">Prévoir pour la prochaine séance</label>
-        <div class="todo-grid" id="todoGrid"></div>
+        <div class="chip-grid" id="todoGrid"></div>
         <input type="text" id="todoNote" placeholder="Note libre complémentaire...">
     </div>
 
-    <!-- CARD 6: CPS — Compétences Psycho-Sociales -->
+    <!-- CARD 6: CPS + MÉTÉO -->
     <div class="card">
-        <div class="card-title">🧠 Mon ressenti (CPS)</div>
-        <div class="cps-row">
-            <span class="cps-label">Cognitif</span>
-            <div class="cps-btns" id="cpsCognitif">
-                <button class="cps-btn" onclick="selectCps('cognitif','1',this)">😩</button>
-                <button class="cps-btn" onclick="selectCps('cognitif','2',this)">😐</button>
-                <button class="cps-btn" onclick="selectCps('cognitif','3',this)">🙂</button>
-                <button class="cps-btn" onclick="selectCps('cognitif','4',this)">😊</button>
-                <button class="cps-btn" onclick="selectCps('cognitif','5',this)">🤩</button>
-            </div>
+        <div class="card-title">🧠 Mon ressenti — Météo de la séance</div>
+
+        <label class="field-label">Météo globale</label>
+        <div class="meteo-grid">
+            <button class="meteo-btn" onclick="selectMeteo('⛈','Très difficile',this)"><span class="m-emoji">⛈</span><span class="m-label">Très difficile</span></button>
+            <button class="meteo-btn" onclick="selectMeteo('🌧','Difficile',this)"><span class="m-emoji">🌧</span><span class="m-label">Difficile</span></button>
+            <button class="meteo-btn" onclick="selectMeteo('⛅','Mitigé',this)"><span class="m-emoji">⛅</span><span class="m-label">Mitigé</span></button>
+            <button class="meteo-btn" onclick="selectMeteo('🌤','Bien',this)"><span class="m-emoji">🌤</span><span class="m-label">Bien</span></button>
+            <button class="meteo-btn" onclick="selectMeteo('☀','Excellent',this)"><span class="m-emoji">☀️</span><span class="m-label">Excellent</span></button>
         </div>
-        <div class="cps-row">
-            <span class="cps-label">Émotionnel</span>
-            <div class="cps-btns" id="cpsEmotionnel">
-                <button class="cps-btn" onclick="selectCps('emotionnel','1',this)">😩</button>
-                <button class="cps-btn" onclick="selectCps('emotionnel','2',this)">😐</button>
-                <button class="cps-btn" onclick="selectCps('emotionnel','3',this)">🙂</button>
-                <button class="cps-btn" onclick="selectCps('emotionnel','4',this)">😊</button>
-                <button class="cps-btn" onclick="selectCps('emotionnel','5',this)">🤩</button>
-            </div>
+
+        <label class="field-label" style="margin-top:4px;">🧩 Cognitif</label>
+        <div class="cps-btns" id="cpsCognitif">
+            <button class="cps-btn" onclick="selectCps('cognitif','1',this)">😩</button>
+            <button class="cps-btn" onclick="selectCps('cognitif','2',this)">😔</button>
+            <button class="cps-btn" onclick="selectCps('cognitif','3',this)">😐</button>
+            <button class="cps-btn" onclick="selectCps('cognitif','4',this)">🙂</button>
+            <button class="cps-btn" onclick="selectCps('cognitif','5',this)">🤩</button>
         </div>
-        <div class="cps-row">
-            <span class="cps-label">Social</span>
-            <div class="cps-btns" id="cpsSocial">
-                <button class="cps-btn" onclick="selectCps('social','1',this)">😩</button>
-                <button class="cps-btn" onclick="selectCps('social','2',this)">😐</button>
-                <button class="cps-btn" onclick="selectCps('social','3',this)">🙂</button>
-                <button class="cps-btn" onclick="selectCps('social','4',this)">😊</button>
-                <button class="cps-btn" onclick="selectCps('social','5',this)">🤩</button>
-            </div>
+        <div class="cps-mots" id="cpsCognitifMots">
+            <button class="cps-mot" onclick="toggleCpsMot('cognitif','Stimulant',this)">Stimulant</button>
+            <button class="cps-mot" onclick="toggleCpsMot('cognitif','Fluide',this)">Fluide</button>
+            <button class="cps-mot" onclick="toggleCpsMot('cognitif','Fatigant',this)">Fatigant</button>
+            <button class="cps-mot" onclick="toggleCpsMot('cognitif','Trop chargé',this)">Trop chargé</button>
+            <button class="cps-mot" onclick="toggleCpsMot('cognitif','Bien préparé',this)">Bien préparé</button>
+            <button class="cps-mot" onclick="toggleCpsMot('cognitif','Improvisation',this)">Improvisation</button>
+        </div>
+
+        <label class="field-label" style="margin-top:8px;">💛 Émotionnel</label>
+        <div class="cps-btns" id="cpsEmotionnel">
+            <button class="cps-btn" onclick="selectCps('emotionnel','1',this)">😩</button>
+            <button class="cps-btn" onclick="selectCps('emotionnel','2',this)">😔</button>
+            <button class="cps-btn" onclick="selectCps('emotionnel','3',this)">😐</button>
+            <button class="cps-btn" onclick="selectCps('emotionnel','4',this)">🙂</button>
+            <button class="cps-btn" onclick="selectCps('emotionnel','5',this)">🤩</button>
+        </div>
+        <div class="cps-mots" id="cpsEmotionnelMots">
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Serein',this)">Serein</button>
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Enthousiaste',this)">Enthousiaste</button>
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Tendu',this)">Tendu</button>
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Épuisé',this)">Épuisé</button>
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Satisfait',this)">Satisfait</button>
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Stressé',this)">Stressé</button>
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Motivé',this)">Motivé</button>
+            <button class="cps-mot" onclick="toggleCpsMot('emotionnel','Frustré',this)">Frustré</button>
+        </div>
+
+        <label class="field-label" style="margin-top:8px;">🤝 Social</label>
+        <div class="cps-btns" id="cpsSocial">
+            <button class="cps-btn" onclick="selectCps('social','1',this)">😩</button>
+            <button class="cps-btn" onclick="selectCps('social','2',this)">😔</button>
+            <button class="cps-btn" onclick="selectCps('social','3',this)">😐</button>
+            <button class="cps-btn" onclick="selectCps('social','4',this)">🙂</button>
+            <button class="cps-btn" onclick="selectCps('social','5',this)">🤩</button>
+        </div>
+        <div class="cps-mots" id="cpsSocialMots">
+            <button class="cps-mot" onclick="toggleCpsMot('social','Bonne cohésion',this)">Bonne cohésion</button>
+            <button class="cps-mot" onclick="toggleCpsMot('social','Échanges riches',this)">Échanges riches</button>
+            <button class="cps-mot" onclick="toggleCpsMot('social','Conflits',this)">Conflits</button>
+            <button class="cps-mot" onclick="toggleCpsMot('social','Entraide',this)">Entraide</button>
+            <button class="cps-mot" onclick="toggleCpsMot('social','Inégalités',this)">Inégalités</button>
+            <button class="cps-mot" onclick="toggleCpsMot('social','Solidaire',this)">Solidaire</button>
         </div>
     </div>
 
@@ -994,6 +1133,7 @@
         buildPhaseSelector('phaseGrid', true);
         initModuleSuivantToggle();
         initPlanifToggle();
+        initModuleAutreToggle();
 
         // Bind classe change
         select.addEventListener('change', onClasseChange);
@@ -1203,24 +1343,51 @@
         if (!container) return;
         container.innerHTML = '';
         var phases = [
-            { id: 'cours', label: 'Cours', icon: '📖' },
-            { id: 'evaluation', label: 'Évaluation', icon: '📝' },
-            { id: 'correction', label: 'Correction', icon: '✅' }
+            { id: 'cours', label: '📖 Cours' },
+            { id: 'evaluation', label: '📝 Évaluation' },
+            { id: 'correction', label: '✅ Correction' },
+            { id: 'exercice', label: '💡 Exercice' }
         ];
-        phases.forEach(function(phase) {
-            var btn = document.createElement('button');
-            var current = isPrimary ? selectedPhase : selectedPhaseSuivant;
-            btn.className = 'phase-btn' + (phase.id === current ? ' selected' : '');
-            btn.type = 'button';
-            btn.innerHTML = '<span class="phase-icon">' + phase.icon + '</span>' + phase.label;
-            btn.addEventListener('click', function() {
-                container.querySelectorAll('.phase-btn').forEach(function(b) { b.classList.remove('selected'); });
-                btn.classList.add('selected');
-                if (isPrimary) { selectedPhase = phase.id; }
-                else { selectedPhaseSuivant = phase.id; }
+        if (isPrimary) {
+            // Multi-select pour phase principale
+            phases.forEach(function(phase) {
+                var btn = document.createElement('button');
+                btn.className = 'chip';
+                btn.type = 'button';
+                btn.textContent = phase.label;
+                btn.addEventListener('click', function() {
+                    window.togglePhase(phase.id, btn);
+                });
+                container.appendChild(btn);
             });
-            container.appendChild(btn);
-        });
+            // Bouton Autre
+            var autreBtn = document.createElement('button');
+            autreBtn.className = 'chip autre';
+            autreBtn.textContent = '+ Autre';
+            autreBtn.type = 'button';
+            autreBtn.addEventListener('click', function() {
+                var inp = document.getElementById('phaseAutreInput');
+                var visible = inp && inp.style.display !== 'none';
+                if (inp) inp.style.display = visible ? 'none' : 'block';
+                autreBtn.classList.toggle('selected', !visible);
+                if (!visible && inp) inp.focus();
+            });
+            container.appendChild(autreBtn);
+        } else {
+            // Single select pour phase suivant
+            phases.slice(0,3).forEach(function(phase) {
+                var btn = document.createElement('button');
+                btn.className = 'chip' + (phase.id === selectedPhaseSuivant ? ' selected' : '');
+                btn.type = 'button';
+                btn.textContent = phase.label;
+                btn.addEventListener('click', function() {
+                    container.querySelectorAll('.chip').forEach(function(b) { b.classList.remove('selected'); });
+                    btn.classList.add('selected');
+                    selectedPhaseSuivant = phase.id;
+                });
+                container.appendChild(btn);
+            });
+        }
     }
 
     function resetModuleSuivant() {
@@ -1228,12 +1395,16 @@
         selectedModuleSuivant = '';
         selectedPhaseSuivant = 'cours';
         selectedPhase = 'cours';
+        selectedPhases = [];
         var toggle = document.getElementById('moduleSuivantToggle');
         if (toggle) { toggle.classList.remove('active'); }
         var icon = document.getElementById('moduleSuivantIcon');
         if (icon) { icon.textContent = '☐'; }
         var section = document.getElementById('moduleSuivantSection');
         if (section) { section.style.display = 'none'; }
+        // Reset chips phase
+        var phaseGrid = document.getElementById('phaseGrid');
+        if (phaseGrid) phaseGrid.querySelectorAll('.chip').forEach(function(b) { b.classList.remove('selected'); });
     }
 
     // ═══════ RESOLVE NIVEAU (with fallbacks) ═══════
@@ -1488,6 +1659,22 @@
 
         // Load last log + history for this class
         await loadLastLog(classeDocId, prevue.classeId);
+        // Afficher historique en haut de page
+        showHistoryTop(classeDocId, prevue.classeId);
+        // Situation auto depuis progression prévue
+        var weekInfoSit = findCurrentWeekPrevue(classeDocId);
+        if (weekInfoSit) {
+            var sitPrevue = (weekInfoSit.week.situation || '').toLowerCase();
+            var situAutoCard = document.getElementById('situationAutoCard');
+            if (situAutoCard) {
+                if (sitPrevue && sitPrevue !== 'normal' && sitPrevue !== '' && sitPrevue !== 'n/a') {
+                    situAutoCard.style.display = 'block';
+                    situAutoCard.innerHTML = '<div class="banner banner-situation" style="margin-bottom:12px;">' +
+                        '<div class="banner-title">📋 Situation prévue cette semaine : ' + weekInfoSit.week.situation + '</div>' +
+                        '<div class="banner-detail">D'après votre progression. Si confirmé, sélectionnez-la ci-dessous.</div></div>';
+                } else { situAutoCard.style.display = 'none'; }
+            }
+        }
 
         // Rebuild checklist (uses currentClassLogs for smart distribution)
         buildChecklist();
@@ -1666,16 +1853,49 @@
         grid.innerHTML = '';
         SEANCES.forEach(function(s) {
             var btn = document.createElement('button');
-            btn.className = 'seance-btn';
+            btn.className = 'chip';
             btn.textContent = s;
             btn.addEventListener('click', function() {
-                grid.querySelectorAll('.seance-btn').forEach(function(b) { b.classList.remove('selected'); });
-                btn.classList.add('selected');
-                selectedSeance = s;
+                var idx = selectedSeances.indexOf(s);
+                if (idx >= 0) { selectedSeances.splice(idx,1); btn.classList.remove('selected'); }
+                else { selectedSeances.push(s); btn.classList.add('selected'); }
+                // Compat legacy
+                selectedSeance = selectedSeances[0] || '';
                 buildTodoGrid();
+                updateStatutInfo();
             });
             grid.appendChild(btn);
         });
+        // Bouton Autre
+        var autreBtn = document.createElement('button');
+        autreBtn.className = 'chip autre';
+        autreBtn.textContent = '+ Autre';
+        autreBtn.addEventListener('click', function() {
+            var inp = document.getElementById('seanceAutreInput');
+            var visible = inp && inp.style.display !== 'none';
+            if (inp) { inp.style.display = visible ? 'none' : 'block'; }
+            autreBtn.classList.toggle('selected', !visible);
+            if (!visible && inp) inp.focus();
+        });
+        grid.appendChild(autreBtn);
+        var seanceAutreInp = document.getElementById('seanceAutreInput');
+        if (seanceAutreInp) {
+            seanceAutreInp.addEventListener('input', function() { seanceAutreText = this.value; updateStatutInfo(); });
+        }
+    }
+
+    function updateStatutInfo() {
+        var infoDiv = document.getElementById('statutLabel') || document.createElement('div');
+        // Afficher ce qui va être validé si statut = Réalisé
+        if (selectedStatut === 'Réalisé') {
+            var allS = selectedSeances.slice();
+            if (seanceAutreText) allS.push(seanceAutreText);
+            if (allS.length > 0 && infoDiv) {
+                infoDiv.style.display = 'block';
+                var strongEl = document.getElementById('statutSeanceLabel');
+                if (strongEl) strongEl.textContent = allS.join(' + ');
+            }
+        }
     }
 
     function findDistributedSeances() {
@@ -2177,7 +2397,10 @@
     // ═══════ SAVE ═══════
     async function saveLog() {
         var classeDocId = document.getElementById('selectClasse').value;
-        var moduleId = document.getElementById('selectModule').value;
+        var moduleAutreInp = document.getElementById('moduleAutreInput');
+        var moduleId = (moduleAutreEnabled && moduleAutreInp && moduleAutreInp.value.trim())
+            ? moduleAutreInp.value.trim()
+            : document.getElementById('selectModule').value;
 
         // For special situations, only classe is required
         if (selectedSituation) {
@@ -2227,6 +2450,23 @@
             evalForm: selectedEvalForm || '',
             evalSomm: selectedEvalSomm || '',
             cps: Object.assign({}, cps),
+            cpsMots: JSON.parse(JSON.stringify(cpsMots)),
+            meteo: selectedMeteo || null,
+            qualiteDim: JSON.parse(JSON.stringify(qualityData)),
+            phases: (function() {
+                var allP = selectedPhases.slice();
+                var autreInp = document.getElementById('phaseAutreInput');
+                if (autreInp && autreInp.style.display !== 'none' && autreInp.value) allP.push(autreInp.value);
+                return allP;
+            })(),
+            seances: (function() {
+                var allS = selectedSeances.slice();
+                var autreInp = document.getElementById('seanceAutreInput');
+                if (autreInp && autreInp.style.display !== 'none' && autreInp.value) allS.push(autreInp.value);
+                return allS;
+            })(),
+            todos: selectedTodos.map(function(t) { return {action:t.action||'',label:t.label||'',note:document.getElementById('todoNote').value.trim()}; }),
+            absentsEleves: absentsEleves.slice(),
             absences: absences,
             absencesNoms: document.getElementById('absencesNoms').value.trim(),
             qualite: selectedQualite,
@@ -2250,7 +2490,8 @@
         try {
             var now2 = new Date();
             var hhmm = String(now2.getHours()).padStart(2, '0') + String(now2.getMinutes()).padStart(2, '0');
-            var docId = today + '_' + hhmm + '_' + classeDocId;
+            // UPSERT: même docId par jour + classe = pas de doublon
+            var docId = today + '_' + classeDocId;
             await setDoc(doc(db, 'progression_logs', docId), data);
 
             // Sync progression_prevue pour le dashboard
@@ -2537,6 +2778,163 @@
         t.classList.add('show');
         setTimeout(function() { t.classList.remove('show'); }, 2500);
     }
+
+    // ── NOUVELLES VARIABLES D'ÉTAT ──
+    let selectedPhases = [];
+    let phaseAutreText = '';
+    let selectedSeances = [];
+    let seanceAutreText = '';
+    let moduleAutreEnabled = false;
+    let qualityData = {};
+    let cpsMots = { cognitif: [], emotionnel: [], social: [] };
+    let selectedMeteo = null;
+    let selectedTodos = [];
+    let absentsEleves = [];
+    let distribSeances = [];
+    let absCoursEleves = [];
+
+    // ── TOGGLE PHASE (multi-select) ──
+    window.togglePhase = function(phase, btn) {
+        // Remplace la sélection unique par multi
+        var idx = selectedPhases.indexOf(phase);
+        if (idx >= 0) { selectedPhases.splice(idx,1); btn.classList.remove('selected'); }
+        else { selectedPhases.push(phase); btn.classList.add('selected'); }
+        // Compatibilité avec l'ancien selectedPhase
+        selectedPhase = selectedPhases[0] || 'cours';
+    };
+
+    // ── TOGGLE PHASE SUIVANT ──
+    window.togglePhaseSuivant2 = function(phase, btn) {
+        document.querySelectorAll('#phaseSuivantGrid .chip').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selectedPhaseSuivant = phase;
+    };
+
+    // ── QUALITÉ ÉTENDUE ──
+    window.toggleQualityDim = function(dim, val, btn) {
+        var container = btn.closest('.quality-chips');
+        if (qualityData[dim] === val) {
+            qualityData[dim] = '';
+            btn.classList.remove('selected');
+        } else {
+            container.querySelectorAll('.q-chip').forEach(function(b) { b.classList.remove('selected'); });
+            qualityData[dim] = val;
+            btn.classList.add('selected');
+        }
+    };
+
+    // ── MÉTÉO GLOBALE ──
+    window.selectMeteo = function(emoji, label, btn) {
+        document.querySelectorAll('.meteo-btn').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selectedMeteo = { emoji: emoji, label: label };
+    };
+
+    // ── CPS MOTS-CLÉS ──
+    window.toggleCpsMot = function(dim, mot, btn) {
+        var arr = cpsMots[dim];
+        var idx = arr.indexOf(mot);
+        if (idx >= 0) { arr.splice(idx,1); btn.classList.remove('selected'); }
+        else { arr.push(mot); btn.classList.add('selected'); }
+    };
+
+    // ── MODULE AUTRE ──
+    function initModuleAutreToggle() {
+        var toggle = document.getElementById('moduleAutreToggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', function() {
+            moduleAutreEnabled = !moduleAutreEnabled;
+            toggle.classList.toggle('active', moduleAutreEnabled);
+            document.getElementById('moduleAutreIcon').textContent = moduleAutreEnabled ? '☑' : '☐';
+            var inp = document.getElementById('moduleAutreInput');
+            var sel = document.getElementById('selectModule');
+            inp.style.display = moduleAutreEnabled ? 'block' : 'none';
+            sel.style.opacity = moduleAutreEnabled ? '0.4' : '1';
+            if (moduleAutreEnabled) inp.focus();
+        });
+    }
+
+    // ── HISTORIQUE TOP ──
+    function showHistoryTop(classeDocId, classeLabel) {
+        var topCard = document.getElementById('historyTopCard');
+        var lastBanner = document.getElementById('lastLogBannerNew');
+        var remindersBanner = document.getElementById('remindersBannerNew');
+        var shortList = document.getElementById('historyShortListNew');
+        if (!topCard || !currentClassLogs || currentClassLogs.length === 0) {
+            if (topCard) topCard.style.display = 'none';
+            return;
+        }
+        topCard.style.display = 'block';
+        document.getElementById('historyClasseLabel').textContent = classeLabel;
+        var last = currentClassLogs[0];
+        var seancesL = Array.isArray(last.seances) ? last.seances.join(' + ') : (last.seance || '');
+        var phases = Array.isArray(last.phases) ? last.phases.join('+') : (last.phase || '');
+        var meteo = last.meteo ? last.meteo.emoji + ' ' : '';
+        lastBanner.innerHTML = '<div class="history-compact"><div class="history-compact-header">' +
+            '<span class="history-compact-date">' + (last.date||'') + '</span>' +
+            '<span class="history-compact-statut">' + (last.statut||'') + ' ' + meteo + '</span>' +
+            '</div><div class="history-compact-detail">' +
+            (last.moduleId||'') + ' — ' + seancesL + (phases?' ['+phases+']':'') +
+            (last.arret ? '<br>📍 Arrêt : <em>' + last.arret + '</em>' : '') +
+            '</div></div>';
+
+        // Reminders
+        var remHtml = '';
+        var cl = last.checklist || {};
+        if (cl.copies_ramassees && !cl.copies_corrigees) remHtml += '<div class="banner banner-warn"><div class="banner-title">📝 Copies à corriger</div></div>';
+        if (cl.copies_corrigees && !cl.copies_rendues) remHtml += '<div class="banner banner-warn"><div class="banner-title">📤 Copies à rendre</div></div>';
+        if (cl.eval_corrigee && !cl.eval_rendue) remHtml += '<div class="banner banner-warn"><div class="banner-title">📤 Évaluation à rendre</div></div>';
+        if (last.todos && Array.isArray(last.todos)) {
+            last.todos.forEach(function(t) {
+                remHtml += '<div class="banner banner-info"><div class="banner-title">📌 ' + (t.label||t) + '</div>' +
+                    (t.note ? '<div class="banner-detail">'+t.note+'</div>' : '') + '</div>';
+            });
+        } else if (last.todoNext && last.todoNext.label) {
+            remHtml += '<div class="banner banner-info"><div class="banner-title">📌 ' + last.todoNext.label + '</div>' +
+                (last.todoNext.note ? '<div class="banner-detail">'+last.todoNext.note+'</div>' : '') + '</div>';
+        }
+        remindersBanner.innerHTML = remHtml;
+
+        // Short history
+        shortList.innerHTML = '';
+        currentClassLogs.slice(1,4).forEach(function(log) {
+            var d = document.createElement('div');
+            d.className = 'history-compact';
+            var sl = Array.isArray(log.seances)?log.seances.join('+'):(log.seance||'');
+            var m = log.meteo ? log.meteo.emoji : '';
+            d.innerHTML = '<div class="history-compact-header"><span class="history-compact-date">'+
+                (log.date||'')+'</span><span class="history-compact-statut">'+(log.statut||'')+' '+m+
+                '</span></div><div class="history-compact-detail">'+(log.moduleId||'')+' — '+sl+'</div>';
+            shortList.appendChild(d);
+        });
+        var toggleBtn = document.getElementById('historyToggleBtnNew');
+        if (currentClassLogs.length > 4) {
+            toggleBtn.style.display = 'block';
+            toggleBtn.textContent = '▼ Voir tout (' + currentClassLogs.length + ' séances)';
+        } else { toggleBtn.style.display = 'none'; }
+    }
+
+    window.toggleFullHistoryNew = function() {
+        var full = document.getElementById('historyFullListNew');
+        var btn = document.getElementById('historyToggleBtnNew');
+        if (full.style.display === 'none') {
+            full.innerHTML = '';
+            currentClassLogs.slice(4).forEach(function(log) {
+                var d = document.createElement('div');
+                d.className = 'history-compact';
+                var sl = Array.isArray(log.seances)?log.seances.join('+'):(log.seance||'');
+                d.innerHTML = '<div class="history-compact-header"><span class="history-compact-date">'+(log.date||'')+'</span><span class="history-compact-statut">'+(log.statut||'')+'</span></div><div class="history-compact-detail">'+(log.moduleId||'')+' — '+sl+'</div>';
+                full.appendChild(d);
+            });
+            full.style.display = 'block';
+            btn.textContent = '▲ Réduire';
+        } else { full.style.display='none'; btn.textContent='▼ Voir tout ('+currentClassLogs.length+' séances)'; }
+    };
+
+    // ── UPSERT SAVE (pas de doublon par jour) ──
+    // Surcharge de la fonction saveLog pour changer le docId
+    const _originalSaveLog = typeof saveLog !== 'undefined' ? saveLog : null;
+
 </script>
 </body>
 </html>
