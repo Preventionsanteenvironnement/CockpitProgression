@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initialisation — CockpitProgression PSE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-2: #334155;
+            --border: #334155;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-light: rgba(99, 102, 241, 0.15);
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.15);
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --pfmp: #8b5cf6;
+            --radius: 14px;
+            --font: 'DM Sans', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ═══ LOGIN ═══ */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            gap: 24px;
+            padding: 24px;
+        }
+        .login-logo { font-size: 48px; }
+        .login-title { font-size: 24px; font-weight: 700; }
+        .login-sub { color: var(--muted); text-align: center; }
+        .btn-google {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 28px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 16px; font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-google:hover { background: var(--surface-2); }
+
+        /* ═══ MAIN CONTAINER ═══ */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            display: none;
+        }
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .header h1 { font-size: 22px; font-weight: 700; }
+        .header .user-info {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--muted); font-size: 14px;
+        }
+        .header .user-info img {
+            width: 32px; height: 32px; border-radius: 50%;
+        }
+
+        /* ═══ CARDS ═══ */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .card h2 {
+            font-size: 16px; font-weight: 600;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card h2 .emoji { font-size: 20px; }
+        .card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+        /* ═══ DATA PREVIEW ═══ */
+        .data-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; margin-top: 12px;
+        }
+        @media (max-width: 600px) { .data-grid { grid-template-columns: 1fr; } }
+        .data-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+        }
+        .data-item .label {
+            font-size: 12px; font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .data-item .value {
+            font-size: 20px; font-weight: 700;
+            margin-top: 4px;
+        }
+        .data-item .value.primary { color: var(--primary); }
+        .data-item .value.success { color: var(--success); }
+        .data-item .value.warning { color: var(--warning); }
+        .data-item .value.pfmp { color: var(--pfmp); }
+
+        /* ═══ TABLE PREVIEW ═══ */
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .preview-table th {
+            text-align: left;
+            padding: 8px 12px;
+            background: var(--bg);
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .preview-table td {
+            padding: 8px 12px;
+            border-top: 1px solid var(--border);
+            color: var(--text);
+        }
+        .preview-table tr:hover td { background: rgba(99,102,241,0.05); }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-sa { background: rgba(99,102,241,0.2); color: #818cf8; }
+        .badge-sb { background: rgba(16,185,129,0.2); color: #34d399; }
+        .badge-all { background: rgba(148,163,184,0.2); color: #94a3b8; }
+
+        /* ═══ BUTTONS ═══ */
+        .btn-init {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%;
+            padding: 16px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: var(--radius);
+            color: #fff;
+            font-family: var(--font);
+            font-size: 18px; font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 24px;
+        }
+        .btn-init:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-init:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none;
+        }
+        .btn-init.success {
+            background: var(--success);
+        }
+
+        /* ═══ LOG ═══ */
+        .init-log {
+            margin-top: 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            display: none;
+        }
+        .init-log .line {
+            padding: 3px 0;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .init-log .line.ok { color: var(--success); }
+        .init-log .line.info { color: var(--muted); }
+        .init-log .line.err { color: var(--danger); }
+
+        /* ═══ CONFIRM MODAL ═══ */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+        }
+        .modal-box h3 { font-size: 18px; margin-bottom: 12px; }
+        .modal-box p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+        .modal-actions { display: flex; gap: 12px; }
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-family: var(--font);
+            font-size: 15px; font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+        .btn-confirm {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-logo">🚀</div>
+    <div class="login-title">Initialisation CockpitPSE</div>
+    <div class="login-sub">Charger les données de l'année 2025-2026</div>
+    <button class="btn-google" id="btnGoogle">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Connexion Google
+    </button>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="container" id="mainContainer">
+    <div class="header">
+        <h1>🚀 Initialisation 2025-2026</h1>
+        <div class="user-info">
+            <span id="userName"></span>
+            <img id="userPhoto" src="" alt="">
+        </div>
+    </div>
+
+    <!-- ═══ RÉSUMÉ ═══ -->
+    <div class="card">
+        <h2><span class="emoji">📊</span> Résumé des données à charger</h2>
+        <p>Ces données seront écrites dans Firebase (collection <code>progression_config/school_calendar</code>). Elles sont nécessaires au fonctionnement de toutes les pages.</p>
+        <div class="data-grid">
+            <div class="data-item">
+                <div class="label">Cours EDT</div>
+                <div class="value primary" id="countEdt">17</div>
+            </div>
+            <div class="data-item">
+                <div class="label">Périodes vacances</div>
+                <div class="value success" id="countVac">5</div>
+            </div>
+            <div class="data-item">
+                <div class="label">Jours fériés</div>
+                <div class="value warning" id="countFer">8</div>
+            </div>
+            <div class="data-item">
+                <div class="label">Classes PFMP</div>
+                <div class="value pfmp" id="countPfmp">14</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ EDT ═══ -->
+    <div class="card">
+        <h2><span class="emoji">📅</span> Emploi du temps PSE</h2>
+        <p>17 créneaux hebdomadaires avec alternance SA/SB. Référence SB = semaine du 23/02/2026.</p>
+        <table class="preview-table" id="edtTable">
+            <thead><tr><th>Jour</th><th>Heure</th><th>Classe</th><th>Salle</th><th>Alternance</th></tr></thead>
+            <tbody id="edtBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ═══ VACANCES ═══ -->
+    <div class="card">
+        <h2><span class="emoji">🏖️</span> Vacances Zone A</h2>
+        <table class="preview-table">
+            <thead><tr><th>Période</th><th>Début</th><th>Fin</th></tr></thead>
+            <tbody id="vacBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ═══ FÉRIÉS ═══ -->
+    <div class="card">
+        <h2><span class="emoji">🎉</span> Jours fériés et ponts</h2>
+        <table class="preview-table">
+            <thead><tr><th>Date</th><th>Label</th></tr></thead>
+            <tbody id="ferBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ═══ PFMP ═══ -->
+    <div class="card">
+        <h2><span class="emoji">🏭</span> PFMP par classe</h2>
+        <table class="preview-table">
+            <thead><tr><th>Classe</th><th>Périodes</th></tr></thead>
+            <tbody id="pfmpBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ═══ BOUTON INIT ═══ -->
+    <button class="btn-init" id="btnInit">
+        🚀 Initialiser l'année 2025-2026
+    </button>
+
+    <!-- ═══ LOG ═══ -->
+    <div class="init-log" id="initLog"></div>
+
+    <a class="nav-link" href="index.html">← Retour au Cockpit</a>
+</div>
+
+<!-- ═══ MODAL CONFIRMATION ═══ -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+        <h3>⚠️ Confirmer l'initialisation</h3>
+        <p>Les données existantes dans <code>school_calendar</code> seront écrasées. Les autres collections ne sont pas affectées.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="btnCancel">Annuler</button>
+            <button class="btn-confirm" id="btnConfirm">Confirmer</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    import {
+        FIREBASE_CONFIG, EDT, VACANCES, FERIES, ABSENCES_PERSO, PFMP,
+        CLASS_GROUPS, ALL_CLASSES, getSemaineType, formatDateISO, ANNEE_SCOLAIRE
+    } from './assets/utils.js';
+
+    // ═══ FIREBASE ═══
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    const JOURS_NOMS = ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+    // ═══ AUTH ═══
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            document.getElementById('userName').textContent = user.displayName || user.email;
+            if (user.photoURL) {
+                document.getElementById('userPhoto').src = user.photoURL;
+            }
+            renderPreviews();
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainContainer').style.display = 'none';
+        }
+    });
+
+    document.getElementById('btnGoogle').addEventListener('click', async () => {
+        try { await signInWithPopup(auth, googleProvider); }
+        catch (e) {
+            if (e.code === 'auth/popup-blocked') await signInWithRedirect(auth, googleProvider);
+            else alert('Erreur: ' + e.message);
+        }
+    });
+    getRedirectResult(auth).catch(() => {});
+
+    // ═══ RENDER PREVIEWS ═══
+    function renderPreviews() {
+        // EDT
+        const edtBody = document.getElementById('edtBody');
+        edtBody.innerHTML = '';
+        EDT.forEach(c => {
+            const tr = document.createElement('tr');
+            const altClass = c.alternance === 'SA' ? 'badge-sa' : c.alternance === 'SB' ? 'badge-sb' : 'badge-all';
+            const altLabel = c.alternance === 'toutes' ? 'Toutes' : c.alternance;
+            tr.innerHTML = `<td>${JOURS_NOMS[c.jour]}</td><td>${c.heure}–${c.heureFin}</td><td><strong>${c.classe}</strong></td><td>${c.salle}</td><td><span class="badge ${altClass}">${altLabel}</span></td>`;
+            edtBody.appendChild(tr);
+        });
+
+        // Vacances
+        const vacBody = document.getElementById('vacBody');
+        vacBody.innerHTML = '';
+        VACANCES.forEach(v => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${v.label}</strong></td><td>${v.debut}</td><td>${v.fin}</td>`;
+            vacBody.appendChild(tr);
+        });
+
+        // Fériés
+        const ferBody = document.getElementById('ferBody');
+        ferBody.innerHTML = '';
+        FERIES.forEach(f => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${f.date}</td><td>${f.label}</td>`;
+            ferBody.appendChild(tr);
+        });
+
+        // PFMP
+        const pfmpBody = document.getElementById('pfmpBody');
+        pfmpBody.innerHTML = '';
+        Object.keys(PFMP).sort().forEach(cls => {
+            const periods = PFMP[cls];
+            const tr = document.createElement('tr');
+            const periodsStr = periods.length === 0
+                ? '<em style="color:var(--muted)">Aucune</em>'
+                : periods.map(p => `${p.debut} → ${p.fin}${p.label ? ' (' + p.label + ')' : ''}`).join('<br>');
+            tr.innerHTML = `<td><strong>${cls}</strong></td><td>${periodsStr}</td>`;
+            pfmpBody.appendChild(tr);
+        });
+
+        // Update counts
+        document.getElementById('countEdt').textContent = EDT.length;
+        document.getElementById('countVac').textContent = VACANCES.length;
+        document.getElementById('countFer').textContent = FERIES.length;
+        document.getElementById('countPfmp').textContent = Object.keys(PFMP).filter(k => PFMP[k].length > 0).length;
+    }
+
+    // ═══ INIT BUTTON ═══
+    document.getElementById('btnInit').addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.add('active');
+    });
+
+    document.getElementById('btnCancel').addEventListener('click', () => {
+        document.getElementById('confirmModal').classList.remove('active');
+    });
+
+    document.getElementById('btnConfirm').addEventListener('click', async () => {
+        document.getElementById('confirmModal').classList.remove('active');
+        await runInit();
+    });
+
+    // ═══ RUN INITIALIZATION ═══
+    async function runInit() {
+        const btn = document.getElementById('btnInit');
+        const logDiv = document.getElementById('initLog');
+        btn.disabled = true;
+        btn.textContent = '⏳ Initialisation en cours...';
+        logDiv.style.display = 'block';
+        logDiv.innerHTML = '';
+
+        function log(msg, type) {
+            const line = document.createElement('div');
+            line.className = 'line ' + (type || 'info');
+            line.textContent = msg;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        try {
+            log('Début de l\'initialisation...', 'info');
+
+            // 1. Build school_calendar document
+            const calendarData = {
+                annee: ANNEE_SCOLAIRE.label,
+                edt: EDT.map(c => ({
+                    jour: c.jour,
+                    heure: c.heure,
+                    heureFin: c.heureFin,
+                    classe: c.classe,
+                    salle: c.salle,
+                    alternance: c.alternance
+                })),
+                vacances: VACANCES.map(v => ({
+                    label: v.label,
+                    debut: v.debut,
+                    fin: v.fin
+                })),
+                feries: FERIES.map(f => ({
+                    date: f.date,
+                    label: f.label
+                })),
+                absencesPerso: ABSENCES_PERSO.map(a => ({
+                    date: a.date,
+                    label: a.label,
+                    classes: a.classes
+                })),
+                pfmp: {},
+                classGroups: CLASS_GROUPS,
+                allClasses: ALL_CLASSES,
+                sbReference: '2026-02-23',
+                loadedAt: serverTimestamp(),
+                loadedBy: auth.currentUser ? auth.currentUser.uid : 'unknown',
+                loadedByName: auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email) : 'unknown'
+            };
+
+            // Add PFMP data
+            for (const [cls, periods] of Object.entries(PFMP)) {
+                calendarData.pfmp[cls] = periods.map(p => ({
+                    debut: p.debut,
+                    fin: p.fin,
+                    label: p.label || null
+                }));
+            }
+
+            log(`EDT : ${EDT.length} créneaux`, 'info');
+            log(`Vacances : ${VACANCES.length} périodes`, 'info');
+            log(`Fériés : ${FERIES.length} jours`, 'info');
+            log(`PFMP : ${Object.keys(PFMP).filter(k => PFMP[k].length > 0).length} classes avec PFMP`, 'info');
+            log(`Ref SB : semaine du 23/02/2026`, 'info');
+
+            // 2. Write to Firebase
+            log('Écriture dans progression_config/school_calendar...', 'info');
+            await setDoc(doc(db, 'progression_config', 'school_calendar'), calendarData);
+            log('✅ school_calendar écrit avec succès !', 'ok');
+
+            // 3. Check if progression_prevue docs exist, create empty ones for missing classes
+            log('Vérification des documents progression_prevue...', 'info');
+            let created = 0;
+            for (const cls of ALL_CLASSES) {
+                try {
+                    const prevueDoc = await getDoc(doc(db, 'progression_prevue', cls));
+                    if (!prevueDoc.exists()) {
+                        // Determine niveau
+                        let niveau = 'CAP';
+                        if (cls.startsWith('B2')) niveau = 'BAC_PRO_2NDE';
+                        else if (cls.startsWith('B1')) niveau = 'BAC_PRO_1ERE';
+                        else if (cls.startsWith('BT')) niveau = 'BAC_PRO_TERM';
+
+                        await setDoc(doc(db, 'progression_prevue', cls), {
+                            classeId: cls,
+                            niveau: niveau,
+                            semaines: [],
+                            createdAt: serverTimestamp()
+                        });
+                        log(`  + Créé progression_prevue/${cls} (${niveau})`, 'ok');
+                        created++;
+                    } else {
+                        log(`  ✓ progression_prevue/${cls} existe déjà`, 'info');
+                    }
+                } catch (e) {
+                    log(`  ✗ Erreur pour ${cls}: ${e.message}`, 'err');
+                }
+            }
+
+            if (created > 0) {
+                log(`${created} documents progression_prevue créés`, 'ok');
+            }
+
+            log('', 'info');
+            log('═══════════════════════════════════════', 'ok');
+            log('✅ INITIALISATION TERMINÉE AVEC SUCCÈS', 'ok');
+            log('═══════════════════════════════════════', 'ok');
+
+            btn.textContent = '✅ Initialisation terminée !';
+            btn.classList.add('success');
+
+        } catch (e) {
+            log('', 'err');
+            log('❌ ERREUR : ' + e.message, 'err');
+            btn.textContent = '❌ Erreur — Réessayer';
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

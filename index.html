@@ -4,437 +4,428 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cockpit Progression PSE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-2: #334155;
+            --border: #334155;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
             --primary: #6366f1;
-            --primary-light: #e0e7ff;
-            --success: #22c55e;
-            --success-light: #dcfce7;
+            --primary-hover: #4f46e5;
+            --primary-light: rgba(99,102,241,0.15);
+            --success: #10b981;
+            --success-light: rgba(16,185,129,0.15);
             --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --danger: #dc2626;
-            --danger-light: #fee2e2;
-            --border: #e2e8f0;
+            --warning-light: rgba(245,158,11,0.15);
+            --danger: #ef4444;
+            --danger-light: rgba(239,68,68,0.15);
+            --pfmp: #8b5cf6;
+            --pfmp-light: rgba(139,92,246,0.15);
             --radius: 14px;
+            --font: 'DM Sans', sans-serif;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: var(--font);
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
         }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
-        /* ── LOGIN ── */
+        /* ═══ LOGIN ═══ */
         .login-screen {
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh; gap: 24px; padding: 24px;
         }
-        .login-card {
-            background: var(--card); border-radius: 20px; padding: 50px 40px;
-            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            max-width: 400px; width: 100%;
-        }
-        .login-icon { font-size: 3.5em; margin-bottom: 15px; }
-        .login-card h2 { font-size: 1.6em; font-weight: 800; margin-bottom: 8px; }
-        .login-card p { color: var(--muted); margin-bottom: 30px; }
+        .login-logo { font-size: 48px; }
+        .login-title { font-size: 28px; font-weight: 800; }
+        .login-sub { color: var(--muted); text-align: center; font-size: 15px; }
         .btn-google {
-            display: inline-flex; align-items: center; gap: 12px;
-            padding: 14px 30px; border: 2px solid var(--border); border-radius: 50px;
-            background: white; font-size: 1em; font-weight: 600; cursor: pointer;
-            font-family: inherit; transition: all 0.2s;
-        }
-        .btn-google:hover { border-color: var(--primary); background: var(--primary-light); }
-        .btn-google svg { width: 20px; height: 20px; }
-
-        /* ── HEADER ── */
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 25px; flex-wrap: wrap; gap: 10px;
-        }
-        .header h1 { font-size: 1.5em; font-weight: 800; }
-        .header-actions { display: flex; align-items: center; gap: 12px; }
-        .user-email { font-size: 0.8em; color: var(--muted); }
-        .btn-logout {
-            padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
-            background: white; font-size: 0.8em; cursor: pointer; font-family: inherit;
-        }
-        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
-
-        /* ── QUICK ACTIONS ── */
-        .quick-actions {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px; margin-bottom: 25px;
-        }
-        .btn-quick {
             display: flex; align-items: center; gap: 12px;
-            padding: 18px 16px; background: var(--card); border-radius: var(--radius);
-            text-decoration: none; color: var(--text);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.2s;
-            border: 2px solid transparent;
+            padding: 14px 28px; background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); color: var(--text);
+            font-family: var(--font); font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: background 0.2s;
         }
-        .btn-quick:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .btn-quick .icon { font-size: 1.8em; }
-        .btn-quick .label { font-weight: 700; font-size: 0.85em; }
-        .btn-quick .sub { font-size: 0.75em; color: var(--muted); }
-        .btn-quick.primary-action { background: linear-gradient(135deg, var(--primary), #818cf8); color: white; }
-        .btn-quick.primary-action .sub { color: rgba(255,255,255,0.7); }
+        .btn-google:hover { background: var(--surface-2); }
+        .btn-google svg { flex-shrink: 0; }
 
-        /* ── CARDS ── */
-        .card {
-            background: var(--card); border-radius: var(--radius); padding: 22px;
-            margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .card-title {
-            font-weight: 700; font-size: 1em; margin-bottom: 18px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .card-title .count {
-            background: var(--primary-light); color: var(--primary);
-            padding: 2px 10px; border-radius: 20px; font-size: 0.8em;
-        }
-
-        /* ── STATS ── */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px; margin-bottom: 25px;
-        }
-        .stat-card {
-            background: var(--card); border-radius: var(--radius); padding: 18px;
-            text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .stat-value { font-size: 2em; font-weight: 800; }
-        .stat-label { font-size: 0.75em; color: var(--muted); font-weight: 600; margin-top: 4px; }
-        .stat-card.success .stat-value { color: var(--success); }
-        .stat-card.warning .stat-value { color: var(--warning); }
-        .stat-card.danger .stat-value { color: var(--danger); }
-        .stat-card.primary .stat-value { color: var(--primary); }
-
-        /* ── IMPORT ── */
-        .import-zone {
-            border: 3px dashed var(--border); border-radius: var(--radius);
-            padding: 40px 20px; text-align: center; cursor: pointer;
-            transition: all 0.2s; position: relative;
-        }
-        .import-zone:hover, .import-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
-        .import-zone .icon { font-size: 2.5em; margin-bottom: 10px; }
-        .import-zone p { color: var(--muted); font-size: 0.9em; }
-        .import-zone input[type="file"] {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; cursor: pointer;
-        }
-        .import-progress { margin-top: 15px; }
-        .import-item {
+        /* ═══ HEADER ═══ */
+        .header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 15px; background: var(--bg); border-radius: 10px;
-            margin-bottom: 6px; font-size: 0.85em;
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
         }
-        .import-item .status { font-weight: 700; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-left h1 { font-size: 18px; font-weight: 700; }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .header-btn {
+            width: 40px; height: 40px; border-radius: 10px; border: none;
+            background: var(--surface); color: var(--muted); font-size: 18px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .header-btn:hover { background: var(--surface-2); color: var(--text); }
+        .user-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 2px solid var(--border);
+        }
+
+        /* ═══ WEEK NAV ═══ */
+        .week-nav {
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; padding: 16px 20px;
+            flex-wrap: wrap;
+        }
+        .week-nav-btn {
+            width: 36px; height: 36px; border-radius: 10px; border: none;
+            background: var(--surface); color: var(--text); font-size: 16px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+        }
+        .week-nav-btn:hover { background: var(--surface-2); }
+        .week-label { font-size: 16px; font-weight: 600; text-align: center; min-width: 260px; }
+        .week-label small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+        .badge-ab {
+            display: inline-block; padding: 3px 10px; border-radius: 8px;
+            font-size: 12px; font-weight: 700; margin-left: 8px;
+        }
+        .badge-sa { background: rgba(99,102,241,0.2); color: #818cf8; }
+        .badge-sb { background: rgba(16,185,129,0.2); color: #34d399; }
+        .btn-today {
+            padding: 8px 16px; border-radius: 10px; border: none;
+            background: var(--primary-light); color: var(--primary);
+            font-family: var(--font); font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .btn-today:hover { background: var(--primary); color: #fff; }
+
+        /* ═══ WEEK GRID ═══ */
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 0 12px 120px 12px;
+            min-height: 400px;
+        }
+        @media (max-width: 700px) {
+            .week-grid {
+                grid-template-columns: repeat(5, minmax(140px, 1fr));
+                overflow-x: auto;
+            }
+        }
+        .day-col { min-width: 0; }
+        .day-header {
+            text-align: center; padding: 10px 4px;
+            font-size: 13px; font-weight: 600; color: var(--muted);
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 8px;
+        }
+        .day-header.today { color: var(--primary); border-bottom-color: var(--primary); }
+        .day-header .day-name { text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
+        .day-header .day-date { font-size: 22px; font-weight: 800; color: var(--text); margin-top: 2px; }
+        .day-header.today .day-date { color: var(--primary); }
+
+        /* ═══ COURSE BLOCKS ═══ */
+        .course-block {
+            border-radius: 12px; padding: 12px;
+            margin-bottom: 8px; cursor: pointer;
+            transition: all 0.15s; position: relative;
+            border: 1px solid transparent;
+            min-height: 80px;
+        }
+        .course-block:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .course-block:active { transform: translateY(0); }
+        .course-block.no-click { cursor: default; opacity: 0.7; }
+        .course-block.no-click:hover { transform: none; box-shadow: none; }
+
+        .cb-heure { font-size: 11px; font-weight: 600; opacity: 0.8; margin-bottom: 4px; }
+        .cb-classe { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+        .cb-module { font-size: 12px; opacity: 0.85; line-height: 1.3; }
+        .cb-status { font-size: 11px; margin-top: 6px; font-weight: 600; opacity: 0.9; }
+        .cb-badge-alt {
+            position: absolute; top: 6px; right: 8px;
+            font-size: 10px; font-weight: 700; padding: 1px 6px;
+            border-radius: 4px; background: rgba(255,255,255,0.15);
+        }
+
+        /* Block colors */
+        .cb-realise   { background: #10b981; color: #fff; }
+        .cb-reporte   { background: #f59e0b; color: #fff; }
+        .cb-non-real  { background: #dc2626; color: #fff; }
+        .cb-annule    { background: #6b7280; color: #fff; }
+        .cb-a-saisir  { background: var(--primary); color: #fff; border: 2px dashed rgba(255,255,255,0.3); }
+        .cb-planifie  { background: #818cf8; color: #fff; }
+        .cb-vide      { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+        .cb-pfmp      { background: var(--pfmp); color: #fff; }
+        .cb-vacances  { background: #374151; color: #9ca3af; }
+        .cb-ferie     { background: #4b5563; color: #9ca3af; }
+
+        /* ═══ VACANCES BANNER ═══ */
+        .vacances-banner {
+            grid-column: 1 / -1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 16px;
+        }
+        .vacances-banner .emoji { font-size: 36px; margin-bottom: 8px; display: block; }
+
+        /* ═══ ALERTS BAR ═══ */
+        .alerts-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex; align-items: center; gap: 16px;
+            overflow-x: auto; white-space: nowrap;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .alert-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 8px;
+            font-size: 12px; font-weight: 600;
+            flex-shrink: 0;
+        }
+        .alert-chip.urgent { background: var(--danger-light); color: var(--danger); }
+        .alert-chip.warn { background: var(--warning-light); color: var(--warning); }
+        .alert-chip.info { background: var(--primary-light); color: var(--primary); }
+
+        /* ═══ NAV LINKS ═══ */
+        .nav-links {
+            display: flex; gap: 8px; padding: 0 20px 12px;
+            justify-content: center;
+        }
+        .nav-link {
+            padding: 8px 16px; border-radius: 10px;
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--muted); text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: all 0.15s;
+        }
+        .nav-link:hover { color: var(--text); background: var(--surface-2); }
+
+        /* ═══ MODAL DETAIL ═══ */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 1000;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 24px;
+            max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto;
+        }
+        .modal-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        .modal-close {
+            float: right; background: none; border: none; color: var(--muted);
+            font-size: 20px; cursor: pointer; padding: 4px;
+        }
+        .modal-close:hover { color: var(--text); }
+        .detail-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid var(--border);
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { font-size: 13px; color: var(--muted); }
+        .detail-value { font-size: 14px; font-weight: 600; }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-modal {
+            flex: 1; padding: 12px; border: none; border-radius: 10px;
+            font-family: var(--font); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.15s; text-decoration: none;
+            text-align: center;
+        }
+        .btn-modal.primary { background: var(--primary); color: #fff; }
+        .btn-modal.primary:hover { background: var(--primary-hover); }
+        .btn-modal.secondary { background: var(--surface-2); color: var(--text); }
+
+        /* ═══ SETTINGS MODAL ═══ */
+        .settings-modal .modal-box { max-width: 600px; }
+        .settings-tabs {
+            display: flex; gap: 4px; margin-bottom: 16px;
+            background: var(--bg); border-radius: 10px; padding: 4px;
+        }
+        .settings-tab {
+            flex: 1; padding: 8px 12px; border: none; border-radius: 8px;
+            background: transparent; color: var(--muted);
+            font-family: var(--font); font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .settings-tab.active { background: var(--surface-2); color: var(--text); }
+        .settings-section { display: none; }
+        .settings-section.active { display: block; }
+
+        /* Import zone */
+        .import-zone {
+            border: 2px dashed var(--border); border-radius: var(--radius);
+            padding: 30px 20px; text-align: center; cursor: pointer;
+            transition: all 0.2s; margin-bottom: 12px;
+        }
+        .import-zone:hover, .import-zone.dragover {
+            border-color: var(--primary); background: var(--primary-light);
+        }
+        .import-zone .icon { font-size: 32px; margin-bottom: 8px; }
+        .import-zone p { color: var(--muted); font-size: 13px; }
+        .import-progress { margin-top: 12px; }
+        .import-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; background: var(--bg); border-radius: 8px;
+            margin-bottom: 4px; font-size: 13px;
+        }
         .import-item .status.ok { color: var(--success); }
         .import-item .status.err { color: var(--danger); }
 
-        /* ── RECENT LOGS ── */
-        .log-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 0; border-bottom: 1px solid var(--border);
-        }
-        .log-item:last-child { border-bottom: none; }
-        .log-badge {
-            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-        }
-        .log-badge.terminee { background: var(--success); }
-        .log-badge.en_cours { background: var(--warning); }
-        .log-badge.non_commencee { background: var(--border); }
-        .log-info { flex: 1; }
-        .log-classe { font-weight: 700; font-size: 0.9em; }
-        .log-module { font-size: 0.8em; color: var(--muted); }
-        .log-date { font-size: 0.75em; color: var(--muted); white-space: nowrap; }
-
-        /* ── ALERT ITEMS ── */
-        .alert-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-radius: 10px; margin-bottom: 6px;
-            font-size: 0.85em; font-weight: 500;
-        }
-        .alert-item.warn { background: var(--warning-light); color: #92400e; }
-        .alert-item.err { background: var(--danger-light); color: #991b1b; }
-        .alert-item .alert-icon { font-size: 1.2em; }
-
-        /* ── CLASSES LIST ── */
-        .classes-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-        }
-        .class-card {
-            padding: 14px; border-radius: 10px; border: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .class-name { font-weight: 700; font-size: 0.9em; }
-        .class-badge {
-            padding: 3px 10px; border-radius: 20px; font-size: 0.7em; font-weight: 700;
-        }
-        .class-badge.cap { background: #dbeafe; color: #1e40af; }
-        .class-badge.bac { background: #dcfce7; color: #166534; }
-
-        /* ── TOAST ── */
-        .toast {
-            position: fixed; bottom: 30px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--success); color: white;
-            padding: 14px 30px; border-radius: 14px;
-            font-weight: 700; z-index: 1000; opacity: 0;
-            transition: all 0.3s ease; font-size: 0.95em;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-        /* ── TABS ── */
-        .tabs {
-            display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg);
-            border-radius: 12px; padding: 4px; border: 1px solid var(--border);
-        }
-        .tab {
-            flex: 1; padding: 10px 15px; border: none; border-radius: 10px;
-            background: transparent; font-family: inherit; font-size: 0.85em;
-            font-weight: 600; cursor: pointer; color: var(--muted); transition: all 0.2s;
-        }
-        .tab.active { background: white; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-
-        .section { display: none; }
-        .section.active { display: block; }
-
-        /* ── EMPTY STATE ── */
-        .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
-        .empty .icon { font-size: 2.5em; margin-bottom: 10px; }
-
-        /* ── EMPLOI DU TEMPS ── */
-        .edt-today { margin-bottom: 20px; }
-        .edt-slot {
-            display: flex; align-items: center; gap: 14px;
-            padding: 14px; border-radius: 12px; margin-bottom: 8px;
-            background: white; border: 2px solid var(--border); transition: all 0.15s;
-        }
-        .edt-slot.is-now { border-color: var(--primary); background: var(--primary-light); }
-        .edt-slot.is-past { opacity: 0.5; }
-        .edt-heure { font-size: 0.85em; font-weight: 800; min-width: 50px; color: var(--primary); }
-        .edt-info { flex: 1; }
-        .edt-classe { font-weight: 700; font-size: 0.95em; }
-        .edt-matiere { font-size: 0.78em; color: var(--muted); }
-        .edt-salle { font-size: 0.75em; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--bg); color: var(--muted); }
-        .edt-sync-bar {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
-        }
+        /* Sync section */
         .btn-sync {
-            padding: 10px 20px; border: 2px solid var(--primary); border-radius: 10px;
-            background: var(--primary-light); color: var(--primary);
-            font-weight: 700; font-size: 0.85em; cursor: pointer; font-family: inherit;
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 20px; background: var(--primary-light); color: var(--primary);
+            border: 1px solid var(--primary); border-radius: var(--radius);
+            font-family: var(--font); font-size: 14px; font-weight: 600;
+            cursor: pointer; width: 100%; justify-content: center;
             transition: all 0.15s;
         }
-        .btn-sync:hover { background: var(--primary); color: white; }
-        .btn-sync:disabled { opacity: 0.4; cursor: not-allowed; }
-        .sync-status { font-size: 0.8em; color: var(--muted); }
-        .edt-day-group { margin-bottom: 20px; }
-        .edt-day-title { font-weight: 700; font-size: 0.9em; margin-bottom: 8px; color: var(--primary); }
+        .btn-sync:hover { background: var(--primary); color: #fff; }
+        .btn-sync:disabled { opacity: 0.5; cursor: not-allowed; }
+        .sync-status { margin-top: 10px; font-size: 13px; color: var(--muted); }
 
-        /* ── QR CODES ── */
-        .qr-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
+        /* QR section */
         .qr-card {
-            background: white; border-radius: var(--radius); padding: 25px;
-            text-align: center; border: 2px solid var(--border);
+            text-align: center; padding: 20px;
+            background: var(--bg); border-radius: var(--radius);
+            border: 1px solid var(--border);
         }
-        .qr-card h3 { font-size: 1.1em; font-weight: 800; margin-bottom: 4px; }
-        .qr-card .qr-sub { font-size: 0.8em; color: var(--muted); margin-bottom: 15px; }
-        .qr-card img { border-radius: 10px; margin-bottom: 12px; }
-        .qr-url { font-size: 0.65em; color: var(--muted); word-break: break-all; padding: 8px; background: var(--bg); border-radius: 8px; }
+        .qr-card h4 { font-size: 14px; margin-bottom: 4px; }
+        .qr-card .qr-sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+        .qr-card img { border-radius: 8px; background: #fff; padding: 8px; }
+        .qr-card .qr-url { font-size: 10px; color: var(--muted); word-break: break-all; margin-top: 8px; }
         .btn-print {
-            display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
-            padding: 8px 18px; border: 2px solid var(--border); border-radius: 8px;
-            background: white; font-size: 0.8em; font-weight: 600; cursor: pointer;
-            font-family: inherit; transition: all 0.15s;
-        }
-        .btn-print:hover { border-color: var(--primary); background: var(--primary-light); }
-
-        @media (max-width: 600px) {
-            .container { padding: 12px; }
-            .header h1 { font-size: 1.2em; }
-            .quick-actions { grid-template-columns: 1fr 1fr; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .tab { font-size: 0.75em; padding: 8px 10px; white-space: nowrap; min-width: fit-content; }
-            .qr-grid { grid-template-columns: 1fr; }
+            margin-top: 10px; padding: 8px 16px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--surface); color: var(--text);
+            font-family: var(--font); font-size: 12px; cursor: pointer;
         }
 
-        @media print {
-            body { background: white; }
-            .header, .tabs, .quick-actions, .stats-grid, #tabOverview, #tabImport, #tabClasses, #tabEdt, .toast { display: none !important; }
-            #tabQr { display: block !important; }
-            .qr-card { break-inside: avoid; border: 3px solid #000; page-break-inside: avoid; }
-            .qr-url { font-size: 0.8em; }
-            .btn-print { display: none; }
+        /* ═══ TOAST ═══ */
+        .toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--surface-2); color: var(--text);
+            padding: 12px 24px; border-radius: 10px;
+            font-size: 14px; font-weight: 600;
+            opacity: 0; transition: all 0.3s; pointer-events: none;
+            z-index: 2000;
         }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ═══ HIDDEN ═══ */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<!-- ════════ LOGIN ════════ -->
-<div id="loginScreen" class="login-screen">
-    <div class="login-card">
-        <div class="login-icon">📊</div>
-        <h2>Cockpit Progression</h2>
-        <p>Suivi de progression PSE</p>
-        <button class="btn-google" id="btnGoogle">
-            <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-            Connexion Google
-        </button>
-    </div>
+<!-- ═══ LOGIN ═══ -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-logo">📊</div>
+    <div class="login-title">CockpitPSE</div>
+    <div class="login-sub">Pilotage de progression — PSE</div>
+    <button class="btn-google" id="btnGoogle">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Connexion Google
+    </button>
 </div>
 
-<!-- ════════ MAIN ════════ -->
+<!-- ═══ MAIN SCREEN ═══ -->
 <div id="mainScreen" style="display:none;">
-<div class="container">
 
     <!-- HEADER -->
     <div class="header">
-        <h1>📊 Cockpit Progression</h1>
-        <div class="header-actions">
-            <span class="user-email" id="userEmail"></span>
-            <button class="btn-logout" id="btnLogout">Déco</button>
+        <div class="header-left">
+            <h1>📊 CockpitPSE</h1>
+        </div>
+        <div class="header-right">
+            <button class="header-btn" id="btnSettings" title="Paramètres">⚙️</button>
+            <button class="header-btn" id="btnLogout" title="Déconnexion">🚪</button>
+            <img class="user-avatar hidden" id="userPhoto" src="" alt="">
         </div>
     </div>
 
-    <!-- QUICK ACTIONS -->
-    <div class="quick-actions">
-        <a href="log.html" class="btn-quick primary-action">
-            <div>
-                <div class="icon">📝</div>
-            </div>
-            <div>
-                <div class="label">Saisie rapide</div>
-                <div class="sub">Logger une séance</div>
-            </div>
-        </a>
-        <a href="dashboard.html" class="btn-quick">
-            <div class="icon">📈</div>
-            <div>
-                <div class="label">Dashboard</div>
-                <div class="sub">Vue complète</div>
-            </div>
-        </a>
+    <!-- WEEK NAV -->
+    <div class="week-nav">
+        <button class="week-nav-btn" id="btnPrev" title="Semaine précédente">◀</button>
+        <div class="week-label" id="weekLabel">
+            Chargement...
+            <small id="weekDates"></small>
+        </div>
+        <button class="week-nav-btn" id="btnNext" title="Semaine suivante">▶</button>
+        <button class="btn-today" id="btnToday">Aujourd'hui</button>
     </div>
 
-    <!-- TABS -->
-    <div class="tabs">
-        <button class="tab active" data-tab="overview">Accueil</button>
-        <button class="tab" data-tab="import">Import CSV</button>
-        <button class="tab" data-tab="classes">Classes</button>
-        <button class="tab" data-tab="edt">Emploi du temps</button>
-        <button class="tab" data-tab="qr">QR Codes</button>
+    <!-- NAV LINKS -->
+    <div class="nav-links">
+        <a href="log.html" class="nav-link">✏️ Saisie rapide</a>
+        <a href="dashboard.html" class="nav-link">📈 Dashboard</a>
+        <a href="init.html" class="nav-link">🚀 Init</a>
     </div>
 
-    <!-- ── TAB: OVERVIEW ── -->
-    <div id="tabOverview" class="section active">
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card primary"><div class="stat-value" id="statClasses">-</div><div class="stat-label">Classes</div></div>
-            <div class="stat-card success"><div class="stat-value" id="statValidees">-</div><div class="stat-label">Semaines validées</div></div>
-            <div class="stat-card warning"><div class="stat-value" id="statLogs">-</div><div class="stat-label">Saisies</div></div>
-            <div class="stat-card danger"><div class="stat-value" id="statAlertes">-</div><div class="stat-label">Alertes</div></div>
-        </div>
-
-        <!-- ALERTS -->
-        <div class="card" id="alertsCard" style="display:none;">
-            <div class="card-title">⚠️ Alertes <span class="count" id="alertsCount"></span></div>
-            <div id="alertsList"></div>
-        </div>
-
-        <!-- RECENT LOGS -->
-        <div class="card">
-            <div class="card-title">📋 Dernières saisies</div>
-            <div id="recentList">
-                <div class="empty">
-                    <div class="icon">📝</div>
-                    <p>Aucune saisie pour l'instant.<br>Scannez un QR code ou utilisez la saisie rapide.</p>
-                </div>
-            </div>
-        </div>
+    <!-- WEEK GRID -->
+    <div class="week-grid" id="weekGrid">
+        <!-- Generated dynamically -->
     </div>
 
-    <!-- ── TAB: IMPORT CSV ── -->
-    <div id="tabImport" class="section">
-        <div class="card">
-            <div class="card-title">📥 Importer les progressions Numbers</div>
-            <p style="color:var(--muted); font-size:0.85em; margin-bottom:15px;">
-                Exportez chaque onglet de Numbers en CSV, puis glissez-les ici.<br>
-                Vous pouvez importer plusieurs fichiers à la fois.
-            </p>
+    <!-- ALERTS BAR -->
+    <div class="alerts-bar" id="alertsBar" style="display:none;">
+        <!-- Generated dynamically -->
+    </div>
+</div>
+
+<!-- ═══ DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+        <h3 id="detailTitle">Détail</h3>
+        <div id="detailContent"></div>
+        <div class="modal-actions" id="detailActions"></div>
+    </div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div class="modal-overlay settings-modal" id="settingsModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeSettings()">&times;</button>
+        <h3>⚙️ Paramètres</h3>
+        <div class="settings-tabs">
+            <button class="settings-tab active" data-stab="import">📥 Import CSV</button>
+            <button class="settings-tab" data-stab="pronote">📅 Pronote</button>
+            <button class="settings-tab" data-stab="qr">📱 QR Code</button>
+        </div>
+        <div class="settings-section active" id="stabImport">
             <div class="import-zone" id="importZone">
-                <input type="file" id="fileInput" multiple accept=".csv,.txt">
                 <div class="icon">📂</div>
-                <p><strong>Glissez vos CSV ici</strong> ou cliquez pour sélectionner</p>
+                <p>Glissez vos CSV ici ou cliquez pour sélectionner</p>
+                <input type="file" id="fileInput" accept=".csv,.txt" multiple style="display:none;">
             </div>
             <div class="import-progress" id="importProgress"></div>
         </div>
-
-        <div class="card" id="importedCard" style="display:none;">
-            <div class="card-title">✅ Progressions importées <span class="count" id="importedCount"></span></div>
-            <div id="importedList"></div>
+        <div class="settings-section" id="stabPronote">
+            <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Synchroniser l'emploi du temps depuis Pronote (iCal)</p>
+            <button class="btn-sync" id="btnSync">🔄 Synchroniser Pronote</button>
+            <div class="sync-status" id="syncStatus"></div>
+        </div>
+        <div class="settings-section" id="stabQr">
+            <div class="qr-card" id="qrCard"></div>
         </div>
     </div>
-
-    <!-- ── TAB: CLASSES ── -->
-    <div id="tabClasses" class="section">
-        <div class="card">
-            <div class="card-title">🎓 Classes enregistrées</div>
-            <div id="classesList" class="classes-grid">
-                <div class="empty">
-                    <div class="icon">📥</div>
-                    <p>Importez d'abord vos CSV Numbers.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── TAB: EMPLOI DU TEMPS ── -->
-    <div id="tabEdt" class="section">
-        <div class="card">
-            <div class="card-title">📅 Emploi du temps Pronote</div>
-            <div class="edt-sync-bar">
-                <button class="btn-sync" id="btnSync">🔄 Synchroniser Pronote</button>
-                <span class="sync-status" id="syncStatus">Non synchronisé</span>
-            </div>
-            <p style="color:var(--muted); font-size:0.82em; margin-bottom:15px;">
-                La synchronisation récupère votre emploi du temps depuis Pronote et le stocke dans l'application.<br>
-                Il sera utilisé pour pré-remplir automatiquement la classe dans la saisie rapide.
-            </p>
-            <div id="edtContent">
-                <div class="empty">
-                    <div class="icon">📅</div>
-                    <p>Cliquez sur "Synchroniser Pronote" pour charger votre emploi du temps.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── TAB: QR CODES ── -->
-    <div id="tabQr" class="section">
-        <div class="card">
-            <div class="card-title">📱 QR Code universel</div>
-            <p style="color:var(--muted); font-size:0.82em; margin-bottom:18px;">
-                Imprimez ce QR code. En scannant, la saisie rapide détecte automatiquement la classe via votre emploi du temps Pronote.
-            </p>
-            <button class="btn-print" onclick="window.print()" style="margin-bottom:18px;">🖨️ Imprimer le QR code</button>
-            <div class="qr-grid" id="qrGrid"></div>
-        </div>
-    </div>
-
-</div>
 </div>
 
 <!-- TOAST -->
@@ -442,38 +433,45 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp }
+        from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut }
+        from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import {
-        getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc,
-        collection, query, orderBy, limit, serverTimestamp, onSnapshot
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import {
-        getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect,
-        getRedirectResult, GoogleAuthProvider, signOut
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        FIREBASE_CONFIG, EDT, VACANCES, FERIES, ABSENCES_PERSO, PFMP,
+        CLASS_GROUPS, CLASS_ALIAS_GROUPS, ALL_CLASSES,
+        getLundi, getSemaineType, coursSePasse, formatDateISO, formatDateCourt,
+        formatSemaineLabel, isVacances, isFerie, isAbsencePerso, isPFMP,
+        classesMatch, normalizeClass, getCoursForDay, MOIS, MOIS_COURTS,
+        BLOC_COLORS, cleanModuleName, CLASSES_CONFIG, MODULES_PSE, ANNEE_SCOLAIRE
+    } from './assets/utils.js';
 
-    // ═══════ FIREBASE INIT ═══════
-    const firebaseConfig = {
-        apiKey: "AIzaSyAWdCMvOiAJln3eT9LIAQD3RWJUD0lQcLI",
-        authDomain: "devoirs-pse.firebaseapp.com",
-        projectId: "devoirs-pse",
-        storageBucket: "devoirs-pse.firebasestorage.app",
-        messagingSenderId: "614730413904",
-        appId: "1:614730413904:web:a5dd478af5de30f6bede55"
-    };
-    const app = initializeApp(firebaseConfig);
+    // ═══ FIREBASE ═══
+    const app = initializeApp(FIREBASE_CONFIG);
     const db = getFirestore(app);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
-    let currentUser = null;
 
-    // ═══════ AUTH ═══════
+    // ═══ STATE ═══
+    let currentUser = null;
+    let currentMonday = getLundi(new Date());
+    let allPrevue = [];
+    let allLogs = [];
+    let unsubPrevue = null;
+    let unsubLogs = null;
+
+    // ═══ AUTH ═══
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'block';
-            document.getElementById('userEmail').textContent = user.email;
-            loadDataAndEdt();
+            if (user.photoURL) {
+                const photo = document.getElementById('userPhoto');
+                photo.src = user.photoURL;
+                photo.classList.remove('hidden');
+            }
+            loadAllData();
         } else {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('mainScreen').style.display = 'none';
@@ -481,114 +479,495 @@
     });
 
     document.getElementById('btnGoogle').addEventListener('click', async () => {
-        try {
-            await signInWithPopup(auth, googleProvider);
-        } catch (e) {
-            if (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request') {
-                await signInWithRedirect(auth, googleProvider);
-            } else {
-                console.error('Auth error:', e);
-                alert('Erreur connexion : ' + e.message);
-            }
+        try { await signInWithPopup(auth, googleProvider); }
+        catch (e) {
+            if (e.code === 'auth/popup-blocked') await signInWithRedirect(auth, googleProvider);
+            else alert('Erreur: ' + e.message);
         }
     });
-    getRedirectResult(auth).catch(e => console.error('Redirect result error:', e));
+    getRedirectResult(auth).catch(() => {});
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
-    // ═══════ TABS ═══════
-    document.querySelectorAll('.tab').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
-            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
-            btn.classList.add('active');
-            var tabName = btn.dataset.tab;
-            var sectionId = 'tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
-            document.getElementById(sectionId).classList.add('active');
+    // ═══ LOAD DATA ═══
+    function loadAllData() {
+        if (unsubPrevue) { unsubPrevue(); }
+        if (unsubLogs) { unsubLogs(); }
+
+        unsubPrevue = onSnapshot(collection(db, 'progression_prevue'), (snap) => {
+            allPrevue = [];
+            snap.forEach(d => allPrevue.push({ id: d.id, ...d.data() }));
+            allPrevue.sort((a, b) => a.classeId.localeCompare(b.classeId));
+            renderWeek();
+        }, err => console.error('prevue error:', err));
+
+        unsubLogs = onSnapshot(collection(db, 'progression_logs'), (snap) => {
+            allLogs = [];
+            snap.forEach(d => allLogs.push({ id: d.id, ...d.data() }));
+            renderWeek();
+        }, err => console.error('logs error:', err));
+
+        loadPronoteEdt();
+    }
+
+    // ═══ WEEK NAVIGATION ═══
+    document.getElementById('btnPrev').addEventListener('click', () => {
+        currentMonday = new Date(currentMonday);
+        currentMonday.setDate(currentMonday.getDate() - 7);
+        renderWeek();
+    });
+    document.getElementById('btnNext').addEventListener('click', () => {
+        currentMonday = new Date(currentMonday);
+        currentMonday.setDate(currentMonday.getDate() + 7);
+        renderWeek();
+    });
+    document.getElementById('btnToday').addEventListener('click', () => {
+        currentMonday = getLundi(new Date());
+        renderWeek();
+    });
+
+    // ═══ RENDER WEEK VIEW ═══
+    function renderWeek() {
+        const grid = document.getElementById('weekGrid');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayISO = formatDateISO(today);
+        const semType = getSemaineType(currentMonday);
+
+        // Update header
+        const vendredi = new Date(currentMonday);
+        vendredi.setDate(vendredi.getDate() + 4);
+        document.getElementById('weekLabel').innerHTML =
+            formatSemaineLabel(currentMonday) +
+            ` <span class="badge-ab badge-${semType.toLowerCase()}">${semType}</span>` +
+            `<small>${currentMonday.getFullYear()}</small>`;
+
+        // Check if entire week is vacances
+        const vacCheck = isVacances(currentMonday);
+        if (vacCheck) {
+            // Check if ALL 5 days are in vacances
+            let allVac = true;
+            for (let d = 0; d < 5; d++) {
+                const day = new Date(currentMonday);
+                day.setDate(day.getDate() + d);
+                if (!isVacances(day)) { allVac = false; break; }
+            }
+            if (allVac) {
+                grid.innerHTML = `<div class="vacances-banner"><span class="emoji">🏖️</span>Vacances — ${vacCheck.label}</div>`;
+                renderAlerts();
+                return;
+            }
+        }
+
+        grid.innerHTML = '';
+        const dayOffsets = [0, 1, 2, 3, 4]; // Mon to Fri
+        const dayNames = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+
+        for (let i = 0; i < 5; i++) {
+            const dayDate = new Date(currentMonday);
+            dayDate.setDate(dayDate.getDate() + dayOffsets[i]);
+            const dateISO = formatDateISO(dayDate);
+            const isToday = dateISO === todayISO;
+            const isPast = dayDate < today;
+
+            const col = document.createElement('div');
+            col.className = 'day-col';
+
+            // Day header
+            const header = document.createElement('div');
+            header.className = 'day-header' + (isToday ? ' today' : '');
+            header.innerHTML = `<div class="day-name">${dayNames[i]}</div><div class="day-date">${dayDate.getDate()}</div>`;
+            col.appendChild(header);
+
+            // Check special day conditions
+            const vacDay = isVacances(dayDate);
+            const ferDay = isFerie(dayDate);
+            const absDay = isAbsencePerso(dayDate);
+
+            if (vacDay) {
+                col.appendChild(createSpecialBlock('🏖️', 'Vacances', vacDay.label, 'cb-vacances'));
+                grid.appendChild(col);
+                continue;
+            }
+            if (ferDay) {
+                col.appendChild(createSpecialBlock('🎉', 'Férié', ferDay.label, 'cb-ferie'));
+                grid.appendChild(col);
+                continue;
+            }
+            if (absDay) {
+                col.appendChild(createSpecialBlock('🚫', 'Absence', absDay.label, 'cb-ferie'));
+                grid.appendChild(col);
+                continue;
+            }
+
+            // Wednesday check — no PSE courses
+            const dayOfWeek = dayDate.getDay();
+            if (dayOfWeek === 3) { // Mercredi
+                const empty = document.createElement('div');
+                empty.className = 'course-block cb-vide no-click';
+                empty.style.textAlign = 'center';
+                empty.style.minHeight = '60px';
+                empty.style.display = 'flex';
+                empty.style.alignItems = 'center';
+                empty.style.justifyContent = 'center';
+                empty.innerHTML = '<span style="font-size:13px;">—</span>';
+                col.appendChild(empty);
+                grid.appendChild(col);
+                continue;
+            }
+
+            // Get courses for this day
+            const courses = getCoursForDay(dayDate);
+
+            if (courses.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'course-block cb-vide no-click';
+                empty.style.textAlign = 'center';
+                empty.innerHTML = '<span style="font-size:12px;color:var(--muted);">Pas de cours</span>';
+                col.appendChild(empty);
+            } else {
+                courses.forEach(cours => {
+                    const block = createCourseBlock(cours, dayDate, dateISO, isPast, isToday);
+                    col.appendChild(block);
+                });
+            }
+
+            grid.appendChild(col);
+        }
+
+        renderAlerts();
+    }
+
+    function createSpecialBlock(emoji, title, sub, cssClass) {
+        const block = document.createElement('div');
+        block.className = `course-block ${cssClass} no-click`;
+        block.innerHTML = `<div style="text-align:center;padding:8px 0;">
+            <div style="font-size:20px;">${emoji}</div>
+            <div style="font-size:13px;font-weight:600;margin-top:4px;">${title}</div>
+            <div style="font-size:11px;opacity:0.8;">${sub}</div>
+        </div>`;
+        return block;
+    }
+
+    function createCourseBlock(cours, dayDate, dateISO, isPast, isToday) {
+        const classeId = cours.classe;
+        const block = document.createElement('div');
+
+        // Check PFMP for this class on this day
+        const pfmpPeriod = isPFMP(dayDate, classeId);
+        if (pfmpPeriod) {
+            block.className = 'course-block cb-pfmp no-click';
+            block.innerHTML = `
+                <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
+                <div class="cb-classe">${classeId}</div>
+                <div class="cb-module">🏭 ${pfmpPeriod.label || 'PFMP'}</div>`;
+            return block;
+        }
+
+        // Find matching log
+        const log = findLog(dateISO, classeId);
+        // Find matching prevue for this week
+        const prevue = findPrevueForWeek(classeId, dayDate);
+        // Alternance badge
+        const altBadge = cours.alternance !== 'toutes' ? `<span class="cb-badge-alt">${cours.alternance}</span>` : '';
+
+        if (log) {
+            // ── SAISIE EXISTS ──
+            const statut = (log.statut || '').toLowerCase();
+            let cssClass = 'cb-realise';
+            let icon = '✅';
+            if (statut.includes('report')) { cssClass = 'cb-reporte'; icon = '🔄'; }
+            else if (statut.includes('non') || statut.includes('annul')) { cssClass = 'cb-annule'; icon = '🚫'; }
+
+            const moduleText = log.moduleId ? cleanModuleName(log.moduleId) : '';
+            const seanceText = log.seance || '';
+            const meteoEmoji = log.meteo ? (log.meteo.emoji || '') : '';
+
+            block.className = `course-block ${cssClass}`;
+            block.innerHTML = `${altBadge}
+                <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
+                <div class="cb-classe">${classeId} ${meteoEmoji}</div>
+                <div class="cb-module">${moduleText}${seanceText ? ' — ' + seanceText : ''}</div>
+                <div class="cb-status">${icon} ${log.statut || 'Réalisé'}</div>`;
+            block.addEventListener('click', () => showLogDetail(log, cours, dateISO));
+
+        } else if (isPast || isToday) {
+            // ── PAST / TODAY WITHOUT LOG → À SAISIR ──
+            const moduleText = prevue ? cleanModuleName(prevue.module || prevue.moduleBase || '') : '';
+
+            block.className = 'course-block cb-a-saisir';
+            block.innerHTML = `${altBadge}
+                <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
+                <div class="cb-classe">${classeId}</div>
+                <div class="cb-module">${moduleText || 'À saisir'}</div>
+                <div class="cb-status">○ Non saisi</div>`;
+            block.addEventListener('click', () => {
+                window.location.href = `log.html?date=${dateISO}&classe=${classeId}`;
+            });
+
+        } else if (prevue) {
+            // ── FUTURE WITH PLAN ──
+            const moduleText = cleanModuleName(prevue.module || prevue.moduleBase || '');
+            const seanceText = prevue.seance || '';
+
+            block.className = 'course-block cb-planifie';
+            block.innerHTML = `${altBadge}
+                <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
+                <div class="cb-classe">${classeId}</div>
+                <div class="cb-module">${moduleText}${seanceText ? ' — ' + seanceText : ''}</div>
+                <div class="cb-status">📅 Planifié</div>`;
+            block.addEventListener('click', () => showPlanDetail(prevue, cours, dateISO, classeId));
+
+        } else {
+            // ── FUTURE WITHOUT PLAN ──
+            block.className = 'course-block cb-vide';
+            block.innerHTML = `${altBadge}
+                <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
+                <div class="cb-classe">${classeId}</div>
+                <div class="cb-module" style="color:var(--muted);">Non planifié</div>`;
+            block.addEventListener('click', () => showPlanDetail(null, cours, dateISO, classeId));
+        }
+
+        return block;
+    }
+
+    // ═══ FIND DATA HELPERS ═══
+    function findLog(dateISO, classeId) {
+        // docId pattern: YYYY-MM-DD_CLASSEID
+        for (let i = 0; i < allLogs.length; i++) {
+            const log = allLogs[i];
+            const logDate = log.date || '';
+            const logClasse = log.classeDocId || log.classeId || '';
+            if (logDate === dateISO && classesMatch(logClasse, classeId)) return log;
+        }
+        return null;
+    }
+
+    function findPrevueForWeek(classeId, dayDate) {
+        const dateStr = formatDateISO(dayDate);
+        // Convert to DD/MM/YYYY for matching against prevue semaines
+        const dd = String(dayDate.getDate()).padStart(2, '0');
+        const mm = String(dayDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = dayDate.getFullYear();
+        const dateFR = `${dd}/${mm}/${yyyy}`;
+
+        // Find the Monday of this week in DD/MM/YYYY format for week matching
+        const mondayOfWeek = getLundi(dayDate);
+        const mondayDD = String(mondayOfWeek.getDate()).padStart(2, '0');
+        const mondayMM = String(mondayOfWeek.getMonth() + 1).padStart(2, '0');
+        const mondayYYYY = mondayOfWeek.getFullYear();
+        const mondayStr = `${mondayDD}/${mondayMM}/${mondayYYYY}`;
+
+        for (let i = 0; i < allPrevue.length; i++) {
+            const p = allPrevue[i];
+            if (!classesMatch(p.classeId, classeId)) continue;
+            const semaines = p.semaines || [];
+            for (let j = 0; j < semaines.length; j++) {
+                const sem = semaines[j];
+                const semDate = (sem.date || '').trim();
+                // Match: semaine date is the Monday of this week
+                if (semDate === mondayStr || semDate === dateFR) {
+                    // Skip vacances/PFMP situations
+                    const sit = (sem.situation || '').toLowerCase();
+                    if (sit.includes('vacances') || sit.includes('pfmp')) continue;
+                    return sem;
+                }
+            }
+        }
+        return null;
+    }
+
+    // ═══ DETAIL MODALS ═══
+    function showLogDetail(log, cours, dateISO) {
+        const modal = document.getElementById('detailModal');
+        document.getElementById('detailTitle').textContent = `${log.classeId || cours.classe} — ${dateISO}`;
+
+        const moduleText = log.moduleId || '';
+        const seanceText = log.seance || '';
+        const statutText = log.statut || '';
+        const arretText = log.arret || '';
+        const meteo = log.meteo ? `${log.meteo.emoji || ''} ${log.meteo.label || ''}` : '';
+
+        let html = '';
+        if (moduleText) html += detailRow('Module', moduleText);
+        if (seanceText) html += detailRow('Séance', seanceText);
+        if (statutText) html += detailRow('Statut', statutText);
+        if (arretText) html += detailRow('Arrêt', arretText);
+        if (meteo) html += detailRow('Météo', meteo);
+
+        // Checklist
+        const cl = log.checklist || {};
+        const checkItems = Object.keys(cl).filter(k => cl[k]);
+        if (checkItems.length > 0) {
+            html += detailRow('Checklist', checkItems.map(k => k.replace(/_/g, ' ')).join(', '));
+        }
+
+        // CPS
+        if (log.cps) {
+            const cpsText = Object.entries(log.cps)
+                .filter(([k, v]) => v)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(', ');
+            if (cpsText) html += detailRow('CPS', cpsText);
+        }
+
+        // Notes
+        if (log.remarque) html += detailRow('Notes', log.remarque);
+
+        document.getElementById('detailContent').innerHTML = html;
+        document.getElementById('detailActions').innerHTML = `
+            <a href="log.html?date=${dateISO}&classe=${cours.classe}" class="btn-modal primary">✏️ Modifier</a>
+            <button class="btn-modal secondary" onclick="closeDetailModal()">Fermer</button>`;
+        modal.classList.add('active');
+    }
+
+    function showPlanDetail(prevue, cours, dateISO, classeId) {
+        const modal = document.getElementById('detailModal');
+        document.getElementById('detailTitle').textContent = `${classeId} — ${dateISO}`;
+
+        let html = '';
+        html += detailRow('Horaire', `${cours.heure} – ${cours.heureFin}`);
+        html += detailRow('Salle', cours.salle);
+        if (cours.alternance !== 'toutes') html += detailRow('Alternance', cours.alternance);
+
+        if (prevue) {
+            if (prevue.module || prevue.moduleBase) html += detailRow('Module prévu', prevue.module || prevue.moduleBase);
+            if (prevue.seance) html += detailRow('Séance', prevue.seance);
+            if (prevue.phase) html += detailRow('Phase', prevue.phase);
+            if (prevue.situation && prevue.situation !== 'Normal') html += detailRow('Situation', prevue.situation);
+        } else {
+            html += '<p style="color:var(--muted);font-size:13px;padding:12px 0;">Aucune planification pour cette semaine. Utilisez le Dashboard pour planifier.</p>';
+        }
+
+        document.getElementById('detailContent').innerHTML = html;
+        document.getElementById('detailActions').innerHTML = `
+            <a href="log.html?date=${dateISO}&classe=${classeId}" class="btn-modal primary">✏️ Saisir</a>
+            <a href="dashboard.html" class="btn-modal secondary">📈 Dashboard</a>`;
+        modal.classList.add('active');
+    }
+
+    function detailRow(label, value) {
+        return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value">${value}</span></div>`;
+    }
+
+    window.closeDetailModal = function() {
+        document.getElementById('detailModal').classList.remove('active');
+    };
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', (e) => {
+            if (e.target === m) m.classList.remove('active');
         });
     });
 
-    // ═══════ TOAST ═══════
-    function showToast(msg, duration) {
-        duration = duration || 2500;
-        var t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(function() { t.classList.remove('show'); }, duration);
+    // ═══ ALERTS ═══
+    function renderAlerts() {
+        const bar = document.getElementById('alertsBar');
+        const alerts = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // 1. Cours passés non saisis (cette semaine)
+        for (let d = 0; d < 5; d++) {
+            const dayDate = new Date(currentMonday);
+            dayDate.setDate(dayDate.getDate() + d);
+            if (dayDate > today) continue;
+            if (isVacances(dayDate) || isFerie(dayDate) || isAbsencePerso(dayDate)) continue;
+
+            const courses = getCoursForDay(dayDate);
+            courses.forEach(cours => {
+                if (isPFMP(dayDate, cours.classe)) return;
+                const log = findLog(formatDateISO(dayDate), cours.classe);
+                if (!log) {
+                    const daysAgo = Math.round((today - dayDate) / (24 * 60 * 60 * 1000));
+                    alerts.push({
+                        type: 'urgent',
+                        text: `${cours.classe} — non saisi` + (daysAgo > 0 ? ` (il y a ${daysAgo}j)` : ' (aujourd\'hui)')
+                    });
+                }
+            });
+        }
+
+        // 2. Copies chain alerts from all logs
+        allLogs.forEach(log => {
+            const cl = log.checklist || {};
+            if (cl.copies_ramassees && !cl.copies_corrigees) {
+                alerts.push({ type: 'warn', text: `${log.classeId} — copies à corriger` });
+            }
+            if (cl.copies_corrigees && !cl.copies_rendues) {
+                alerts.push({ type: 'info', text: `${log.classeId} — copies à rendre` });
+            }
+        });
+
+        if (alerts.length === 0) {
+            bar.style.display = 'none';
+            return;
+        }
+
+        bar.style.display = 'flex';
+        bar.innerHTML = alerts.map(a =>
+            `<span class="alert-chip ${a.type}">${a.type === 'urgent' ? '🔴' : a.type === 'warn' ? '🟠' : '🟡'} ${a.text}</span>`
+        ).join('');
     }
 
-    // ═══════ CSV PARSER ═══════
+    // ═══════════════════════════════════════════
+    // SETTINGS — CSV Import, Pronote, QR
+    // ═══════════════════════════════════════════
+
+    // Settings tabs
+    document.querySelectorAll('.settings-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('stab' + btn.dataset.stab.charAt(0).toUpperCase() + btn.dataset.stab.slice(1)).classList.add('active');
+        });
+    });
+
+    document.getElementById('btnSettings').addEventListener('click', () => {
+        document.getElementById('settingsModal').classList.add('active');
+        renderQrCode();
+    });
+
+    window.closeSettings = function() {
+        document.getElementById('settingsModal').classList.remove('active');
+    };
+
+    // ═══ CSV IMPORT ═══
     function normalizeClassToken(v) {
-        return (v || '')
-            .toString()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toUpperCase()
-            .replace(/[^A-Z0-9]/g, '');
+        return (v || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase().replace(/[^A-Z0-9]/g, '');
     }
 
     function looksLikeClassValue(v) {
         var raw = (v || '').toString().trim();
         if (!raw) return false;
-
         var lower = raw.toLowerCase();
-        if (
-            lower === 'n/a' ||
-            lower === 'na' ||
-            lower === '-' ||
-            lower.includes('vacances') ||
-            lower.includes('pfmp') ||
-            lower.includes('jour') ||
-            lower.includes('féri') ||
-            lower.includes('ferie') ||
-            lower.includes('séance') ||
-            lower.includes('seance') ||
-            lower.includes('brainstorming') ||
-            lower.includes('questionnaire') ||
-            lower.includes('évaluation') ||
-            lower.includes('evaluation') ||
-            lower.includes('correction')
-        ) {
-            return false;
-        }
-
+        if (['n/a','na','-'].includes(lower) || /vacances|pfmp|jour|féri|ferie|séance|seance|brainstorming|questionnaire|évaluation|evaluation|correction/i.test(lower)) return false;
         var norm = normalizeClassToken(raw);
         if (!norm) return false;
-
-        return /^(C[12]|B[12]|BT|CAP|BAC|TAG)/.test(norm) ||
-            /(PSR|CAN|JP|HORT|VAN|MELEC|AGO|AGORA|GATL)/.test(norm);
+        return /^(C[12]|B[12]|BT|CAP|BAC|TAG)/.test(norm) || /(PSR|CAN|JP|HORT|VAN|MELEC|AGO|AGORA|GATL)/.test(norm);
     }
 
     function buildClassDocId(v) {
-        return (v || '')
-            .toString()
-            .trim()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toUpperCase()
-            .replace(/[^A-Z0-9]+/g, '_')
-            .replace(/^_+|_+$/g, '');
+        return (v || '').toString().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     }
 
     function parseCSV(text, filename) {
-        // Detect separator
         var sep = ';';
         var lines = text.split('\n');
         if (lines.length < 2) return null;
+        var header = lines[0].split(sep).map(h => h.trim());
 
-        // Parse header
-        var header = lines[0].split(sep).map(function(h) { return h.trim(); });
-
-        // Find module column (the one that's NOT always N/A)
-        var moduleColCandidates = [];
-        var suiteColCandidates = [];
+        var moduleColCandidates = [], suiteColCandidates = [];
         for (var h = 0; h < header.length; h++) {
             if (header[h].match(/^Modules\s/i)) moduleColCandidates.push(h);
             if (header[h].match(/^Suite\s/i)) suiteColCandidates.push(h);
         }
 
-        // Find key column indices
         var colMap = {};
-        header.forEach(function(name, idx) {
+        header.forEach((name, idx) => {
             var n = name.toLowerCase().trim();
             if (n === 'semaines' || n.startsWith('semaines')) colMap.semaine = idx;
             if (n === 's') colMap.s = idx;
@@ -604,78 +983,48 @@
             if (n === 'validé' || n === 'valide') colMap.valide = idx;
             if (n.match(/évaluations? diagn/i) || n.match(/evaluations? diagn/i)) colMap.evalDiag = idx;
             if (n.match(/évaluations? form/i) || n.match(/evaluations? form/i)) colMap.evalForm = idx;
-            if (n.match(/^évaluation$/) || n.match(/^evaluation$/)) colMap.evaluation = idx;
+            if (n.match(/^évaluation$/i) || n.match(/^evaluation$/i)) colMap.evaluation = idx;
         });
 
-        // Parse rows - handle multi-line CSV values (quoted fields)
         var rows = [];
-        var currentRow = [];
-        var inQuote = false;
-        var currentField = '';
-
+        var currentRow = [], inQuote = false, currentField = '';
         for (var i = 1; i < lines.length; i++) {
             var line = lines[i];
-            if (!inQuote) {
-                currentRow = [];
-                currentField = '';
-            }
-
+            if (!inQuote) { currentRow = []; currentField = ''; }
             for (var c = 0; c < line.length; c++) {
                 var ch = line[c];
-                if (ch === '"') {
-                    inQuote = !inQuote;
-                } else if (ch === sep && !inQuote) {
-                    currentRow.push(currentField.trim());
-                    currentField = '';
-                } else {
-                    currentField += ch;
-                }
+                if (ch === '"') inQuote = !inQuote;
+                else if (ch === sep && !inQuote) { currentRow.push(currentField.trim()); currentField = ''; }
+                else currentField += ch;
             }
-
-            if (inQuote) {
-                currentField += '\n';
-                continue;
-            }
-
+            if (inQuote) { currentField += '\n'; continue; }
             currentRow.push(currentField.trim());
-            if (currentRow.length > 1 && currentRow[0]) {
-                rows.push(currentRow);
-            }
+            if (currentRow.length > 1 && currentRow[0]) rows.push(currentRow);
         }
 
-        // Determine which module column has actual data (not N/A)
         var activeModuleCol = -1;
         for (var mc = 0; mc < moduleColCandidates.length; mc++) {
             var col = moduleColCandidates[mc];
             for (var r = 0; r < Math.min(rows.length, 15); r++) {
                 var val = (rows[r][col] || '').trim();
-                if (val && val !== 'N/A' && val !== 'Vacances scolaires' && val !== 'PFMP') {
-                    activeModuleCol = col;
-                    break;
-                }
+                if (val && val !== 'N/A' && val !== 'Vacances scolaires' && val !== 'PFMP') { activeModuleCol = col; break; }
             }
             if (activeModuleCol >= 0) break;
         }
 
-        // Also find the active "suite module" column
         var activeSuiteCol = -1;
         for (var sc = 0; sc < suiteColCandidates.length; sc++) {
             var col2 = suiteColCandidates[sc];
             for (var r2 = 0; r2 < Math.min(rows.length, 20); r2++) {
                 var val2 = (rows[r2][col2] || '').trim();
-                if (val2 && val2 !== 'N/A' && val2.match(/[➩➫⇨]/)) {
-                    activeSuiteCol = col2;
-                    break;
-                }
+                if (val2 && val2 !== 'N/A' && val2.match(/[➩➫⇨]/)) { activeSuiteCol = col2; break; }
             }
             if (activeSuiteCol >= 0) break;
         }
 
-        // Detect classe from data + filename
         var classeId = '';
         var classeFromFile = filename.replace(/-Tableau.*$/i, '').replace(/\.csv$/i, '').trim();
         var classCounts = {};
-
         if (colMap.classe !== undefined) {
             for (var r3 = 0; r3 < rows.length; r3++) {
                 var cv = (rows[r3][colMap.classe] || '').trim();
@@ -683,100 +1032,49 @@
                 classCounts[cv] = (classCounts[cv] || 0) + 1;
             }
         }
-
-        var bestClass = '';
-        var bestCount = 0;
-        Object.keys(classCounts).forEach(function(k) {
-            if (classCounts[k] > bestCount) {
-                bestClass = k;
-                bestCount = classCounts[k];
-            }
-        });
+        var bestClass = '', bestCount = 0;
+        Object.keys(classCounts).forEach(k => { if (classCounts[k] > bestCount) { bestClass = k; bestCount = classCounts[k]; } });
         if (bestClass) classeId = bestClass;
+        if (looksLikeClassValue(classeFromFile)) classeId = classeFromFile;
+        if (!classeId) classeId = classeFromFile;
 
-        // If filename itself looks like a class label, prefer it (CSV column often contains N/A/noise)
-        if (looksLikeClassValue(classeFromFile)) {
-            classeId = classeFromFile;
-        }
-
-        if (!classeId) {
-            // Final fallback
-            classeId = classeFromFile;
-        }
-
-        // Detect niveau from module column header
         var niveau = 'INCONNU';
         if (activeModuleCol >= 0) {
-            var colHeader = header[activeModuleCol] || '';
-            if (colHeader.match(/CAP/i)) niveau = 'CAP';
-            else if (colHeader.match(/BACPRO\s*T/i)) niveau = 'BAC_PRO_TERM';
-            else if (colHeader.match(/BACPRO\s*1/i)) niveau = 'BAC_PRO_1ERE';
-            else if (colHeader.match(/BACPRO\s*2/i)) niveau = 'BAC_PRO_2NDE';
+            var colH = header[activeModuleCol] || '';
+            if (colH.match(/CAP/i)) niveau = 'CAP';
+            else if (colH.match(/BACPRO\s*T/i)) niveau = 'BAC_PRO_TERM';
+            else if (colH.match(/BACPRO\s*1/i)) niveau = 'BAC_PRO_1ERE';
+            else if (colH.match(/BACPRO\s*2/i)) niveau = 'BAC_PRO_2NDE';
         }
 
-        // Build semaines array
         var semaines = [];
         for (var r4 = 0; r4 < rows.length; r4++) {
             var row = rows[r4];
             var dateStr = (row[colMap.semaine] || '').trim();
             if (!dateStr) continue;
-
             var situation = (row[colMap.situation] || '').trim();
             var moduleVal = activeModuleCol >= 0 ? (row[activeModuleCol] || '').trim() : '';
             var suiteVal = activeSuiteCol >= 0 ? (row[activeSuiteCol] || '').trim() : '';
-
-            // Clean module name (remove trailing newlines)
             moduleVal = moduleVal.replace(/\n/g, ' ').trim();
             suiteVal = suiteVal.replace(/\n/g, ' ').trim();
-
-            // Skip if module is same as situation (vacances etc)
             if (moduleVal === situation) moduleVal = '';
 
-            // ── Parse phase & transition from module text ──
-            // Examples: "C3 – Les acteurs de prévention" → phase=cours
-            //           "C3 – Évaluation" → phase=evaluation
-            //           "A7 – Correction + module suivant" → phase=correction, transition=module_suivant
-            //           "Présentation PSE" → phase=presentation
-            var phase = 'cours';
-            var transition = '';
-            var moduleBase = moduleVal;
-
+            var phase = 'cours', transition = '', moduleBase = moduleVal;
             if (moduleVal) {
-                // Detect transition first (+ module suivant / + suite module)
                 var transMatch = moduleVal.match(/\+\s*(module suivant|suite module)/i);
-                if (transMatch) {
-                    transition = transMatch[1].toLowerCase().replace(/\s+/g, '_');
-                }
-
-                // Detect phase from module text
-                if (moduleVal.match(/[–\-]\s*[ÉéEe]valuation/i)) {
-                    phase = 'evaluation';
-                } else if (moduleVal.match(/[–\-]\s*Corr(ection|\.)/i)) {
-                    phase = 'correction';
-                } else if (moduleVal.match(/Pr[ée]sentation\s+PSE/i)) {
-                    phase = 'presentation';
-                } else if (moduleVal.match(/^(Évaluation|Evaluation)$/i)) {
-                    phase = 'evaluation';
-                } else if (moduleVal.match(/^Correction/i)) {
-                    phase = 'correction';
-                }
-
-                // Extract base module name (without phase/transition suffixes)
-                moduleBase = moduleVal
-                    .replace(/\s*[–\-]\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, '')
-                    .replace(/^\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, moduleVal)
-                    .trim();
-                // If the whole string was a phase keyword, keep original as moduleBase
+                if (transMatch) transition = transMatch[1].toLowerCase().replace(/\s+/g, '_');
+                if (moduleVal.match(/[–\-]\s*[ÉéEe]valuation/i)) phase = 'evaluation';
+                else if (moduleVal.match(/[–\-]\s*Corr(ection|\.)/i)) phase = 'correction';
+                else if (moduleVal.match(/Pr[ée]sentation\s+PSE/i)) phase = 'presentation';
+                else if (moduleVal.match(/^(Évaluation|Evaluation)$/i)) phase = 'evaluation';
+                else if (moduleVal.match(/^Correction/i)) phase = 'correction';
+                moduleBase = moduleVal.replace(/\s*[–\-]\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, '').trim();
                 if (!moduleBase || moduleBase === moduleVal) {
-                    // Try to extract just the module code + title
                     var codeMatch = moduleVal.match(/^([A-Z]+\d+(?:\.\d+)?)\s*[–\-]\s*/i);
-                    if (codeMatch) {
-                        moduleBase = moduleVal.replace(/\s*[–\-]\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, '').trim();
-                    }
+                    if (codeMatch) moduleBase = moduleVal.replace(/\s*[–\-]\s*(Évaluation|Evaluation|Correction|Corr\.).*$/i, '').trim();
                 }
             }
 
-            // ── Parse suite module transition type ──
             var suiteTransition = '';
             if (suiteVal) {
                 if (suiteVal.match(/Module suivant/i)) suiteTransition = 'module_suivant';
@@ -784,16 +1082,9 @@
             }
 
             var sem = {
-                date: dateStr,
-                semaine: (row[colMap.s] || '').trim(),
-                ab: (row[colMap.ab] || '').trim(),
-                situation: situation,
-                module: moduleVal || '',
-                moduleBase: moduleBase || '',
-                phase: phase,
-                transition: transition,
-                suiteModule: suiteVal || '',
-                suiteTransition: suiteTransition,
+                date: dateStr, semaine: (row[colMap.s] || '').trim(), ab: (row[colMap.ab] || '').trim(),
+                situation: situation, module: moduleVal || '', moduleBase: moduleBase || '', phase: phase,
+                transition: transition, suiteModule: suiteVal || '', suiteTransition: suiteTransition,
                 seance: colMap.seance !== undefined ? (row[colMap.seance] || '').trim() : '',
                 nbSeancesPrevues: colMap.nbSeances !== undefined ? parseInt(row[colMap.nbSeances]) || 0 : 0,
                 objectifModule: colMap.objectifModule !== undefined ? (row[colMap.objectifModule] || '').trim() : '',
@@ -801,253 +1092,58 @@
                 statut: colMap.statut !== undefined ? (row[colMap.statut] || '').trim() : '',
                 valide: colMap.valide !== undefined ? (row[colMap.valide] || '').trim().toUpperCase() === 'VRAI' : false
             };
-
-            // Add evaluation columns if present
             if (colMap.evalDiag !== undefined) sem.evalDiag = (row[colMap.evalDiag] || '').trim();
             if (colMap.evalForm !== undefined) sem.evalForm = (row[colMap.evalForm] || '').trim();
             if (colMap.evaluation !== undefined) sem.evaluation = (row[colMap.evaluation] || '').trim();
-
             semaines.push(sem);
         }
 
-        return {
-            classeId: classeId,
-            csvFilename: filename,
-            niveau: niveau,
-            semaines: semaines
-        };
+        return { classeId, csvFilename: filename, niveau, semaines };
     }
 
-    // ═══════ CSV IMPORT HANDLER ═══════
+    // CSV import handlers
     var importZone = document.getElementById('importZone');
     var fileInput = document.getElementById('fileInput');
 
-    importZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        importZone.classList.add('dragover');
-    });
-    importZone.addEventListener('dragleave', function() {
-        importZone.classList.remove('dragover');
-    });
-    importZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        importZone.classList.remove('dragover');
-        handleFiles(e.dataTransfer.files);
-    });
-    fileInput.addEventListener('change', function(e) {
-        handleFiles(e.target.files);
-    });
+    importZone.addEventListener('click', () => fileInput.click());
+    importZone.addEventListener('dragover', (e) => { e.preventDefault(); importZone.classList.add('dragover'); });
+    importZone.addEventListener('dragleave', () => importZone.classList.remove('dragover'));
+    importZone.addEventListener('drop', (e) => { e.preventDefault(); importZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
     async function handleFiles(files) {
         var progressDiv = document.getElementById('importProgress');
         progressDiv.innerHTML = '';
-
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
-            if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
-                addImportItem(progressDiv, file.name, 'Pas un CSV', 'err');
-                continue;
-            }
-
-            // Skip vierge files
-            if (file.name.toLowerCase().includes('vierge')) {
-                addImportItem(progressDiv, file.name, 'Ignoré (vierge)', 'err');
-                continue;
-            }
-
+            if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) { addItem(progressDiv, file.name, 'Pas un CSV', 'err'); continue; }
+            if (file.name.toLowerCase().includes('vierge')) { addItem(progressDiv, file.name, 'Ignoré (vierge)', 'err'); continue; }
             try {
                 var text = await file.text();
                 var parsed = parseCSV(text, file.name);
-                if (!parsed || parsed.semaines.length === 0) {
-                    addImportItem(progressDiv, file.name, 'Aucune donnée', 'err');
-                    continue;
-                }
-
-                // Save to Firestore
+                if (!parsed || parsed.semaines.length === 0) { addItem(progressDiv, file.name, 'Aucune donnée', 'err'); continue; }
                 var docId = buildClassDocId(parsed.classeId);
-                if (!docId) throw new Error('Classe invalide (docId vide)');
+                if (!docId) throw new Error('Classe invalide');
                 await setDoc(doc(db, 'progression_prevue', docId), {
-                    classeId: parsed.classeId,
-                    csvFilename: parsed.csvFilename,
-                    niveau: parsed.niveau,
-                    semaines: parsed.semaines,
-                    importedAt: serverTimestamp(),
-                    importedBy: currentUser.uid
+                    classeId: parsed.classeId, csvFilename: parsed.csvFilename, niveau: parsed.niveau,
+                    semaines: parsed.semaines, importedAt: serverTimestamp(), importedBy: currentUser.uid
                 });
-
-                addImportItem(progressDiv, parsed.classeId + ' (' + parsed.semaines.length + ' sem.)', '✓ Importé', 'ok');
+                addItem(progressDiv, parsed.classeId + ' (' + parsed.semaines.length + ' sem.)', '✓ Importé', 'ok');
             } catch (err) {
-                console.error('Import error:', err);
-                addImportItem(progressDiv, file.name, 'Erreur: ' + err.message, 'err');
+                addItem(progressDiv, file.name, 'Erreur: ' + err.message, 'err');
             }
         }
-
         showToast('Import terminé !');
-        loadData();
     }
 
-    function addImportItem(container, name, status, type) {
+    function addItem(container, name, status, type) {
         var div = document.createElement('div');
         div.className = 'import-item';
-        div.innerHTML = '<span>' + name + '</span><span class="status ' + type + '">' + status + '</span>';
+        div.innerHTML = `<span>${name}</span><span class="status ${type}">${status}</span>`;
         container.appendChild(div);
     }
 
-    // ═══════ LOAD DATA (real-time) ═══════
-    var allPrevue = [];
-    var allLogs = [];
-    var unsubPrevue = null;
-    var unsubLogs = null;
-
-    function refreshIndexViews() {
-        allLogs.sort(function(a, b) {
-            var ta = a.timestamp ? a.timestamp.seconds : 0;
-            var tb = b.timestamp ? b.timestamp.seconds : 0;
-            return tb - ta;
-        });
-        renderOverview();
-        renderClasses();
-        renderImported();
-    }
-
-    function loadData() {
-        if (unsubPrevue) { unsubPrevue(); unsubPrevue = null; }
-        if (unsubLogs) { unsubLogs(); unsubLogs = null; }
-
-        unsubPrevue = onSnapshot(collection(db, 'progression_prevue'), function(snap) {
-            allPrevue = [];
-            snap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
-            refreshIndexViews();
-        }, function(err) { console.error('onSnapshot prevue error:', err); });
-
-        unsubLogs = onSnapshot(collection(db, 'progression_logs'), function(snap) {
-            allLogs = [];
-            snap.forEach(function(d) { allLogs.push({ id: d.id, ...d.data() }); });
-            refreshIndexViews();
-        }, function(err) { console.error('onSnapshot logs error:', err); });
-    }
-
-    // ═══════ RENDER OVERVIEW ═══════
-    function renderOverview() {
-        // Stats
-        document.getElementById('statClasses').textContent = allPrevue.length;
-        document.getElementById('statLogs').textContent = allLogs.length;
-
-        // Count validated weeks
-        var totalValidees = 0;
-        allPrevue.forEach(function(p) {
-            (p.semaines || []).forEach(function(s) {
-                if (s.valide) totalValidees++;
-            });
-        });
-        document.getElementById('statValidees').textContent = totalValidees;
-
-        // Alerts
-        var alerts = [];
-        allLogs.forEach(function(log) {
-            var cl = log.checklist || {};
-            if (cl.copies_ramassees && !cl.copies_corrigees) {
-                alerts.push({ type: 'warn', text: log.classeId + ' — Copies à corriger (' + log.date + ')' });
-            }
-            if (cl.copies_corrigees && !cl.copies_rendues) {
-                alerts.push({ type: 'warn', text: log.classeId + ' — Copies à rendre (' + log.date + ')' });
-            }
-            if (cl.eval_passee && !cl.eval_corrigee) {
-                alerts.push({ type: 'err', text: log.classeId + ' — Évaluation à corriger (' + log.date + ')' });
-            }
-            if (cl.eval_corrigee && !cl.eval_rendue) {
-                alerts.push({ type: 'warn', text: log.classeId + ' — Évaluation à rendre (' + log.date + ')' });
-            }
-        });
-
-        document.getElementById('statAlertes').textContent = alerts.length;
-
-        var alertsCard = document.getElementById('alertsCard');
-        var alertsList = document.getElementById('alertsList');
-        if (alerts.length > 0) {
-            alertsCard.style.display = 'block';
-            document.getElementById('alertsCount').textContent = alerts.length;
-            alertsList.innerHTML = '';
-            alerts.forEach(function(a) {
-                var div = document.createElement('div');
-                div.className = 'alert-item ' + a.type;
-                div.innerHTML = '<span class="alert-icon">' + (a.type === 'err' ? '🔴' : '🟡') + '</span>' + a.text;
-                alertsList.appendChild(div);
-            });
-        } else {
-            alertsCard.style.display = 'none';
-        }
-
-        // Recent logs
-        var recentDiv = document.getElementById('recentList');
-        if (allLogs.length === 0) {
-            recentDiv.innerHTML = '<div class="empty"><div class="icon">📝</div><p>Aucune saisie pour l\'instant.</p></div>';
-            return;
-        }
-
-        recentDiv.innerHTML = '';
-        var shown = allLogs.slice(0, 10);
-        shown.forEach(function(log) {
-            var div = document.createElement('div');
-            div.className = 'log-item';
-            var dateDisplay = log.date || '';
-            div.innerHTML = '<div class="log-badge ' + (log.statut || '') + '"></div>' +
-                '<div class="log-info">' +
-                '<div class="log-classe">' + (log.classeId || '') + '</div>' +
-                '<div class="log-module">' + (log.moduleId || '') + ' — ' + (log.seance || '') + '</div>' +
-                '</div>' +
-                '<div class="log-date">' + dateDisplay + '</div>';
-            recentDiv.appendChild(div);
-        });
-    }
-
-    // ═══════ RENDER CLASSES ═══════
-    function renderClasses() {
-        var container = document.getElementById('classesList');
-        if (allPrevue.length === 0) {
-            container.innerHTML = '<div class="empty"><div class="icon">📥</div><p>Importez d\'abord vos CSV Numbers.</p></div>';
-            return;
-        }
-
-        container.innerHTML = '';
-        allPrevue.sort(function(a, b) { return a.classeId.localeCompare(b.classeId); });
-        allPrevue.forEach(function(p) {
-            var div = document.createElement('div');
-            div.className = 'class-card';
-            var niveauClass = p.niveau === 'CAP' ? 'cap' : 'bac';
-            var niveauLabel = p.niveau === 'CAP' ? 'CAP' : 'BAC PRO';
-            div.innerHTML = '<span class="class-name">' + p.classeId + '</span>' +
-                '<span class="class-badge ' + niveauClass + '">' + niveauLabel + '</span>';
-            container.appendChild(div);
-        });
-    }
-
-    // ═══════ RENDER IMPORTED ═══════
-    function renderImported() {
-        var card = document.getElementById('importedCard');
-        var list = document.getElementById('importedList');
-        if (allPrevue.length === 0) {
-            card.style.display = 'none';
-            return;
-        }
-        card.style.display = 'block';
-        document.getElementById('importedCount').textContent = allPrevue.length;
-        list.innerHTML = '';
-        allPrevue.forEach(function(p) {
-            var nbNormal = (p.semaines || []).filter(function(s) { return s.situation === 'Normal'; }).length;
-            var nbValide = (p.semaines || []).filter(function(s) { return s.valide; }).length;
-            var div = document.createElement('div');
-            div.className = 'import-item';
-            div.innerHTML = '<span>' + p.classeId + ' — ' + p.niveau + ' (' + nbNormal + ' cours, ' + nbValide + ' validés)</span>' +
-                '<span class="status ok">✓</span>';
-            list.appendChild(div);
-        });
-    }
-
-    // ═══════════════════════════════════════════
-    // EMPLOI DU TEMPS — PRONOTE iCal
-    // ═══════════════════════════════════════════
-
+    // ═══ PRONOTE SYNC ═══
     const ICS_URL = 'https://0692390y.index-education.net/pronote/ical/mesinformations.ics?icalsecurise=5FCC8714D0288D0C735DBB51F2A682873D9407D68F403E748C4860B26B18CFA16BE48C43C48C24A416FA30C689813A61&version=2025.2.9&param=900A75DF9ED8C62E212781A9E4DCC937';
     const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
@@ -1056,289 +1152,111 @@
     async function syncPronote() {
         var btn = document.getElementById('btnSync');
         var status = document.getElementById('syncStatus');
-        btn.disabled = true;
-        btn.textContent = '⏳ Synchronisation...';
-        status.textContent = 'Chargement...';
-
+        btn.disabled = true; btn.textContent = '⏳ Synchronisation...'; status.textContent = 'Chargement...';
         try {
             var response = await fetch(CORS_PROXY + encodeURIComponent(ICS_URL));
             if (!response.ok) throw new Error('HTTP ' + response.status);
             var icsText = await response.text();
-
             var events = parseICS(icsText);
             if (events.length === 0) throw new Error('Aucun événement trouvé');
-
-            // Save to Firestore
             await setDoc(doc(db, 'progression_config', 'emploi_du_temps'), {
-                events: events,
-                syncedAt: serverTimestamp(),
-                syncedBy: currentUser.uid,
-                eventCount: events.length
+                events, syncedAt: serverTimestamp(), syncedBy: currentUser.uid, eventCount: events.length
             });
-
-            status.textContent = '✅ ' + events.length + ' cours synchronisés (' + new Date().toLocaleString('fr-FR') + ')';
+            status.textContent = '✅ ' + events.length + ' cours synchronisés';
             showToast('✅ ' + events.length + ' cours synchronisés !');
-            renderEdt(events);
-
         } catch (err) {
-            console.error('Sync error:', err);
             status.textContent = '❌ Erreur: ' + err.message;
-            showToast('Erreur synchronisation');
         }
-
-        btn.disabled = false;
-        btn.textContent = '🔄 Synchroniser Pronote';
+        btn.disabled = false; btn.textContent = '🔄 Synchroniser Pronote';
     }
 
     function parseICS(text) {
         var events = [];
         var blocks = text.split('BEGIN:VEVENT');
-
         for (var i = 1; i < blocks.length; i++) {
             var block = blocks[i].split('END:VEVENT')[0];
-            var ev = {};
-
-            var lines = block.split('\n');
-            var currentKey = '';
-            var currentVal = '';
-
+            var ev = {}, lines = block.split('\n'), currentKey = '', currentVal = '';
             for (var j = 0; j < lines.length; j++) {
                 var line = lines[j].replace(/\r$/, '');
-                // Continuation line (starts with space or tab)
-                if (line.match(/^[\s\t]/)) {
-                    currentVal += line.substring(1);
-                    continue;
-                }
-                // Save previous field
-                if (currentKey) {
-                    ev[currentKey] = currentVal;
-                }
-                // Parse new field
+                if (line.match(/^[\s\t]/)) { currentVal += line.substring(1); continue; }
+                if (currentKey) ev[currentKey] = currentVal;
                 var colonIdx = line.indexOf(':');
                 if (colonIdx > 0) {
                     var rawKey = line.substring(0, colonIdx);
-                    // Remove parameters (e.g., DTSTART;TZID=...)
                     var semiIdx = rawKey.indexOf(';');
                     currentKey = semiIdx > 0 ? rawKey.substring(0, semiIdx) : rawKey;
                     currentVal = line.substring(colonIdx + 1);
                 }
             }
             if (currentKey) ev[currentKey] = currentVal;
-
-            // Parse dates
             var dtStart = parseICSDate(ev.DTSTART || '');
             var dtEnd = parseICSDate(ev.DTEND || '');
             var summary = (ev.SUMMARY || '').replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
             var location = (ev.LOCATION || '').replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
             var description = (ev.DESCRIPTION || '').replace(/\\,/g, ',').replace(/\\n/g, '\n').trim();
-
             if (!dtStart || !summary) continue;
-
-            // Extract classe from description or summary
             var classe = '';
             var descLines = description.split('\n');
             for (var k = 0; k < descLines.length; k++) {
-                var dl = descLines[k].trim();
-                if (dl.match(/^(C[12]|B[12T]|CPSE|BPSE|TAG)/)) {
-                    classe = dl;
-                    break;
-                }
+                if (descLines[k].trim().match(/^(C[12]|B[12T]|CPSE|BPSE|TAG)/)) { classe = descLines[k].trim(); break; }
             }
-            // Also check summary
-            if (!classe) {
-                var sumMatch = summary.match(/(C[12]\w+|B[12T]\w+|CPSE\d|BPSE\d|TAG\w+)/);
-                if (sumMatch) classe = sumMatch[1];
-            }
-
-            // Extract salle from location
+            if (!classe) { var sumMatch = summary.match(/(C[12]\w+|B[12T]\w+|CPSE\d|BPSE\d|TAG\w+)/); if (sumMatch) classe = sumMatch[1]; }
             var salle = location.replace(/^SALLE\s*/i, '').trim();
-
-            events.push({
-                start: dtStart.toISOString(),
-                end: dtEnd ? dtEnd.toISOString() : '',
-                summary: summary,
-                location: salle,
-                classe: classe,
-                description: description.substring(0, 200)
-            });
+            events.push({ start: dtStart.toISOString(), end: dtEnd ? dtEnd.toISOString() : '', summary, location: salle, classe, description: description.substring(0, 200) });
         }
-
         return events;
     }
 
     function parseICSDate(str) {
         if (!str) return null;
-        // Format: 20250901T073000Z or 20250901T093000
         str = str.replace(/[^\dTZ]/g, '');
         if (str.length < 15) return null;
-        var y = parseInt(str.substring(0, 4));
-        var m = parseInt(str.substring(4, 6)) - 1;
-        var d = parseInt(str.substring(6, 8));
-        var h = parseInt(str.substring(9, 11));
-        var min = parseInt(str.substring(11, 13));
-        var s = parseInt(str.substring(13, 15));
-
-        if (str.endsWith('Z')) {
-            return new Date(Date.UTC(y, m, d, h, min, s));
-        }
-        return new Date(y, m, d, h, min, s);
+        var y = parseInt(str.substring(0,4)), m = parseInt(str.substring(4,6))-1, d = parseInt(str.substring(6,8));
+        var h = parseInt(str.substring(9,11)), min = parseInt(str.substring(11,13)), s = parseInt(str.substring(13,15));
+        return str.endsWith('Z') ? new Date(Date.UTC(y,m,d,h,min,s)) : new Date(y,m,d,h,min,s);
     }
 
-    // Load EDT from Firestore on startup
-    async function loadEdt() {
+    async function loadPronoteEdt() {
         try {
             var edtDoc = await getDoc(doc(db, 'progression_config', 'emploi_du_temps'));
             if (edtDoc.exists()) {
                 var data = edtDoc.data();
                 var syncDate = data.syncedAt ? new Date(data.syncedAt.seconds * 1000).toLocaleString('fr-FR') : '';
                 document.getElementById('syncStatus').textContent = '✅ ' + (data.eventCount || 0) + ' cours (' + syncDate + ')';
-                renderEdt(data.events || []);
             }
-        } catch (e) { console.error('loadEdt error:', e); }
+        } catch (e) {}
     }
 
-    function renderEdt(events) {
-        var container = document.getElementById('edtContent');
-        if (!events || events.length === 0) {
-            container.innerHTML = '<div class="empty"><div class="icon">📅</div><p>Aucun cours.</p></div>';
-            return;
-        }
-
-        // Group by day
-        var byDay = {};
-        var jourNoms = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-        var now = new Date();
-
-        events.forEach(function(ev) {
-            var d = new Date(ev.start);
-            var key = d.toISOString().split('T')[0];
-            if (!byDay[key]) byDay[key] = [];
-            byDay[key].push(ev);
-        });
-
-        // Sort days
-        var days = Object.keys(byDay).sort();
-
-        // Find today and this week
-        var todayKey = now.toISOString().split('T')[0];
-        var weekStart = new Date(now);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-        var weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        var weekStartKey = weekStart.toISOString().split('T')[0];
-        var weekEndKey = weekEnd.toISOString().split('T')[0];
-
-        // Show this week's events
-        var weekDays = days.filter(function(d) { return d >= weekStartKey && d <= weekEndKey; });
-        if (weekDays.length === 0) {
-            // Show next available days
-            var futureDays = days.filter(function(d) { return d >= todayKey; });
-            weekDays = futureDays.slice(0, 5);
-        }
-
-        container.innerHTML = '';
-
-        if (weekDays.length === 0) {
-            container.innerHTML = '<div class="empty"><div class="icon">📅</div><p>Aucun cours cette semaine.</p></div>';
-            return;
-        }
-
-        weekDays.forEach(function(dayKey) {
-            var dayEvents = byDay[dayKey];
-            dayEvents.sort(function(a, b) { return a.start.localeCompare(b.start); });
-
-            var d = new Date(dayKey + 'T12:00:00');
-            var dayName = jourNoms[d.getDay()];
-            var dateStr = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-            var isToday = dayKey === todayKey;
-
-            var group = document.createElement('div');
-            group.className = 'edt-day-group';
-            group.innerHTML = '<div class="edt-day-title">' +
-                (isToday ? '📍 ' : '') + dayName.charAt(0).toUpperCase() + dayName.slice(1) + ' ' + dateStr +
-                (isToday ? ' (aujourd\'hui)' : '') + '</div>';
-
-            dayEvents.forEach(function(ev) {
-                var startDate = new Date(ev.start);
-                var endDate = ev.end ? new Date(ev.end) : null;
-                var heure = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                var heureFin = endDate ? endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
-
-                var isNow = isToday && now >= startDate && endDate && now <= endDate;
-                var isPast = isToday && endDate && now > endDate;
-
-                var slot = document.createElement('div');
-                slot.className = 'edt-slot' + (isNow ? ' is-now' : '') + (isPast ? ' is-past' : '');
-                slot.innerHTML =
-                    '<div class="edt-heure">' + heure + (heureFin ? '<br><span style="font-size:0.8em;color:var(--muted);">' + heureFin + '</span>' : '') + '</div>' +
-                    '<div class="edt-info">' +
-                        '<div class="edt-classe">' + (ev.classe || ev.summary) + '</div>' +
-                        '<div class="edt-matiere">' + ev.summary + '</div>' +
-                    '</div>' +
-                    (ev.location ? '<div class="edt-salle">' + ev.location + '</div>' : '');
-
-                group.appendChild(slot);
-            });
-
-            container.appendChild(group);
-        });
-    }
-
-    // ═══════════════════════════════════════════
-    // QR CODES GENERATOR
-    // ═══════════════════════════════════════════
-
+    // ═══ QR CODE ═══
     var BASE_URL = 'https://preventionsanteenvironnement.github.io/CockpitProgression/';
 
-    var QR_ROOMS = [
-        { room: '', label: 'QR Universel', desc: 'Détecte automatiquement la classe via Pronote (heure + jour)', primary: true }
-    ];
-
-    function renderQrCodes() {
-        var grid = document.getElementById('qrGrid');
-        grid.innerHTML = '';
-
-        QR_ROOMS.forEach(function(r) {
-            var url = BASE_URL + 'log.html' + (r.room ? '?room=' + r.room : '');
-            var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&data=' + encodeURIComponent(url);
-
-            var card = document.createElement('div');
-            card.className = 'qr-card';
-            if (r.primary) {
-                card.style.borderColor = 'var(--primary)';
-                card.style.background = 'var(--primary-light)';
-            }
-            card.innerHTML =
-                (r.primary ? '<div style="font-size:0.7em;font-weight:700;color:var(--primary);margin-bottom:6px;">⭐ RECOMMANDE</div>' : '') +
-                '<h3>' + r.label + '</h3>' +
-                '<div class="qr-sub">' + r.desc + '</div>' +
-                '<img src="' + qrApiUrl + '" alt="QR ' + r.label + '" width="200" height="200">' +
-                '<div class="qr-url">' + url + '</div>' +
-                '<button class="btn-print" onclick="printSingleQr(this)">🖨️ Imprimer</button>';
-
-            grid.appendChild(card);
-        });
+    function renderQrCode() {
+        var url = BASE_URL + 'log.html';
+        var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&data=' + encodeURIComponent(url);
+        document.getElementById('qrCard').innerHTML = `
+            <h4>QR Universel</h4>
+            <div class="qr-sub">Détecte automatiquement la classe via Pronote</div>
+            <img src="${qrApiUrl}" alt="QR Code" width="200" height="200">
+            <div class="qr-url">${url}</div>
+            <button class="btn-print" onclick="printQr()">🖨️ Imprimer</button>`;
     }
 
-    window.printSingleQr = function(btn) {
-        var card = btn.closest('.qr-card');
-        var title = card.querySelector('h3').textContent;
-        var imgSrc = card.querySelector('img').src;
-        var url = card.querySelector('.qr-url').textContent;
+    window.printQr = function() {
+        var url = BASE_URL + 'log.html';
+        var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&data=' + encodeURIComponent(url);
         var w = window.open('', '_blank');
-        w.document.write('<html><head><title>QR ' + title + '</title>' +
-            '<style>body{font-family:sans-serif;text-align:center;padding:40px;}h1{font-size:2em;}p{color:#666;font-size:0.9em;word-break:break-all;}</style></head>' +
-            '<body><h1>' + title + '</h1><img src="' + imgSrc + '" width="300" height="300"><p>' + url + '</p>' +
+        w.document.write('<html><head><title>QR CockpitPSE</title><style>body{font-family:sans-serif;text-align:center;padding:40px;}h1{font-size:2em;}p{color:#666;font-size:0.9em;word-break:break-all;}</style></head>' +
+            '<body><h1>Saisie PSE</h1><img src="' + qrApiUrl + '" width="300" height="300"><p>' + url + '</p>' +
             '<script>setTimeout(function(){window.print();},500)<\/script></body></html>');
     };
 
-    // Init QR codes on load
-    renderQrCodes();
-
-    // ═══════ LOAD EDT ON STARTUP ═══════
-    async function loadDataAndEdt() {
-        await loadData();
-        await loadEdt();
+    // ═══ TOAST ═══
+    function showToast(msg, duration) {
+        duration = duration || 2500;
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), duration);
     }
 
 </script>

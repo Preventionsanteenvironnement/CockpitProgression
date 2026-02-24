@@ -7,20 +7,22 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-light: #ecfdf5;
-            --success: #16a34a;
-            --success-light: #dcfce7;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --surface: #1e293b;
+            --surface-2: #334155;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: rgba(99,102,241,0.15);
+            --success: #10b981;
+            --success-light: rgba(16,185,129,0.15);
             --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --danger: #dc2626;
-            --danger-light: #fee2e2;
-            --border: #e2e8f0;
+            --warning-light: rgba(245,158,11,0.15);
+            --danger: #ef4444;
+            --danger-light: rgba(239,68,68,0.15);
+            --border: #334155;
             --radius: 14px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,8 +40,8 @@
         }
         .login-card {
             background: var(--card); border-radius: 20px; padding: 40px 30px;
-            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            max-width: 350px; width: 100%;
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 350px; width: 100%; border: 1px solid var(--border);
         }
         .login-icon { font-size: 3em; margin-bottom: 12px; }
         .login-card h2 { font-size: 1.3em; font-weight: 800; margin-bottom: 6px; }
@@ -47,10 +49,10 @@
         .btn-google {
             display: inline-flex; align-items: center; gap: 10px;
             padding: 12px 25px; border: 2px solid var(--border); border-radius: 50px;
-            background: white; font-size: 0.95em; font-weight: 600; cursor: pointer;
+            background: var(--surface-2); color: var(--text); font-size: 0.95em; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: all 0.2s;
         }
-        .btn-google:hover { border-color: var(--primary); }
+        .btn-google:hover { border-color: var(--primary); background: var(--primary-light); }
 
         /* ── HEADER ── */
         .page-header {
@@ -90,7 +92,7 @@
             width: 100%; padding: 14px 40px 14px 14px;
             border: 2px solid var(--border); border-radius: 12px;
             font-size: 1em; font-family: inherit; margin-bottom: 14px;
-            background: white; color: var(--text);
+            background: var(--surface-2); color: var(--text);
             -webkit-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 12px center; background-size: 20px;
@@ -103,37 +105,37 @@
         }
         .seance-btn {
             padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px;
-            background: white; font-size: 0.8em; font-weight: 600; cursor: pointer;
+            background: var(--surface-2); font-size: 0.8em; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: all 0.15s; color: var(--text);
             -webkit-tap-highlight-color: transparent; flex-shrink: 0;
         }
         .seance-btn:active { transform: scale(0.95); }
-        .seance-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
+        .seance-btn.selected { border-color: var(--primary); background: var(--primary-light); color: #818cf8; }
 
         /* ── PHASE SELECTOR ── */
         .phase-grid { display: flex; gap: 8px; margin-bottom: 14px; }
         .phase-btn {
             flex: 1; padding: 10px 8px; border: 2px solid var(--border); border-radius: 10px;
-            background: white; font-size: 0.8em; font-weight: 600; cursor: pointer;
+            background: var(--surface-2); font-size: 0.8em; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: all 0.15s; color: var(--muted); text-align: center;
             -webkit-tap-highlight-color: transparent;
         }
         .phase-btn:active { transform: scale(0.95); }
-        .phase-btn.selected { border-color: #6366f1; background: #e0e7ff; color: #4338ca; }
+        .phase-btn.selected { border-color: #6366f1; background: var(--primary-light); color: #818cf8; }
         .phase-btn .phase-icon { display: block; font-size: 1.2em; margin-bottom: 2px; }
 
         /* ── MODULE SUIVANT ── */
         .module-suivant-toggle {
             display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
             padding: 10px 14px; border-radius: 10px; border: 2px dashed var(--border);
-            background: white; cursor: pointer; transition: all 0.15s;
+            background: var(--surface); cursor: pointer; transition: all 0.15s;
             font-size: 0.82em; font-weight: 600; color: var(--muted);
             -webkit-tap-highlight-color: transparent;
         }
         .module-suivant-toggle:active { transform: scale(0.98); }
-        .module-suivant-toggle.active { border-color: #6366f1; border-style: solid; background: #e0e7ff; color: #4338ca; }
+        .module-suivant-toggle.active { border-color: #6366f1; border-style: solid; background: var(--primary-light); color: #818cf8; }
         #moduleSuivantSection {
-            padding: 12px; border-radius: 10px; background: #f8fafc;
+            padding: 12px; border-radius: 10px; background: var(--bg);
             border: 1px solid var(--border); margin-bottom: 14px;
         }
         #moduleSuivantSection select { width: 100%; margin-bottom: 10px; }
@@ -141,15 +143,15 @@
             display: inline-block; padding: 2px 8px; border-radius: 6px;
             font-size: 0.7em; font-weight: 600; margin-left: 6px;
         }
-        .phase-badge.cours { background: #dcfce7; color: #166534; }
+        .phase-badge.cours { background: var(--success-light); color: #166534; }
         .phase-badge.evaluation { background: #fef3c7; color: #92400e; }
-        .phase-badge.correction { background: #e0e7ff; color: #4338ca; }
+        .phase-badge.correction { background: var(--primary-light); color: #818cf8; }
 
         /* ── STATUS BUTTONS ── */
         .status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
         .status-btn {
             padding: 18px 8px; border: 3px solid var(--border);
-            border-radius: 14px; background: white; cursor: pointer;
+            border-radius: 14px; background: var(--surface-2); cursor: pointer;
             text-align: center; transition: all 0.15s; font-family: inherit;
             -webkit-tap-highlight-color: transparent;
         }
@@ -158,7 +160,7 @@
         .status-btn .label { font-size: 0.72em; font-weight: 700; color: var(--muted); }
         .status-btn.selected.s-realise { border-color: var(--success); background: var(--success-light); }
         .status-btn.selected.s-realise .label { color: var(--success); }
-        .status-btn.selected.s-prevu { border-color: #6366f1; background: #e0e7ff; }
+        .status-btn.selected.s-prevu { border-color: #6366f1; background: var(--primary-light); }
         .status-btn.selected.s-prevu .label { color: #6366f1; }
         .status-btn.selected.s-reporte { border-color: var(--warning); background: var(--warning-light); }
         .status-btn.selected.s-reporte .label { color: #92400e; }
@@ -169,7 +171,7 @@
         .situation-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
         .situation-btn {
             padding: 8px 14px; border: 2px solid var(--border); border-radius: 20px;
-            background: white; font-size: 0.78em; font-weight: 600; cursor: pointer;
+            background: var(--surface-2); font-size: 0.78em; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: all 0.15s; color: var(--muted);
         }
         .situation-btn.selected { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
@@ -178,7 +180,7 @@
         .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .check-btn {
             padding: 12px 10px; border: 2px solid var(--border);
-            border-radius: 10px; background: white; cursor: pointer;
+            border-radius: 10px; background: var(--surface-2); cursor: pointer;
             text-align: center; font-size: 0.78em; font-weight: 600;
             transition: all 0.15s; font-family: inherit; color: var(--muted);
             -webkit-tap-highlight-color: transparent;
@@ -191,7 +193,7 @@
         .stepper { display: flex; align-items: center; gap: 20px; margin-bottom: 14px; }
         .stepper-btn {
             width: 52px; height: 52px; border-radius: 50%;
-            border: 2px solid var(--border); background: white;
+            border: 2px solid var(--border); background: var(--surface-2);
             font-size: 1.5em; cursor: pointer; display: flex;
             align-items: center; justify-content: center;
             font-family: inherit; transition: all 0.15s;
@@ -204,7 +206,7 @@
         .quality-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .quality-btn {
             padding: 14px 8px; border: 2px solid var(--border);
-            border-radius: 12px; background: white; cursor: pointer;
+            border-radius: 12px; background: var(--surface-2); cursor: pointer;
             text-align: center; font-family: inherit; transition: all 0.15s;
             -webkit-tap-highlight-color: transparent;
         }
@@ -227,8 +229,9 @@
         /* ── SAVE BAR ── */
         .save-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
-            padding: 14px 15px; background: white;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 100;
+            padding: 14px 15px; background: var(--surface);
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3); z-index: 100;
         }
         .btn-save {
             display: flex; align-items: center; justify-content: center;
@@ -236,7 +239,7 @@
             padding: 18px; border: none; border-radius: var(--radius);
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white; font-size: 1.1em; font-weight: 800; cursor: pointer;
-            font-family: inherit; box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+            font-family: inherit; box-shadow: 0 4px 15px rgba(99,102,241,0.3);
             transition: all 0.15s;
         }
         .btn-save:active { transform: scale(0.98); }
@@ -253,7 +256,7 @@
         .valide-toggle {
             display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
             padding: 14px; border-radius: 12px; border: 3px solid var(--border);
-            background: white; cursor: pointer; transition: all 0.15s;
+            background: var(--surface-2); cursor: pointer; transition: all 0.15s;
             -webkit-tap-highlight-color: transparent;
         }
         .valide-toggle:active { transform: scale(0.98); }
@@ -268,7 +271,7 @@
         .cps-btns { display: flex; gap: 6px; flex: 1; }
         .cps-btn {
             flex: 1; padding: 8px 4px; border: 2px solid var(--border); border-radius: 10px;
-            background: white; cursor: pointer; text-align: center; font-size: 1.4em;
+            background: var(--surface-2); cursor: pointer; text-align: center; font-size: 1.4em;
             transition: all 0.15s; -webkit-tap-highlight-color: transparent;
         }
         .cps-btn:active { transform: scale(0.92); }
@@ -277,7 +280,7 @@
         /* ── MISSED REMINDER ── */
         .missed-banner {
             padding: 14px; border-radius: 12px; margin-bottom: 10px;
-            background: #fff7ed; border: 2px solid #fb923c; cursor: pointer;
+            background: rgba(251,146,60,0.1); border: 2px solid #fb923c; cursor: pointer;
             transition: all 0.15s; -webkit-tap-highlight-color: transparent;
         }
         .missed-banner:active { transform: scale(0.98); }
@@ -288,7 +291,7 @@
         .todo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
         .todo-btn {
             padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px;
-            background: white; font-size: 0.78em; font-weight: 600; cursor: pointer;
+            background: var(--surface-2); font-size: 0.78em; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: all 0.15s; color: var(--text);
             -webkit-tap-highlight-color: transparent;
         }
@@ -300,7 +303,7 @@
         /* ── PRONOTE REMINDER ── */
         .pronote-banner {
             padding: 14px; border-radius: 12px; margin-bottom: 10px;
-            background: #fff7ed; border: 2px solid #fb923c;
+            background: rgba(251,146,60,0.1); border: 2px solid #fb923c;
         }
         .pronote-banner .reminder-title { font-weight: 700; font-size: 0.85em; color: #c2410c; margin-bottom: 4px; }
         .pronote-banner .reminder-detail { font-size: 0.78em; color: #9a3412; }
@@ -349,7 +352,7 @@
         .history-card {
             padding: 10px 12px; border-radius: 10px;
             border: 1px solid var(--border); margin-bottom: 6px;
-            background: white; font-size: 0.82em;
+            background: var(--surface-2); font-size: 0.82em;
         }
         .history-card:first-child { border-color: var(--primary); background: #eff6ff; }
         .history-card-header {
@@ -378,7 +381,7 @@
         }
         .nav-arrow {
             width: 44px; height: 44px; border-radius: 50%;
-            border: 2px solid var(--border); background: white;
+            border: 2px solid var(--border); background: var(--surface-2);
             font-size: 1.2em; cursor: pointer; display: flex;
             align-items: center; justify-content: center;
             font-family: inherit; transition: all 0.15s;
@@ -412,7 +415,7 @@
         }
 
         /* ── MULTI-CHIP (remplace seance-btn) ── */
-        .chip { padding:9px 14px; border:2px solid var(--border); border-radius:22px; background:white; font-size:.8em; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; color:var(--muted); -webkit-tap-highlight-color:transparent; white-space:nowrap; }
+        .chip { padding:9px 14px; border:2px solid var(--border); border-radius:22px; background:var(--surface-2); font-size:.8em; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; color:var(--muted); -webkit-tap-highlight-color:transparent; white-space:nowrap; }
         .chip:active { transform:scale(.95); }
         .chip.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
         .chip.autre { border-style:dashed; }
@@ -421,7 +424,7 @@
         .chip-autre-input:focus { outline:none; }
 
         /* ── HISTORIQUE TOP ── */
-        .history-compact { padding:11px 13px; border-radius:10px; border:1px solid var(--border); background:white; margin-bottom:7px; font-size:.82em; }
+        .history-compact { padding:11px 13px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); margin-bottom:7px; font-size:.82em; }
         .history-compact:first-child { border-color:var(--primary); background:#f0fdf9; }
         .history-compact-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
         .history-compact-date { font-weight:800; color:var(--muted); }
@@ -446,13 +449,13 @@
         .quality-dim { margin-bottom:10px; }
         .quality-dim-title { font-size:.72em; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
         .quality-chips { display:flex; flex-wrap:wrap; gap:6px; }
-        .q-chip { padding:7px 12px; border:2px solid var(--border); border-radius:18px; background:white; font-size:.77em; font-weight:700; cursor:pointer; font-family:inherit; color:var(--muted); transition:all .15s; -webkit-tap-highlight-color:transparent; }
+        .q-chip { padding:7px 12px; border:2px solid var(--border); border-radius:18px; background:var(--surface-2); font-size:.77em; font-weight:700; cursor:pointer; font-family:inherit; color:var(--muted); transition:all .15s; -webkit-tap-highlight-color:transparent; }
         .q-chip:active { transform:scale(.95); }
         .q-chip.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
 
         /* ── MÉTÉO GLOBALE ── */
         .meteo-grid { display:flex; gap:7px; margin-bottom:12px; }
-        .meteo-btn { flex:1; padding:10px 4px; border:2px solid var(--border); border-radius:11px; background:white; cursor:pointer; text-align:center; font-family:inherit; transition:all .15s; -webkit-tap-highlight-color:transparent; }
+        .meteo-btn { flex:1; padding:10px 4px; border:2px solid var(--border); border-radius:11px; background:var(--surface-2); cursor:pointer; text-align:center; font-family:inherit; transition:all .15s; -webkit-tap-highlight-color:transparent; }
         .meteo-btn:active { transform:scale(.95); }
         .meteo-btn .m-emoji { font-size:1.5em; display:block; margin-bottom:2px; }
         .meteo-btn .m-label { font-size:.58em; font-weight:700; color:var(--muted); line-height:1.2; }
@@ -461,7 +464,7 @@
 
         /* ── CPS MOTS-CLES ── */
         .cps-mots { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; margin-bottom:8px; }
-        .cps-mot { padding:5px 10px; border:2px solid var(--border); border-radius:14px; background:white; font-size:.72em; font-weight:700; cursor:pointer; font-family:inherit; color:var(--muted); transition:all .14s; -webkit-tap-highlight-color:transparent; }
+        .cps-mot { padding:5px 10px; border:2px solid var(--border); border-radius:14px; background:var(--surface-2); font-size:.72em; font-weight:700; cursor:pointer; font-family:inherit; color:var(--muted); transition:all .14s; -webkit-tap-highlight-color:transparent; }
         .cps-mot.selected { border-color:#6366f1; background:#e0e7ff; color:#4338ca; }
 
         /* ── STATUT LABEL ── */
@@ -470,7 +473,7 @@
 
         /* ── STUDENTS GRID ── */
         .students-checklist { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:9px; max-height:200px; overflow-y:auto; }
-        .student-item { display:flex; align-items:center; gap:6px; padding:7px 9px; border:2px solid var(--border); border-radius:8px; background:white; cursor:pointer; font-size:.78em; font-weight:600; transition:all .12s; -webkit-tap-highlight-color:transparent; }
+        .student-item { display:flex; align-items:center; gap:6px; padding:7px 9px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); cursor:pointer; font-size:.78em; font-weight:600; transition:all .12s; -webkit-tap-highlight-color:transparent; }
         .student-item.absent { border-color:var(--danger); background:var(--danger-light); color:var(--danger); }
         .student-item.no-cours { border-color:var(--warning); background:var(--warning-light); color:#92400e; }
     </style>
@@ -505,7 +508,7 @@
         <span>📅 Planifier (date future / CCF / événement)</span>
     </div>
     <div id="planifSection" style="display:none; margin-bottom:14px;">
-        <div style="padding:12px; border-radius:10px; background:#f8fafc; border:1px solid var(--border);">
+        <div style="padding:12px; border-radius:10px; background:var(--bg); border:1px solid var(--border);">
             <label class="field-label">Date cible</label>
             <input type="date" id="planifDate" style="width:100%; padding:12px; border:2px solid var(--border); border-radius:12px; font-size:1em; font-family:inherit; margin-bottom:10px;">
             <label class="field-label">Type</label>
@@ -838,16 +841,19 @@
         getRedirectResult, GoogleAuthProvider, signOut
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
+    // ═══════ IMPORTS UTILS ═══════
+    import {
+        FIREBASE_CONFIG, MODULES_PSE, CLASSES_CONFIG, THEME_LABELS, CHECKLIST as CHECKLIST_ITEMS_UTILS,
+        CLASS_ALIAS_GROUPS as CAG_UTILS, EDT, VACANCES, FERIES, PFMP,
+        normalizeClass as normalizeClassUtil, classesMatch as classesMatchUtil,
+        detectClassGroup as detectClassGroupUtil, getSemaineType, coursSePasse,
+        getLundi, formatDateISO, formatDateCourt, isVacances, isFerie, isPFMP,
+        getCoursForDay, cleanModuleName, SEANCES as SEANCES_UTILS,
+        STUDENTS_STORAGE_KEY, getModulesForClasse, getNiveauForClasse
+    } from './assets/utils.js';
+
     // ═══════ FIREBASE ═══════
-    const firebaseConfig = {
-        apiKey: "AIzaSyAWdCMvOiAJln3eT9LIAQD3RWJUD0lQcLI",
-        authDomain: "devoirs-pse.firebaseapp.com",
-        projectId: "devoirs-pse",
-        storageBucket: "devoirs-pse.firebasestorage.app",
-        messagingSenderId: "614730413904",
-        appId: "1:614730413904:web:a5dd478af5de30f6bede55"
-    };
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(FIREBASE_CONFIG);
     const db = getFirestore(app);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
@@ -865,6 +871,8 @@
 
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room') || '';
+    const paramDate = params.get('date') || '';  // YYYY-MM-DD from index.html
+    const paramClasse = params.get('classe') || '';  // class ID from index.html
 
     // Checklist items
     const CHECKLIST = [
@@ -1056,11 +1064,17 @@
 
     // ═══════ INIT FORM ═══════
     async function initForm() {
-        // Date
-        var now = new Date();
-        document.getElementById('dateJour').textContent = now.toLocaleDateString('fr-FR', {
+        // Date — use paramDate if provided (from index.html click)
+        var now = paramDate ? new Date(paramDate + 'T12:00:00') : new Date();
+        var displayDate = now.toLocaleDateString('fr-FR', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         });
+        // Show semaine A/B badge
+        var semType = getSemaineType(now);
+        document.getElementById('dateJour').innerHTML = displayDate +
+            ' <span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;' +
+            (semType === 'SA' ? 'background:rgba(99,102,241,0.2);color:#818cf8;">' : 'background:rgba(16,185,129,0.2);color:#34d399;">') +
+            semType + '</span>';
 
         // Room
         if (room) {
@@ -1099,8 +1113,15 @@
         } catch (e) { console.error('Load EDT error:', e); }
 
         // ── AUTO-DETECT CLASS ──
-        var todayStr = now.toISOString().split('T')[0];
-        var detection = detectCurrentClass(room);
+        var todayStr = paramDate || now.toISOString().split('T')[0];
+        // If paramClasse is provided (from index.html), use it directly
+        var detection;
+        if (paramClasse) {
+            detection = { classe: paramClasse, location: '', source: 'url_param' };
+            selectClasseFromDetected(paramClasse);
+        } else {
+            detection = detectCurrentClass(room);
+        }
 
         // ── BUILD COURSE NAVIGATION (flèches gauche/droite) ──
         buildCourseNav();
@@ -1115,7 +1136,7 @@
             var detMsg = '✅ ' + detection.classe;
             if (detection.location) detMsg += ' — Salle ' + detection.location;
             qrResult.textContent = detMsg;
-            qrResult.style.background = '#dcfce7';
+            qrResult.style.background = 'rgba(16,185,129,0.15)';
             qrResult.style.borderColor = '#16a34a';
             qrResult.style.color = '#166534';
         }
@@ -2417,7 +2438,7 @@
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         var classeLabel = prevue ? prevue.classeId : classeDocId;
         var planifDate = planifEnabled ? document.getElementById('planifDate').value : '';
-        var today = planifDate || new Date().toISOString().split('T')[0];
+        var today = planifDate || paramDate || new Date().toISOString().split('T')[0];
 
         var data = {
             timestamp: serverTimestamp(),

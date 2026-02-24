@@ -4,29 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard — Cockpit Progression PSE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --surface: #1e293b;
+            --surface-2: #334155;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
             --primary: #6366f1;
-            --primary-light: #e0e7ff;
+            --primary-light: rgba(99,102,241,0.15);
             --success: #22c55e;
-            --success-light: #dcfce7;
+            --success-light: rgba(34,197,94,0.15);
             --warning: #f59e0b;
-            --warning-light: #fef3c7;
+            --warning-light: rgba(245,158,11,0.15);
             --danger: #dc2626;
-            --danger-light: #fee2e2;
-            --border: #e2e8f0;
+            --danger-light: rgba(239,68,68,0.15);
+            --border: #334155;
             --radius: 14px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'DM Sans', -apple-system, sans-serif;
             background: var(--bg); color: var(--text);
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
@@ -37,7 +41,8 @@
         }
         .login-card {
             background: var(--card); border-radius: 20px; padding: 50px 40px;
-            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
             max-width: 400px; width: 100%;
         }
         .login-icon { font-size: 3.5em; margin-bottom: 15px; }
@@ -46,7 +51,7 @@
         .btn-google {
             display: inline-flex; align-items: center; gap: 12px;
             padding: 14px 30px; border: 2px solid var(--border); border-radius: 50px;
-            background: white; font-size: 1em; font-weight: 600; cursor: pointer;
+            background: var(--surface-2); font-size: 1em; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: all 0.2s;
         }
         .btn-google:hover { border-color: var(--primary); background: var(--primary-light); }
@@ -67,7 +72,7 @@
         .user-email { font-size: 0.8em; color: var(--muted); }
         .btn-logout {
             padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
-            background: white; font-size: 0.8em; cursor: pointer; font-family: inherit;
+            background: var(--surface-2); font-size: 0.8em; cursor: pointer; font-family: inherit;
         }
         .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
 
@@ -83,7 +88,7 @@
             font-weight: 600; cursor: pointer; color: var(--muted);
             transition: all 0.2s; white-space: nowrap; min-width: fit-content;
         }
-        .tab.active { background: white; color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .tab.active { background: var(--surface-2); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 
         .section { display: none; }
         .section.active { display: block; }
@@ -107,7 +112,7 @@
             padding: 12px 40px 12px 14px;
             border: 2px solid var(--border); border-radius: 12px;
             font-size: 0.95em; font-family: inherit;
-            background: white; color: var(--text);
+            background: var(--surface-2); color: var(--text);
             -webkit-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 10px center; background-size: 18px;
@@ -142,7 +147,7 @@
         .students-box {
             margin-top: 14px;
             border: 1px solid var(--border);
-            background: #f8fafc;
+            background: var(--bg);
             border-radius: 12px;
             padding: 10px 12px;
         }
@@ -162,7 +167,7 @@
         }
         .student-item {
             background: #fff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 7px 9px;
             line-height: 1.25;
@@ -197,8 +202,8 @@
             font-size: 0.6em; font-weight: 700; color: white; cursor: default;
             position: relative; flex-shrink: 0;
         }
-        .timeline-cell.c-normal { background: #e2e8f0; color: var(--muted); }
-        .timeline-cell.c-vacances { background: #f0f0f0; color: #ccc; }
+        .timeline-cell.c-normal { background: var(--surface-2); color: var(--muted); }
+        .timeline-cell.c-vacances { background: #374151; color: #6b7280; }
         .timeline-cell.c-realise { background: var(--success); }
         .timeline-cell.c-prevu { background: #6366f1; }
         .timeline-cell.c-reporte { background: var(--warning); }
@@ -343,12 +348,12 @@
 
         /* ── AGENDA ── */
         .agenda-day { margin-bottom: 14px; }
-        .agenda-day-header { font-weight: 800; font-size: .88em; padding: 8px 12px; border-radius: 10px 10px 0 0; background: #f8fafc; border: 1px solid var(--border); border-bottom: none; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+        .agenda-day-header { font-weight: 800; font-size: .88em; padding: 8px 12px; border-radius: 10px 10px 0 0; background: var(--bg); border: 1px solid var(--border); border-bottom: none; color: var(--muted); display: flex; align-items: center; gap: 8px; }
         .agenda-day-header.today { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
-        .agenda-day-body { border: 1px solid var(--border); border-radius: 0 0 10px 10px; background: white; overflow: hidden; }
+        .agenda-day-body { border: 1px solid var(--border); border-radius: 0 0 10px 10px; background: var(--surface-2); overflow: hidden; }
         .agenda-slot { display: flex; align-items: stretch; border-bottom: 1px solid #f1f5f9; min-height: 70px; cursor: pointer; transition: all .15s; }
         .agenda-slot:last-child { border-bottom: none; }
-        .agenda-slot:hover { background: #f8fafc; }
+        .agenda-slot:hover { background: var(--bg); }
         .agenda-slot:active { transform: scale(.99); }
         .agenda-slot-time { min-width: 70px; padding: 12px 10px; font-size: .72em; font-weight: 700; color: var(--muted); border-right: 3px solid #f1f5f9; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; }
         .agenda-slot-time.has-log { border-right-color: var(--success); }
@@ -358,22 +363,22 @@
         .agenda-slot-room { font-size: .73em; color: var(--muted); }
         .agenda-slot-status { margin-left: auto; font-size: .78em; font-weight: 700; padding: 4px 10px; border-radius: 15px; white-space: nowrap; }
         .status-realise { background: var(--success-light); color: var(--success); }
-        .status-prevu { background: #e0e7ff; color: #4338ca; }
+        .status-prevu { background: var(--primary-light); color: #4338ca; }
         .status-reporte { background: var(--warning-light); color: #92400e; }
         .status-annule { background: var(--danger-light); color: var(--danger); }
-        .status-vide { background: #f8fafc; color: var(--muted); }
+        .status-vide { background: var(--bg); color: var(--muted); }
         .agenda-slot-log { font-size: .73em; color: var(--muted); }
         .agenda-event { padding: 12px 14px; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; margin: 8px 12px; }
         .agenda-event.ccf { background: #fce7f3; border-color: #ec4899; }
         .agenda-event.bac { background: #fce7f3; border-color: #ec4899; }
         .agenda-event.pfmp { background: #ede9fe; border-color: #8b5cf6; }
-        .agenda-event.reunion { background: #eff6ff; border-color: #60a5fa; }
+        .agenda-event.reunion { background: rgba(99,102,241,0.12); border-color: #60a5fa; }
         .agenda-event-title { font-weight: 800; font-size: .85em; }
         .agenda-event-detail { font-size: .75em; color: var(--muted); margin-top: 2px; }
         .agenda-event-countdown { font-size: .72em; font-weight: 700; color: var(--danger); margin-top: 3px; }
         .agenda-empty { padding: 20px; text-align: center; font-size: .82em; color: var(--muted); font-style: italic; }
         .week-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 14px; }
-        .week-day-card { background: white; border: 2px solid var(--border); border-radius: 10px; padding: 10px 8px; cursor: pointer; transition: all .15s; }
+        .week-day-card { background: var(--surface-2); border: 2px solid var(--border); border-radius: 10px; padding: 10px 8px; cursor: pointer; transition: all .15s; }
         .week-day-card:hover { border-color: var(--primary); }
         .week-day-card.today { border-color: var(--primary); background: var(--primary-light); }
         .week-day-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
@@ -430,6 +435,7 @@
         <button class="tab" data-tab="timeline">Timeline annee</button>
         <button class="tab" data-tab="alertes">Alertes</button>
         <button class="tab" data-tab="agenda">📅 Agenda</button>
+        <button class="tab" data-tab="meteo">📊 Météo</button>
     </div>
 
     <!-- ── VUE 1 : PAR CLASSE ── -->
@@ -448,9 +454,9 @@
             <div class="legend-item"><div class="legend-dot" style="background:#6366f1;"></div> Prévu</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div> Reporté</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Non réalisé</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0;"></div> À faire</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--surface-2);"></div> À faire</div>
             <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6;"></div> PFMP</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#f0f0f0; border:1px solid #ddd;"></div> Vacances</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#374151; border:1px solid #4b5563;"></div> Vacances</div>
             <div class="legend-item"><div class="legend-dot" style="background:#06b6d4;"></div> Sortie</div>
             <div class="legend-item"><div class="legend-dot" style="background:#ec4899;"></div> BAC / Épreuves</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f472b6;"></div> CCF</div>
@@ -483,8 +489,8 @@
             <div class="legend-item"><div class="legend-dot" style="background:#6366f1;"></div> Prévu</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div> Reporté</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Non réalisé</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0;"></div> À faire</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#f0f0f0; border:1px solid #ddd;"></div> Vacances</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--surface-2);"></div> À faire</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#374151; border:1px solid #4b5563;"></div> Vacances</div>
             <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6;"></div> PFMP</div>
             <div class="legend-item"><div class="legend-dot" style="background:#ec4899;"></div> BAC / Épreuves</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f472b6;"></div> CCF</div>
@@ -513,14 +519,14 @@
         <div class="card" style="padding:14px 16px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <button onclick="agendaGoToToday()" style="padding:8px 16px; border:2px solid var(--primary); border-radius:10px; background:var(--primary-light); color:var(--primary); font-weight:700; font-size:.82em; cursor:pointer; font-family:inherit;">📍 Aujourd'hui</button>
-                <button onclick="agendaNav(-1)" style="padding:8px 12px; border:2px solid var(--border); border-radius:10px; background:white; font-size:1em; cursor:pointer;">◀</button>
+                <button onclick="agendaNav(-1)" style="padding:8px 12px; border:2px solid var(--border); border-radius:10px; background:var(--surface-2); font-size:1em; cursor:pointer;">◀</button>
                 <span id="agendaDateLabel" style="font-weight:800; font-size:.95em; min-width:170px; text-align:center;"></span>
-                <button onclick="agendaNav(1)" style="padding:8px 12px; border:2px solid var(--border); border-radius:10px; background:white; font-size:1em; cursor:pointer;">▶</button>
+                <button onclick="agendaNav(1)" style="padding:8px 12px; border:2px solid var(--border); border-radius:10px; background:var(--surface-2); font-size:1em; cursor:pointer;">▶</button>
                 <div style="margin-left:auto; display:flex; gap:6px;">
                     <button id="agendaViewDay" onclick="setAgendaView('day')" style="padding:8px 14px; border:2px solid var(--primary); border-radius:10px; background:var(--primary); color:white; font-weight:700; font-size:.8em; cursor:pointer; font-family:inherit;">Jour</button>
-                    <button id="agendaViewWeek" onclick="setAgendaView('week')" style="padding:8px 14px; border:2px solid var(--border); border-radius:10px; background:white; font-weight:700; font-size:.8em; cursor:pointer; font-family:inherit; color:var(--muted);">Semaine</button>
+                    <button id="agendaViewWeek" onclick="setAgendaView('week')" style="padding:8px 14px; border:2px solid var(--border); border-radius:10px; background:var(--surface-2); font-weight:700; font-size:.8em; cursor:pointer; font-family:inherit; color:var(--muted);">Semaine</button>
                 </div>
-                <button onclick="openAddEventModal()" style="padding:8px 16px; border:2px solid var(--success); border-radius:10px; background:var(--success-light); color:#166534; font-weight:700; font-size:.82em; cursor:pointer; font-family:inherit;">+ Événement</button>
+                <button onclick="openAddEventModal()" style="padding:8px 16px; border:2px solid var(--success); border-radius:10px; background:var(--success-light); color:var(--success); font-weight:700; font-size:.82em; cursor:pointer; font-family:inherit;">+ Événement</button>
             </div>
         </div>
 
@@ -529,21 +535,73 @@
 
     </div>
 
+    <!-- ── VUE 6 : MÉTÉO ── -->
+    <div id="tabMeteo" class="section">
+        <!-- Vue selector -->
+        <div class="card" style="padding:14px 16px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <span style="font-weight:700; font-size:.88em;">📊 Météo de classe</span>
+                <div style="margin-left:auto; display:flex; gap:6px;">
+                    <button class="meteo-view-btn active" data-view="semaine" onclick="setMeteoView('semaine')" style="padding:8px 14px; border:2px solid var(--primary); border-radius:10px; background:var(--primary); color:white; font-weight:700; font-size:.8em; cursor:pointer; font-family:inherit;">Semaine</button>
+                    <button class="meteo-view-btn" data-view="mensuel" onclick="setMeteoView('mensuel')" style="padding:8px 14px; border:2px solid var(--border); border-radius:10px; background:var(--surface-2); font-weight:700; font-size:.8em; cursor:pointer; font-family:inherit; color:var(--muted);">Mensuel</button>
+                    <button class="meteo-view-btn" data-view="annuel" onclick="setMeteoView('annuel')" style="padding:8px 14px; border:2px solid var(--border); border-radius:10px; background:var(--surface-2); font-weight:700; font-size:.8em; cursor:pointer; font-family:inherit; color:var(--muted);">Annuel</button>
+                    <button class="meteo-view-btn" data-view="classe" onclick="setMeteoView('classe')" style="padding:8px 14px; border:2px solid var(--border); border-radius:10px; background:var(--surface-2); font-weight:700; font-size:.8em; cursor:pointer; font-family:inherit; color:var(--muted);">Par classe</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtre classe (visible en vue "classe" seulement) -->
+        <div id="meteoClasseFilter" style="display:none; margin-bottom:14px;">
+            <div class="card" style="padding:12px 16px;">
+                <label style="font-size:.75em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;">Classe :</label>
+                <select id="meteoFilterClasse" onchange="renderMeteo()" style="padding:8px 12px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text); font-family:inherit; font-size:.88em; margin-left:8px;">
+                    <option value="">-- Toutes --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Légende météo -->
+        <div class="card" style="padding:12px 16px; margin-bottom:14px;">
+            <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:.78em; align-items:center;">
+                <span style="font-weight:700;">Échelle :</span>
+                <span>😡 1</span> <span>😕 2</span> <span>😐 3</span> <span>🙂 4</span> <span>😊 5</span>
+                <span style="margin-left:12px; color:var(--muted);">|</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:50%; background:#6366f1; display:inline-block;"></span> Global</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:50%; background:#10b981; display:inline-block;"></span> Cognitif</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:50%; background:#f59e0b; display:inline-block;"></span> Émotionnel</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:50%; background:#ec4899; display:inline-block;"></span> Social</span>
+            </div>
+        </div>
+
+        <!-- Chart container -->
+        <div class="card">
+            <div id="meteoChartContainer" style="position:relative; min-height:300px;">
+                <canvas id="meteoChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Résumé stats -->
+        <div id="meteoSummary" class="card" style="display:none; margin-top:14px;">
+            <div class="card-title">📈 Résumé</div>
+            <div id="meteoSummaryContent" style="font-size:.85em;"></div>
+        </div>
+    </div>
+
     <!-- ── MODAL AJOUT ÉVÉNEMENT ── -->
     <div id="eventModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:300;" onclick="closeEventModal()"></div>
-    <div id="eventModal" style="display:none; position:fixed; bottom:0; left:0; right:0; max-height:85vh; overflow-y:auto; background:white; border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,0.2); z-index:301; padding:22px 20px 36px;">
-        <div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 16px;"></div>
+    <div id="eventModal" style="display:none; position:fixed; bottom:0; left:0; right:0; max-height:85vh; overflow-y:auto; background:var(--surface-2); border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,0.2); z-index:301; padding:22px 20px 36px;">
+        <div style="width:40px;height:4px;background:var(--surface-2);border-radius:2px;margin:0 auto 16px;"></div>
         <div style="font-weight:800; font-size:1.05em; margin-bottom:16px;" id="eventModalTitle">📌 Ajouter un événement</div>
 
         <label style="font-size:.72em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;">Type</label>
         <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;" id="eventTypeGrid">
-            <button class="ev-type-btn" data-type="CCF" onclick="selectEvType('CCF',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:white;font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">📋 CCF</button>
-            <button class="ev-type-btn" data-type="Bac blanc" onclick="selectEvType('Bac blanc',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:white;font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">📄 Bac blanc</button>
-            <button class="ev-type-btn" data-type="PFMP" onclick="selectEvType('PFMP',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:white;font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🏭 PFMP</button>
-            <button class="ev-type-btn" data-type="Réunion" onclick="selectEvType('Réunion',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:white;font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🗣️ Réunion</button>
-            <button class="ev-type-btn" data-type="Sortie scolaire" onclick="selectEvType('Sortie scolaire',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:white;font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🎒 Sortie</button>
-            <button class="ev-type-btn" data-type="Férié" onclick="selectEvType('Férié',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:white;font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🏖️ Férié</button>
-            <button class="ev-type-btn" data-type="Autre" onclick="selectEvType('Autre',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:white;font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">📌 Autre</button>
+            <button class="ev-type-btn" data-type="CCF" onclick="selectEvType('CCF',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:var(--surface-2);font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">📋 CCF</button>
+            <button class="ev-type-btn" data-type="Bac blanc" onclick="selectEvType('Bac blanc',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:var(--surface-2);font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">📄 Bac blanc</button>
+            <button class="ev-type-btn" data-type="PFMP" onclick="selectEvType('PFMP',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:var(--surface-2);font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🏭 PFMP</button>
+            <button class="ev-type-btn" data-type="Réunion" onclick="selectEvType('Réunion',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:var(--surface-2);font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🗣️ Réunion</button>
+            <button class="ev-type-btn" data-type="Sortie scolaire" onclick="selectEvType('Sortie scolaire',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:var(--surface-2);font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🎒 Sortie</button>
+            <button class="ev-type-btn" data-type="Férié" onclick="selectEvType('Férié',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:var(--surface-2);font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">🏖️ Férié</button>
+            <button class="ev-type-btn" data-type="Autre" onclick="selectEvType('Autre',this)" style="padding:8px 14px;border:2px solid var(--border);border-radius:20px;background:var(--surface-2);font-size:.8em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);">📌 Autre</button>
         </div>
 
         <label style="font-size:.72em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px;">Titre / description</label>
@@ -574,20 +632,20 @@
         </div>
 
         <button onclick="saveEvent()" style="width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);color:white;font-size:1em;font-weight:800;cursor:pointer;font-family:inherit;">💾 Enregistrer l'événement</button>
-        <button onclick="closeEventModal()" style="width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;background:white;font-size:.9em;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;color:var(--muted);">Annuler</button>
+        <button onclick="closeEventModal()" style="width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;background:var(--surface-2);font-size:.9em;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;color:var(--muted);">Annuler</button>
     </div>
 
     <!-- ── MODAL ÉDITION SÉANCE ── -->
     <div id="editSeanceOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:300;" onclick="closeEditSeance()"></div>
-    <div id="editSeanceModal" style="display:none; position:fixed; bottom:0; left:0; right:0; max-height:85vh; overflow-y:auto; background:white; border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,0.2); z-index:301; padding:22px 20px 36px;">
-        <div style="width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 16px;"></div>
+    <div id="editSeanceModal" style="display:none; position:fixed; bottom:0; left:0; right:0; max-height:85vh; overflow-y:auto; background:var(--surface-2); border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,0.2); z-index:301; padding:22px 20px 36px;">
+        <div style="width:40px;height:4px;background:var(--surface-2);border-radius:2px;margin:0 auto 16px;"></div>
         <div id="editSeanceContent"></div>
     </div>
 
 <!-- ── WEEK DETAIL PANEL ── -->
 <div id="weekDetailOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:200;" onclick="closeWeekDetail()"></div>
-<div id="weekDetail" style="display:none; position:fixed; bottom:0; left:0; right:0; max-height:70vh; overflow-y:auto; background:white; border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,0.15); z-index:201; padding:24px 20px 30px; transition:transform 0.3s ease;">
-    <div style="width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:0 auto 16px;"></div>
+<div id="weekDetail" style="display:none; position:fixed; bottom:0; left:0; right:0; max-height:70vh; overflow-y:auto; background:var(--surface-2); border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,0.15); z-index:201; padding:24px 20px 30px; transition:transform 0.3s ease;">
+    <div style="width:40px; height:4px; background:var(--surface-2); border-radius:2px; margin:0 auto 16px;"></div>
     <div id="weekDetailContent"></div>
 </div>
 
@@ -608,16 +666,30 @@
         getRedirectResult, GoogleAuthProvider, signOut
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
+    // ═══════ IMPORTS UTILS ═══════
+    import {
+        FIREBASE_CONFIG, MODULES_PSE, CLASSES_CONFIG, THEME_LABELS,
+        CLASS_ALIAS_GROUPS as CAG_UTILS, CLASS_GROUPS,
+        EDT, VACANCES, FERIES, PFMP, ALL_CLASSES,
+        normalizeClass as normalizeClassUtil, classesMatch as classesMatchUtil,
+        detectClassGroup as detectClassGroupUtil,
+        getSemaineType, coursSePasse, getLundi, formatDateISO, formatDateFR,
+        isVacances, isFerie, isPFMP, isAbsencePerso,
+        getCoursForDay, computeSeancesDisponibles,
+        cleanModuleName as cleanModuleNameUtil, baseModuleName as baseModuleNameUtil,
+        capitalize as capitalizeUtil, parseDate as parseDateUtil,
+        getCurrentWeekMonday as getCurrentWeekMondayUtil,
+        isRealise as isRealiseUtil, isPrevu as isPrevuUtil,
+        isReporte as isReporteUtil, isNonRealise as isNonRealiseUtil,
+        phaseLabel as phaseLabelUtil, situationClass as situationClassUtil,
+        situationColor as situationColorUtil,
+        meteoToScore, METEO_SCORES, STUDENTS_STORAGE_KEY,
+        ANNEE_SCOLAIRE, MOIS_COURTS, formatDateCourt, formatSemaineLabel,
+        getNiveauForClasse, getModulesForClasse
+    } from './assets/utils.js';
+
     // ═══════ FIREBASE ═══════
-    const firebaseConfig = {
-        apiKey: "AIzaSyAWdCMvOiAJln3eT9LIAQD3RWJUD0lQcLI",
-        authDomain: "devoirs-pse.firebaseapp.com",
-        projectId: "devoirs-pse",
-        storageBucket: "devoirs-pse.firebasestorage.app",
-        messagingSenderId: "614730413904",
-        appId: "1:614730413904:web:a5dd478af5de30f6bede55"
-    };
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(FIREBASE_CONFIG);
     const db = getFirestore(app);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
@@ -627,53 +699,15 @@
     let logsByClasse = {};
     let unsubPrevue = null;
     let unsubLogs = null;
-    const STUDENTS_STORAGE_KEY = 'cockpit_progression_students_v1';
+    // STUDENTS_STORAGE_KEY imported from utils.js
     let localStudents = [];
     let codeClasseIndex = {};
 
-    const CLASS_ALIAS_GROUPS = {
-        CAP_VAN: ['CPSE1', 'CAPVAN', 'C1VAN', 'C2VAN', 'C1VANC2VAN', 'VAN'],
-        PREMIERE_AGORA: ['BPSE2', '1AGORA', '1EREAGORA', 'PREMIEREAGORA', 'B1AGO', 'B1AGORA', 'B1AGO1', 'B1AGO2'],
-        TERMINALE_AGORA: ['TAGORA', 'BTAGO', 'BTAGORA', 'BTAGO1', 'BTAGO2'],
-        B2_AGORA: ['B2GATL1', 'B2GATL2', 'B2AGO', 'B2AGORA', '2GATL']
-    };
-
-    function normalizeKey(v) {
-        return (v || '')
-            .toString()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toUpperCase()
-            .replace(/[^A-Z0-9]/g, '');
-    }
-
-    function detectClassGroup(rawClass) {
-        var norm = normalizeKey(rawClass);
-        if (!norm) return '';
-        var groups = Object.keys(CLASS_ALIAS_GROUPS);
-        for (var i = 0; i < groups.length; i++) {
-            var aliases = CLASS_ALIAS_GROUPS[groups[i]];
-            for (var j = 0; j < aliases.length; j++) {
-                var aliasNorm = normalizeKey(aliases[j]);
-                if (!aliasNorm) continue;
-                if (norm === aliasNorm || norm.includes(aliasNorm) || aliasNorm.includes(norm)) {
-                    return groups[i];
-                }
-            }
-        }
-        return '';
-    }
-
-    function classesMatch(a, b) {
-        var na = normalizeKey(a);
-        var nb = normalizeKey(b);
-        if (!na || !nb) return false;
-        if (na === nb) return true;
-        if (na.includes(nb) || nb.includes(na)) return true;
-        var ga = detectClassGroup(na);
-        var gb = detectClassGroup(nb);
-        return !!(ga && gb && ga === gb);
-    }
+    // CLASS_ALIAS_GROUPS, normalizeKey, detectClassGroup, classesMatch
+    // now use imported versions from utils.js
+    function normalizeKey(v) { return normalizeClassUtil(v); }
+    function detectClassGroup(raw) { return detectClassGroupUtil(raw); }
+    function classesMatch(a, b) { return classesMatchUtil(a, b); }
 
     function looksLikeCode(raw) {
         var n = normalizeKey(raw);
@@ -989,6 +1023,7 @@
 
     function capitalize(s) {
         if (s === 'agenda') return 'Agenda';
+        if (s === 'meteo') return 'Meteo';
         return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
@@ -1010,6 +1045,8 @@
         renderAlertes();
         // Rafraîchir agenda si actif
         if (document.getElementById('tabAgenda') && document.getElementById('tabAgenda').classList.contains('active')) renderAgenda();
+        // Rafraîchir météo si actif
+        if (document.getElementById('tabMeteo') && document.getElementById('tabMeteo').classList.contains('active')) renderMeteo();
     }
 
     function loadAll() {
@@ -1046,7 +1083,6 @@
         var matchLog = null;
         allLogs.forEach(function(log) {
             if ((log.classeId === classeId || log.classeDocId === classeDocId) && log.date) {
-                // Match by week date
                 var parts = (sem.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
                 if (parts) {
                     var semDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
@@ -1057,38 +1093,232 @@
             }
         });
 
-        var html = '<h3 style="margin-bottom:12px; font-size:1.1em;">' + classeId + ' — ' + (sem.semaine || sem.date || '') + '</h3>';
-        html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.85em; margin-bottom:14px;">';
-        html += '<div><strong>Date :</strong> ' + (sem.date || '-') + '</div>';
-        html += '<div><strong>Module :</strong> ' + (sem.moduleBase || sem.module || '-') + '</div>';
-        html += '<div><strong>Phase :</strong> ' + (sem.phase || 'cours') + '</div>';
-        html += '<div><strong>Statut :</strong> ' + (sem.statut || '-') + '</div>';
-        html += '<div><strong>Séance :</strong> ' + (sem.seance || '-') + '</div>';
-        html += '<div><strong>Situation :</strong> ' + (sem.situation || 'Normal') + '</div>';
-        if (sem.objectifModule) html += '<div style="grid-column:1/-1;"><strong>Objectif module :</strong> ' + sem.objectifModule + '</div>';
-        if (sem.objectifSeance) html += '<div style="grid-column:1/-1;"><strong>Objectif séance :</strong> ' + sem.objectifSeance + '</div>';
-        if (sem.evalDiag && sem.evalDiag !== 'N/A') html += '<div><strong>Éval diag :</strong> ' + sem.evalDiag + '</div>';
-        if (sem.evalForm && sem.evalForm !== 'N/A') html += '<div><strong>Éval form :</strong> ' + sem.evalForm + '</div>';
-        if (sem.evaluation && sem.evaluation !== 'N/A') html += '<div><strong>Évaluation :</strong> ' + sem.evaluation + '</div>';
+        // Detect niveau for module list
+        var niveau = '';
+        try { niveau = getNiveauForClasse(classeId); } catch(e) {}
+        var modulesList = [];
+        try { modulesList = getModulesForClasse(classeId); } catch(e) {}
+
+        var html = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">';
+        html += '<h3 style="font-size:1.1em; font-weight:800;">' + classeId + ' — ' + (sem.semaine || sem.date || '') + '</h3>';
+        html += '<button onclick="closeWeekDetail()" style="background:none; border:none; font-size:1.3em; cursor:pointer; color:var(--muted);">✕</button>';
         html += '</div>';
 
+        // Current state
+        html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.85em; margin-bottom:14px; padding:12px; border-radius:10px; background:var(--surface-2);">';
+        html += '<div><strong>Date :</strong> ' + (sem.date || '-') + '</div>';
+        html += '<div><strong>Situation :</strong> ' + (sem.situation || 'Normal') + '</div>';
+        html += '<div><strong>Module :</strong> ' + (sem.moduleBase || sem.module || '-') + '</div>';
+        html += '<div><strong>Phase :</strong> ' + (sem.phase || 'cours') + '</div>';
+        html += '<div><strong>Séance :</strong> ' + (sem.seance || '-') + '</div>';
+        html += '<div><strong>Statut :</strong> ' + (sem.statut || '-') + '</div>';
+        html += '</div>';
+
+        // Log info
         if (matchLog) {
-            html += '<div style="padding:12px; border-radius:10px; background:#eff6ff; border:1px solid #bfdbfe; font-size:0.82em; margin-bottom:14px;">';
-            html += '<strong>Log du ' + matchLog.date + '</strong><br>';
+            html += '<div style="padding:12px; border-radius:10px; background:var(--success-light); border:1px solid rgba(16,185,129,0.3); font-size:0.82em; margin-bottom:14px;">';
+            html += '<strong>✅ Log du ' + matchLog.date + '</strong><br>';
             html += (matchLog.moduleId || '') + ' — ' + (matchLog.seance || '') + ' [' + (matchLog.statut || '') + ']';
             if (matchLog.qualite) html += '<br>Qualité : ' + matchLog.qualite;
             if (matchLog.absences > 0) html += '<br>Absences : ' + matchLog.absences;
             if (matchLog.absencesNoms) html += ' (' + matchLog.absencesNoms + ')';
-            if (matchLog.remarque) html += '<br>Note : ' + matchLog.remarque;
+            if (matchLog.remarque) html += '<br>💬 ' + matchLog.remarque;
             html += '</div>';
         }
 
-        html += '<a href="log.html" style="display:block; text-align:center; padding:14px; border-radius:12px; background:linear-gradient(135deg,#10b981,#059669); color:white; font-weight:700; text-decoration:none; font-size:0.95em;">📝 Saisir pour ' + classeId + '</a>';
+        // ── EDITING SECTION ──
+        html += '<div style="border-top:1px solid var(--border); padding-top:14px; margin-top:6px;">';
+        html += '<div style="font-weight:700; font-size:.88em; margin-bottom:10px;">✏️ Modifier la planification</div>';
+
+        // Module selector
+        html += '<label style="font-size:.72em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:4px;">Module</label>';
+        html += '<select id="editWeekModule" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text); font-family:inherit; font-size:.85em; margin-bottom:10px;">';
+        html += '<option value="">-- Sélectionner --</option>';
+        modulesList.forEach(function(m) {
+            var selected = (sem.module && sem.module.includes(m)) || (sem.moduleBase && sem.moduleBase.includes(m)) ? ' selected' : '';
+            html += '<option value="' + m + '"' + selected + '>' + m + '</option>';
+        });
+        html += '</select>';
+
+        // Séance chips (multi-select)
+        html += '<label style="font-size:.72em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:4px;">Séance(s)</label>';
+        html += '<div id="editWeekSeances" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">';
+        var seancesList = ['S1','S2','S3','S4','S5','S6'];
+        var currentSeance = (sem.seance || '').toUpperCase();
+        seancesList.forEach(function(s) {
+            var isActive = currentSeance.includes(s);
+            html += '<button class="edit-seance-chip" data-seance="' + s + '" onclick="toggleWeekSeanceChip(this)" style="padding:7px 14px; border:2px solid ' + (isActive ? 'var(--primary)' : 'var(--border)') + '; border-radius:20px; background:' + (isActive ? 'var(--primary)' : 'var(--surface-2)') + '; color:' + (isActive ? 'white' : 'var(--muted)') + '; font-size:.78em; font-weight:700; cursor:pointer; font-family:inherit;">' + s + '</button>';
+        });
+        html += '</div>';
+
+        // Phase chips
+        html += '<label style="font-size:.72em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:4px;">Phase</label>';
+        html += '<div id="editWeekPhase" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">';
+        var phases = ['Cours','Évaluation','Correction','TP','Révision'];
+        var currentPhase = (sem.phase || 'Cours');
+        phases.forEach(function(p) {
+            var isActive = currentPhase.toLowerCase() === p.toLowerCase();
+            html += '<button class="edit-phase-chip" data-phase="' + p + '" onclick="toggleWeekPhaseChip(this)" style="padding:7px 14px; border:2px solid ' + (isActive ? '#10b981' : 'var(--border)') + '; border-radius:20px; background:' + (isActive ? '#10b981' : 'var(--surface-2)') + '; color:' + (isActive ? 'white' : 'var(--muted)') + '; font-size:.78em; font-weight:700; cursor:pointer; font-family:inherit;">' + p + '</button>';
+        });
+        html += '</div>';
+
+        // Situation dropdown
+        html += '<label style="font-size:.72em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:4px;">Situation</label>';
+        html += '<select id="editWeekSituation" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text); font-family:inherit; font-size:.85em; margin-bottom:14px;">';
+        var situations = ['Normal','Vacances scolaires','PFMP','Jours fériés','CCF','BAC BLANC','Sortie scolaire','Annulé','Formation','Absent'];
+        situations.forEach(function(s) {
+            var selected = (sem.situation || 'Normal') === s ? ' selected' : '';
+            html += '<option value="' + s + '"' + selected + '>' + s + '</option>';
+        });
+        html += '</select>';
+
+        // Save button
+        html += '<button onclick="saveWeekEdit(\'' + classeDocId + '\',\'' + (sem.date || '') + '\')" style="width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,#10b981,#059669); color:white; font-size:.95em; font-weight:800; cursor:pointer; font-family:inherit; margin-bottom:8px;">💾 Enregistrer</button>';
+
+        // Propagate button
+        html += '<button onclick="propagateWeekEdit(\'' + classeDocId + '\',\'' + (sem.date || '') + '\')" style="width:100%; padding:12px; border:2px solid var(--primary); border-radius:12px; background:var(--primary-light); color:var(--primary); font-size:.85em; font-weight:700; cursor:pointer; font-family:inherit; margin-bottom:8px;">📡 Propager sur les semaines suivantes</button>';
+
+        // Link to log
+        var logLink = 'log.html';
+        if (sem.date) {
+            var dateParts = (sem.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            if (dateParts) {
+                var isoDate = dateParts[3] + '-' + dateParts[2].padStart(2,'0') + '-' + dateParts[1].padStart(2,'0');
+                logLink = 'log.html?date=' + isoDate + '&classe=' + encodeURIComponent(classeId);
+            }
+        }
+        html += '<a href="' + logLink + '" style="display:block; text-align:center; padding:12px; border-radius:12px; border:2px solid var(--border); color:var(--text); font-weight:700; text-decoration:none; font-size:.85em;">📝 Saisir dans log.html</a>';
+
+        html += '</div>';
 
         content.innerHTML = html;
         overlay.style.display = 'block';
         panel.style.display = 'block';
     }
+
+    // Timeline editing helpers
+    window.toggleWeekSeanceChip = function(btn) {
+        var isActive = btn.style.background === 'var(--primary)';
+        if (isActive) {
+            btn.style.borderColor = 'var(--border)';
+            btn.style.background = 'var(--surface-2)';
+            btn.style.color = 'var(--muted)';
+        } else {
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.background = 'var(--primary)';
+            btn.style.color = 'white';
+        }
+    };
+
+    window.toggleWeekPhaseChip = function(btn) {
+        // Single select — deactivate all then activate clicked
+        document.querySelectorAll('#editWeekPhase .edit-phase-chip').forEach(function(b) {
+            b.style.borderColor = 'var(--border)';
+            b.style.background = 'var(--surface-2)';
+            b.style.color = 'var(--muted)';
+        });
+        btn.style.borderColor = '#10b981';
+        btn.style.background = '#10b981';
+        btn.style.color = 'white';
+    };
+
+    window.saveWeekEdit = async function(classeDocId, dateStr) {
+        if (!classeDocId) { showToast('Progression non trouvée'); return; }
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) { showToast('Progression non trouvée'); return; }
+
+        var module = (document.getElementById('editWeekModule') || {}).value || '';
+        var situation = (document.getElementById('editWeekSituation') || {}).value || 'Normal';
+
+        // Collect selected seances
+        var selectedSeances = [];
+        document.querySelectorAll('#editWeekSeances .edit-seance-chip').forEach(function(btn) {
+            if (btn.style.color === 'white') selectedSeances.push(btn.dataset.seance);
+        });
+        var seance = selectedSeances.join('+');
+
+        // Get phase
+        var phase = 'Cours';
+        document.querySelectorAll('#editWeekPhase .edit-phase-chip').forEach(function(btn) {
+            if (btn.style.color === 'white') phase = btn.dataset.phase;
+        });
+
+        // Find the matching semaine
+        var target = dateStr;
+        var found = false;
+        prevue.semaines.forEach(function(sem) {
+            if (sem.date === target) {
+                if (module) sem.module = module;
+                if (seance) sem.seance = seance;
+                sem.phase = phase;
+                sem.situation = situation;
+                found = true;
+            }
+        });
+
+        if (!found) { showToast('Semaine non trouvée'); return; }
+
+        try {
+            await updateDoc(doc(db, 'progression_prevue', classeDocId), { semaines: prevue.semaines });
+            showToast('✅ Planification mise à jour');
+            closeWeekDetail();
+        } catch(e) { showToast('Erreur : ' + e.message); }
+    };
+
+    window.propagateWeekEdit = async function(classeDocId, dateStr) {
+        if (!classeDocId) { showToast('Progression non trouvée'); return; }
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) { showToast('Progression non trouvée'); return; }
+
+        var module = (document.getElementById('editWeekModule') || {}).value || '';
+        var situation = (document.getElementById('editWeekSituation') || {}).value || 'Normal';
+        var selectedSeances = [];
+        document.querySelectorAll('#editWeekSeances .edit-seance-chip').forEach(function(btn) {
+            if (btn.style.color === 'white') selectedSeances.push(btn.dataset.seance);
+        });
+        var phase = 'Cours';
+        document.querySelectorAll('#editWeekPhase .edit-phase-chip').forEach(function(btn) {
+            if (btn.style.color === 'white') phase = btn.dataset.phase;
+        });
+
+        if (!module) { showToast('Sélectionnez un module pour propager'); return; }
+
+        // Find the starting week and propagate forward
+        var startIdx = -1;
+        for (var i = 0; i < prevue.semaines.length; i++) {
+            if (prevue.semaines[i].date === dateStr) { startIdx = i; break; }
+        }
+        if (startIdx < 0) { showToast('Semaine non trouvée'); return; }
+
+        var seanceIdx = 0;
+        var allSeances = ['S1','S2','S3','S4','S5','S6'];
+        // Start from the first selected seance
+        if (selectedSeances.length > 0) {
+            seanceIdx = allSeances.indexOf(selectedSeances[0]);
+            if (seanceIdx < 0) seanceIdx = 0;
+        }
+
+        var count = 0;
+        for (var j = startIdx; j < prevue.semaines.length && seanceIdx < allSeances.length; j++) {
+            var sem = prevue.semaines[j];
+            var sit = (sem.situation || '').toLowerCase();
+            // Skip vacances, PFMP, fériés
+            if (sit.includes('vacances') || sit.includes('pfmp') || sit.includes('feri') || sit.includes('féri')) continue;
+
+            sem.module = module;
+            sem.seance = allSeances[seanceIdx];
+            sem.phase = phase;
+            if (situation !== 'Normal') sem.situation = situation;
+            seanceIdx++;
+            count++;
+        }
+
+        try {
+            await updateDoc(doc(db, 'progression_prevue', classeDocId), { semaines: prevue.semaines });
+            showToast('✅ Propagé sur ' + count + ' semaine' + (count > 1 ? 's' : ''));
+            closeWeekDetail();
+        } catch(e) { showToast('Erreur : ' + e.message); }
+    };
 
     // ═══════ STATS ═══════
     function renderStats() {
@@ -1251,7 +1481,7 @@
     // Same but for year timeline cells (returns bg color)
     function situationColor(sem) {
         var sit = (sem.situation || '').toLowerCase();
-        if (sit.includes('vacances')) return '#f0f0f0';
+        if (sit.includes('vacances')) return '#374151';
         if (sit.includes('pfmp')) return '#8b5cf6';
         if (sit.includes('bac blanc') || sit.includes('epreuv')) return '#ec4899';
         if (sit.includes('ccf')) return '#f472b6';
@@ -1263,7 +1493,7 @@
         if (isReporte(sem)) return '#f59e0b';
         if (isNonRealise(sem)) return '#dc2626';
         if (isPrevu(sem)) return '#6366f1';
-        return '#e2e8f0';
+        return '#334155';
     }
 
     // ════════════════════════════════════════
@@ -1752,7 +1982,7 @@
                 var td = document.createElement('td');
                 td.className = 'week-cell';
                 var sem = weekMap[w.date];
-                var color = sem ? situationColor(sem) : '#f8fafc';
+                var color = sem ? situationColor(sem) : '#1e293b';
                 td.style.background = color;
 
                 var isCurrent = w.date === currentMonday;
@@ -1794,50 +2024,135 @@
     // ════════════════════════════════════════
     function computeAlerts() {
         var alerts = [];
+        var today = new Date();
+        var todayISO = today.toISOString().split('T')[0];
 
-        // 1. From logs: checklist-based alerts
+        // ── 1. COPIES CHAIN: ramassées → corrigées → rendues ──
         allLogs.forEach(function(log) {
             var cl = log.checklist || {};
+            var dateLabel = log.date || '';
+            var moduleLabel = (log.moduleId || '') + (log.seance ? ' — ' + log.seance : '');
+
+            // Copies ramassées mais pas encore corrigées
             if (cl.copies_ramassees && !cl.copies_corrigees) {
+                var daysSince = dateLabel ? Math.floor((today - new Date(dateLabel)) / 86400000) : 0;
                 alerts.push({
-                    type: 'warn', icon: '📝',
+                    type: daysSince > 7 ? 'err' : 'warn',
+                    icon: '📝',
                     text: log.classeId + ' — Copies à corriger',
-                    detail: (log.moduleId || '') + (log.seance ? ' — ' + log.seance : ''),
-                    date: log.date || '',
-                    priority: 2
+                    detail: moduleLabel + (daysSince > 0 ? ' (ramassées il y a ' + daysSince + 'j)' : ''),
+                    date: dateLabel,
+                    priority: daysSince > 7 ? 4 : 2
                 });
             }
+            // Copies corrigées mais pas rendues
             if (cl.copies_corrigees && !cl.copies_rendues) {
+                var daysSinceCorr = dateLabel ? Math.floor((today - new Date(dateLabel)) / 86400000) : 0;
                 alerts.push({
-                    type: 'warn', icon: '📤',
+                    type: daysSinceCorr > 5 ? 'err' : 'warn',
+                    icon: '📤',
                     text: log.classeId + ' — Copies à rendre',
-                    detail: (log.moduleId || '') + (log.seance ? ' — ' + log.seance : ''),
-                    date: log.date || '',
-                    priority: 1
+                    detail: moduleLabel + (daysSinceCorr > 0 ? ' (corrigées il y a ' + daysSinceCorr + 'j)' : ''),
+                    date: dateLabel,
+                    priority: daysSinceCorr > 5 ? 3 : 1
                 });
             }
+            // Évaluation passée mais pas corrigée
             if (cl.eval_passee && !cl.eval_corrigee) {
+                var daysSinceEval = dateLabel ? Math.floor((today - new Date(dateLabel)) / 86400000) : 0;
                 alerts.push({
-                    type: 'err', icon: '🔴',
+                    type: 'err',
+                    icon: '🔴',
                     text: log.classeId + ' — Évaluation à corriger',
-                    detail: (log.moduleId || ''),
-                    date: log.date || '',
-                    priority: 3
+                    detail: (log.moduleId || '') + (daysSinceEval > 0 ? ' (passée il y a ' + daysSinceEval + 'j)' : ''),
+                    date: dateLabel,
+                    priority: 4
                 });
             }
+            // Évaluation corrigée mais pas rendue
             if (cl.eval_corrigee && !cl.eval_rendue) {
                 alerts.push({
-                    type: 'warn', icon: '📤',
+                    type: 'warn',
+                    icon: '📤',
                     text: log.classeId + ' — Évaluation à rendre',
                     detail: (log.moduleId || ''),
-                    date: log.date || '',
+                    date: dateLabel,
                     priority: 2
                 });
             }
         });
 
-        // 2. Retard vs prevue + statuts problematiques
-        var today = new Date();
+        // ── 2. CCF COUNTDOWNS (séances restantes avant fin d'année) ──
+        var finAnnee = new Date('2026-06-30');
+        allPrevue.forEach(function(prevue) {
+            var classeId = prevue.classeId || '';
+            // Check if class has CCF modules (BAC PRO)
+            var hasCCF = false;
+            (prevue.semaines || []).forEach(function(sem) {
+                if ((sem.situation || '').toLowerCase().includes('ccf') || (sem.phase || '').toLowerCase().includes('ccf')) hasCCF = true;
+            });
+
+            // Compute remaining séances using utils if EDT data is available
+            try {
+                var remaining = computeSeancesDisponibles(classeId, todayISO, '2026-06-30', EDT, VACANCES, FERIES, PFMP);
+                if (remaining && remaining.count <= 8 && remaining.count > 0) {
+                    alerts.push({
+                        type: remaining.count <= 3 ? 'err' : 'warn',
+                        icon: '⏳',
+                        text: classeId + ' — ' + remaining.count + ' séance' + (remaining.count > 1 ? 's' : '') + ' restante' + (remaining.count > 1 ? 's' : ''),
+                        detail: 'Jusqu\'au 30 juin 2026' + (hasCCF ? ' ⚠️ CCF à prévoir' : ''),
+                        date: '',
+                        priority: remaining.count <= 3 ? 5 : 2
+                    });
+                }
+            } catch(e) { /* skip if EDT not matching */ }
+        });
+
+        // ── 3. COURS NON SAISIS (passés sans log) ──
+        // Check the last 2 weeks for missing logs
+        var twoWeeksAgo = new Date(today.getTime() - 14 * 86400000);
+        var twoWeeksISO = twoWeeksAgo.toISOString().split('T')[0];
+        var missingByClasse = {};
+
+        // Iterate over EDT to find courses that should have happened
+        for (var dayOffset = 0; dayOffset < 14; dayOffset++) {
+            var checkDate = new Date(twoWeeksAgo.getTime() + dayOffset * 86400000);
+            if (checkDate >= today) break;
+            var checkISO = checkDate.toISOString().split('T')[0];
+            var dayOfWeek = checkDate.getDay(); // 0=Sun
+
+            EDT.forEach(function(cours) {
+                if (cours.jour !== dayOfWeek) return;
+                if (!coursSePasse(cours, checkDate)) return;
+                var classeId = cours.classe || '';
+                if (isVacances(checkDate, VACANCES) || isFerie(checkDate, FERIES) || isPFMP(checkDate, classeId, PFMP)) return;
+
+                // Check if a log exists for this class + date
+                var hasLog = allLogs.some(function(log) {
+                    return log.date === checkISO && classesMatch(log.classeId || log.classeDocId || '', classeId);
+                });
+                if (!hasLog) {
+                    if (!missingByClasse[classeId]) missingByClasse[classeId] = 0;
+                    missingByClasse[classeId]++;
+                }
+            });
+        }
+
+        Object.keys(missingByClasse).forEach(function(classeId) {
+            var count = missingByClasse[classeId];
+            if (count > 0) {
+                alerts.push({
+                    type: count > 3 ? 'err' : 'info',
+                    icon: '📋',
+                    text: classeId + ' — ' + count + ' cours non saisi' + (count > 1 ? 's' : ''),
+                    detail: 'Dernières 2 semaines — cliquez pour saisir',
+                    date: '',
+                    priority: count > 3 ? 3 : 1
+                });
+            }
+        });
+
+        // ── 4. RETARD vs progression_prevue ──
         allPrevue.forEach(function(prevue) {
             var behindCount = 0;
             var reporteCount = 0;
@@ -1883,6 +2198,21 @@
             }
         });
 
+        // ── 5. ÉLÈVES ABSENTS avec cours non distribués ──
+        allLogs.forEach(function(log) {
+            if (!log.absencesNoms || !log.checklist) return;
+            var cl = log.checklist;
+            if (cl.distribuer_cours && !cl.distribuer_absents_done) {
+                alerts.push({
+                    type: 'info', icon: '🎒',
+                    text: log.classeId + ' — Cours à distribuer aux absents',
+                    detail: log.absencesNoms + ' (' + (log.date || '') + ')',
+                    date: log.date || '',
+                    priority: 1
+                });
+            }
+        });
+
         // Sort by priority desc, then date desc
         alerts.sort(function(a, b) {
             if (b.priority !== a.priority) return b.priority - a.priority;
@@ -1903,6 +2233,21 @@
 
         container.innerHTML = '';
 
+        // Summary bar
+        var errCount = alerts.filter(function(a) { return a.type === 'err'; }).length;
+        var warnCount = alerts.filter(function(a) { return a.type === 'warn'; }).length;
+        var infoCount = alerts.filter(function(a) { return a.type === 'info'; }).length;
+        var summaryCard = document.createElement('div');
+        summaryCard.className = 'card';
+        summaryCard.style.cssText = 'padding:14px 18px; margin-bottom:14px;';
+        summaryCard.innerHTML = '<div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">' +
+            '<span style="font-weight:800; font-size:.92em;">' + alerts.length + ' alerte' + (alerts.length > 1 ? 's' : '') + '</span>' +
+            (errCount ? '<span style="padding:4px 12px; border-radius:20px; background:var(--danger-light); color:var(--danger); font-size:.78em; font-weight:700;">🔴 ' + errCount + ' urgent' + (errCount > 1 ? 'es' : 'e') + '</span>' : '') +
+            (warnCount ? '<span style="padding:4px 12px; border-radius:20px; background:var(--warning-light); color:var(--warning); font-size:.78em; font-weight:700;">🟠 ' + warnCount + ' attention</span>' : '') +
+            (infoCount ? '<span style="padding:4px 12px; border-radius:20px; background:var(--primary-light); color:var(--primary); font-size:.78em; font-weight:700;">🟡 ' + infoCount + ' info</span>' : '') +
+            '</div>';
+        container.appendChild(summaryCard);
+
         // Group by type
         var errAlerts = alerts.filter(function(a) { return a.type === 'err'; });
         var warnAlerts = alerts.filter(function(a) { return a.type === 'warn'; });
@@ -1911,7 +2256,8 @@
         if (errAlerts.length > 0) {
             var card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = '<div class="card-title">🔴 Urgences <span class="count">' + errAlerts.length + '</span></div>';
+            card.style.borderLeft = '4px solid var(--danger)';
+            card.innerHTML = '<div class="card-title">🔴 Urgent <span class="count" style="background:var(--danger-light); color:var(--danger);">' + errAlerts.length + '</span></div>';
             errAlerts.forEach(function(a) { card.appendChild(createAlertItem(a)); });
             container.appendChild(card);
         }
@@ -1919,7 +2265,8 @@
         if (warnAlerts.length > 0) {
             var card2 = document.createElement('div');
             card2.className = 'card';
-            card2.innerHTML = '<div class="card-title">🟡 À traiter <span class="count">' + warnAlerts.length + '</span></div>';
+            card2.style.borderLeft = '4px solid var(--warning)';
+            card2.innerHTML = '<div class="card-title">🟠 Attention <span class="count" style="background:var(--warning-light); color:var(--warning);">' + warnAlerts.length + '</span></div>';
             warnAlerts.forEach(function(a) { card2.appendChild(createAlertItem(a)); });
             container.appendChild(card2);
         }
@@ -1927,7 +2274,8 @@
         if (infoAlerts.length > 0) {
             var card3 = document.createElement('div');
             card3.className = 'card';
-            card3.innerHTML = '<div class="card-title">ℹ️ Retards <span class="count">' + infoAlerts.length + '</span></div>';
+            card3.style.borderLeft = '4px solid var(--primary)';
+            card3.innerHTML = '<div class="card-title">🟡 Information <span class="count" style="background:var(--primary-light); color:var(--primary);">' + infoAlerts.length + '</span></div>';
             infoAlerts.forEach(function(a) { card3.appendChild(createAlertItem(a)); });
             container.appendChild(card3);
         }
@@ -1983,8 +2331,8 @@
         'CCF':        { bg:'#fce7f3', border:'#ec4899', cls:'ccf' },
         'Bac blanc':  { bg:'#fce7f3', border:'#ec4899', cls:'bac' },
         'PFMP':       { bg:'#ede9fe', border:'#8b5cf6', cls:'pfmp' },
-        'Réunion':    { bg:'#eff6ff', border:'#60a5fa', cls:'reunion' },
-        'Férié':      { bg:'#f8fafc', border:'#94a3b8', cls:'' },
+        'Réunion':    { bg:'rgba(99,102,241,0.12)', border:'#60a5fa', cls:'reunion' },
+        'Férié':      { bg:'#1e293b', border:'#94a3b8', cls:'' },
         'Sortie scolaire':{ bg:'#ecfeff', border:'#06b6d4', cls:'' },
         'Autre':      { bg:'#fef3c7', border:'#fbbf24', cls:'' }
     };
@@ -2387,18 +2735,18 @@
 
         // Module prévu
         if (moduleLabel) {
-            html += '<div style="padding:10px 12px;border-radius:9px;background:#eff6ff;border:1px solid #bfdbfe;font-size:.83em;margin-bottom:12px;">' +
+            html += '<div style="padding:10px 12px;border-radius:9px;background:var(--primary-light);border:1px solid rgba(99,102,241,0.3);font-size:.83em;margin-bottom:12px;">' +
                 '<strong>📚 Prévu :</strong> ' + moduleLabel;
             if (weekSem && weekSem.seance) html += ' — ' + weekSem.seance;
             if (weekSem && weekSem.situation && weekSem.situation !== 'Normal') {
-                html += '<br><span style="color:#c2410c;font-weight:700;">⚠️ ' + weekSem.situation + '</span>';
+                html += '<br><span style="color:var(--warning);font-weight:700;">⚠️ ' + weekSem.situation + '</span>';
             }
             html += '</div>';
         }
 
         // Log existant
         if (log) {
-            html += '<div style="padding:11px 12px;border-radius:9px;background:var(--success-light);border:1px solid #4ade80;font-size:.83em;margin-bottom:12px;">' +
+            html += '<div style="padding:11px 12px;border-radius:9px;background:var(--success-light);border:1px solid rgba(16,185,129,0.3);font-size:.83em;margin-bottom:12px;">' +
                 '<strong>✅ Séance saisie :</strong> ' + meteo + (log.moduleId||'') + (seances ? ' — '+seances : '') +
                 (log.statut ? ' ['+log.statut+']' : '') +
                 (log.arret ? '<br>📍 Arrêt : '+log.arret : '') +
@@ -2410,12 +2758,12 @@
         html += '<div style="display:grid;gap:8px;margin-top:4px;">';
 
         // Saisir / modifier
-        var logUrl = 'log.html';
+        var logUrl = 'log.html?date=' + encodeURIComponent(dateStr) + '&classe=' + encodeURIComponent(cours.classe);
         html += '<a href="' + logUrl + '" style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);color:white;font-weight:700;text-decoration:none;font-size:.92em;">' +
             (log ? '✏️ Modifier la saisie' : '📝 Saisir la séance') + ' — ' + cours.classe + '</a>';
 
         // Mettre à jour la progression (situation)
-        html += '<button onclick="updateSituationFromAgenda(\'' + (prevue?prevue.id:'') + '\',\'' + dateStr + '\')" style="padding:13px 16px;border-radius:12px;border:2px solid var(--warning);background:var(--warning-light);color:#92400e;font-weight:700;font-size:.82em;cursor:pointer;font-family:inherit;">📋 Modifier la situation prévue</button>';
+        html += '<button onclick="updateSituationFromAgenda(\'' + (prevue?prevue.id:'') + '\',\'' + dateStr + '\')" style="padding:13px 16px;border-radius:12px;border:2px solid var(--warning);background:var(--warning-light);color:var(--warning);font-weight:700;font-size:.82em;cursor:pointer;font-family:inherit;">📋 Modifier la situation prévue</button>';
 
         html += '</div>';
 
@@ -2480,7 +2828,7 @@
         grid.innerHTML = '';
         allPrevue.forEach(function(p) {
             var btn = document.createElement('button');
-            btn.style.cssText = 'padding:7px 12px;border:2px solid var(--border);border-radius:18px;background:white;font-size:.77em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s;';
+            btn.style.cssText = 'padding:7px 12px;border:2px solid var(--border);border-radius:18px;background:var(--surface-2);font-size:.77em;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s;';
             btn.textContent = p.classeId;
             btn.addEventListener('click', function() {
                 var idx = eventModalData.classes.indexOf(p.classeId);
@@ -2554,9 +2902,333 @@
         } catch(e) { showToast('Erreur: ' + e.message); }
     };
 
-    // ── LANCER L'AGENDA SUR CET ONGLET ──
-    // Surveiller le changement d'onglet
-    function patchTabsForAgenda() {
+    // ══════════════════════════════════════════════
+    // MÉTÉO — Chart.js lazy-load + rendering
+    // ══════════════════════════════════════════════
+    var chartJsLoaded = false;
+    var meteoChartInstance = null;
+    var currentMeteoView = 'semaine';
+
+    function loadChartJs() {
+        return new Promise(function(resolve) {
+            if (chartJsLoaded) { resolve(); return; }
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+            script.onload = function() { chartJsLoaded = true; resolve(); };
+            document.head.appendChild(script);
+        });
+    }
+
+    window.setMeteoView = function(view) {
+        currentMeteoView = view;
+        document.querySelectorAll('.meteo-view-btn').forEach(function(b) {
+            if (b.dataset.view === view) {
+                b.style.borderColor = 'var(--primary)';
+                b.style.background = 'var(--primary)';
+                b.style.color = 'white';
+            } else {
+                b.style.borderColor = 'var(--border)';
+                b.style.background = 'var(--surface-2)';
+                b.style.color = 'var(--muted)';
+            }
+        });
+        var classeFilter = document.getElementById('meteoClasseFilter');
+        if (classeFilter) classeFilter.style.display = (view === 'classe') ? 'block' : 'none';
+        renderMeteo();
+    };
+
+    function getMeteoData() {
+        // Extract meteo scores from all logs
+        var data = [];
+        allLogs.forEach(function(log) {
+            if (!log.date) return;
+            var meteoEmoji = log.meteo || '';
+            var score = meteoToScore(meteoEmoji);
+            if (score === 0 && !log.cps) return; // No meteo data at all
+
+            var cps = log.cps || {};
+            data.push({
+                date: log.date,
+                classeId: log.classeId || log.classeDocId || '',
+                global: score,
+                cognitif: parseInt(cps.cognitif) || 0,
+                emotionnel: parseInt(cps.emotionnel) || 0,
+                social: parseInt(cps.social) || 0
+            });
+        });
+        data.sort(function(a, b) { return a.date.localeCompare(b.date); });
+        return data;
+    }
+
+    function renderMeteoSemaine(data) {
+        // Group by date, average scores per day
+        var byDate = {};
+        data.forEach(function(d) {
+            if (!byDate[d.date]) byDate[d.date] = [];
+            byDate[d.date].push(d);
+        });
+
+        var dates = Object.keys(byDate).sort();
+        // Take last 20 entries max for readability
+        if (dates.length > 20) dates = dates.slice(-20);
+
+        var labels = dates.map(function(d) {
+            var parts = d.split('-');
+            return (parts[2] || '') + '/' + (parts[1] || '');
+        });
+
+        var globalAvg = dates.map(function(d) {
+            var entries = byDate[d].filter(function(e) { return e.global > 0; });
+            if (entries.length === 0) return null;
+            return entries.reduce(function(s, e) { return s + e.global; }, 0) / entries.length;
+        });
+
+        var cogAvg = dates.map(function(d) {
+            var entries = byDate[d].filter(function(e) { return e.cognitif > 0; });
+            if (entries.length === 0) return null;
+            return entries.reduce(function(s, e) { return s + e.cognitif; }, 0) / entries.length;
+        });
+
+        var emoAvg = dates.map(function(d) {
+            var entries = byDate[d].filter(function(e) { return e.emotionnel > 0; });
+            if (entries.length === 0) return null;
+            return entries.reduce(function(s, e) { return s + e.emotionnel; }, 0) / entries.length;
+        });
+
+        var socAvg = dates.map(function(d) {
+            var entries = byDate[d].filter(function(e) { return e.social > 0; });
+            if (entries.length === 0) return null;
+            return entries.reduce(function(s, e) { return s + e.social; }, 0) / entries.length;
+        });
+
+        return {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Global', data: globalAvg, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 4, order: 1 },
+                    { label: 'Cognitif', data: cogAvg, type: 'line', borderColor: '#10b981', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, order: 0 },
+                    { label: 'Émotionnel', data: emoAvg, type: 'line', borderColor: '#f59e0b', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, order: 0 },
+                    { label: 'Social', data: socAvg, type: 'line', borderColor: '#ec4899', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3, order: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
+                scales: {
+                    y: { min: 0, max: 5, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.5)' } },
+                    x: { ticks: { color: '#94a3b8', maxRotation: 45, font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        };
+    }
+
+    function renderMeteoMensuel(data) {
+        // Group by month
+        var byMonth = {};
+        data.forEach(function(d) {
+            var m = d.date.substring(0, 7); // YYYY-MM
+            if (!byMonth[m]) byMonth[m] = [];
+            byMonth[m].push(d);
+        });
+
+        var months = Object.keys(byMonth).sort();
+        var monthLabels = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+        var labels = months.map(function(m) {
+            var parts = m.split('-');
+            return monthLabels[parseInt(parts[1]) - 1] + ' ' + parts[0].substring(2);
+        });
+
+        function avgField(entries, field) {
+            var valid = entries.filter(function(e) { return e[field] > 0; });
+            if (valid.length === 0) return null;
+            return valid.reduce(function(s, e) { return s + e[field]; }, 0) / valid.length;
+        }
+
+        return {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Global', data: months.map(function(m) { return avgField(byMonth[m], 'global'); }), borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4, pointRadius: 5 },
+                    { label: 'Cognitif', data: months.map(function(m) { return avgField(byMonth[m], 'cognitif'); }), borderColor: '#10b981', tension: 0.4, pointRadius: 4 },
+                    { label: 'Émotionnel', data: months.map(function(m) { return avgField(byMonth[m], 'emotionnel'); }), borderColor: '#f59e0b', tension: 0.4, pointRadius: 4 },
+                    { label: 'Social', data: months.map(function(m) { return avgField(byMonth[m], 'social'); }), borderColor: '#ec4899', tension: 0.4, pointRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
+                scales: {
+                    y: { min: 0, max: 5, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.5)' } },
+                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                }
+            }
+        };
+    }
+
+    function renderMeteoAnnuel(data) {
+        // Heatmap-style: rows = classes, columns = weeks
+        // Fallback to a grouped bar chart (class × avg score)
+        var byClasse = {};
+        data.forEach(function(d) {
+            if (!d.classeId) return;
+            if (!byClasse[d.classeId]) byClasse[d.classeId] = [];
+            byClasse[d.classeId].push(d);
+        });
+        var classes = Object.keys(byClasse).sort();
+
+        function avgField(entries, field) {
+            var valid = entries.filter(function(e) { return e[field] > 0; });
+            if (valid.length === 0) return 0;
+            return Math.round((valid.reduce(function(s, e) { return s + e[field]; }, 0) / valid.length) * 10) / 10;
+        }
+
+        return {
+            type: 'bar',
+            data: {
+                labels: classes,
+                datasets: [
+                    { label: 'Global', data: classes.map(function(c) { return avgField(byClasse[c], 'global'); }), backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 4 },
+                    { label: 'Cognitif', data: classes.map(function(c) { return avgField(byClasse[c], 'cognitif'); }), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 4 },
+                    { label: 'Émotionnel', data: classes.map(function(c) { return avgField(byClasse[c], 'emotionnel'); }), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 4 },
+                    { label: 'Social', data: classes.map(function(c) { return avgField(byClasse[c], 'social'); }), backgroundColor: 'rgba(236,72,153,0.7)', borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
+                scales: {
+                    y: { min: 0, max: 5, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.5)' } },
+                    x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        };
+    }
+
+    function renderMeteoClasse(data) {
+        var selectedClasse = (document.getElementById('meteoFilterClasse') || {}).value || '';
+        var filtered = selectedClasse ? data.filter(function(d) { return classesMatch(d.classeId, selectedClasse); }) : data;
+
+        if (filtered.length === 0) {
+            return {
+                type: 'bar',
+                data: { labels: ['Aucune donnée'], datasets: [{ label: '-', data: [0], backgroundColor: '#334155' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            };
+        }
+
+        // Timeline for this class
+        var labels = filtered.map(function(d) {
+            var parts = d.date.split('-');
+            return (parts[2] || '') + '/' + (parts[1] || '');
+        });
+
+        return {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Global', data: filtered.map(function(d) { return d.global || null; }), borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.3, pointRadius: 5 },
+                    { label: 'Cognitif', data: filtered.map(function(d) { return d.cognitif || null; }), borderColor: '#10b981', tension: 0.3, pointRadius: 4 },
+                    { label: 'Émotionnel', data: filtered.map(function(d) { return d.emotionnel || null; }), borderColor: '#f59e0b', tension: 0.3, pointRadius: 4 },
+                    { label: 'Social', data: filtered.map(function(d) { return d.social || null; }), borderColor: '#ec4899', tension: 0.3, pointRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
+                scales: {
+                    y: { min: 0, max: 5, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.5)' } },
+                    x: { ticks: { color: '#94a3b8', maxRotation: 45, font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        };
+    }
+
+    function renderMeteoSummary(data) {
+        var summary = document.getElementById('meteoSummary');
+        var content = document.getElementById('meteoSummaryContent');
+        if (!summary || !content) return;
+
+        if (data.length === 0) { summary.style.display = 'none'; return; }
+
+        var totalGlobal = 0, countGlobal = 0;
+        var totalCog = 0, countCog = 0;
+        var totalEmo = 0, countEmo = 0;
+        var totalSoc = 0, countSoc = 0;
+        data.forEach(function(d) {
+            if (d.global > 0) { totalGlobal += d.global; countGlobal++; }
+            if (d.cognitif > 0) { totalCog += d.cognitif; countCog++; }
+            if (d.emotionnel > 0) { totalEmo += d.emotionnel; countEmo++; }
+            if (d.social > 0) { totalSoc += d.social; countSoc++; }
+        });
+
+        var html = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px;">';
+        html += '<div style="text-align:center; padding:12px; border-radius:10px; background:rgba(99,102,241,0.15);"><div style="font-size:1.6em; font-weight:800;">' + (countGlobal ? (totalGlobal / countGlobal).toFixed(1) : '-') + '</div><div style="font-size:.75em; color:var(--muted);">Global moy.</div></div>';
+        html += '<div style="text-align:center; padding:12px; border-radius:10px; background:rgba(16,185,129,0.15);"><div style="font-size:1.6em; font-weight:800;">' + (countCog ? (totalCog / countCog).toFixed(1) : '-') + '</div><div style="font-size:.75em; color:var(--muted);">Cognitif</div></div>';
+        html += '<div style="text-align:center; padding:12px; border-radius:10px; background:rgba(245,158,11,0.15);"><div style="font-size:1.6em; font-weight:800;">' + (countEmo ? (totalEmo / countEmo).toFixed(1) : '-') + '</div><div style="font-size:.75em; color:var(--muted);">Émotionnel</div></div>';
+        html += '<div style="text-align:center; padding:12px; border-radius:10px; background:rgba(236,72,153,0.15);"><div style="font-size:1.6em; font-weight:800;">' + (countSoc ? (totalSoc / countSoc).toFixed(1) : '-') + '</div><div style="font-size:.75em; color:var(--muted);">Social</div></div>';
+        html += '</div>';
+        html += '<div style="margin-top:10px; font-size:.8em; color:var(--muted);">' + data.length + ' séances avec données météo</div>';
+
+        content.innerHTML = html;
+        summary.style.display = 'block';
+    }
+
+    window.renderMeteo = async function() {
+        await loadChartJs();
+        var data = getMeteoData();
+
+        // Populate classe filter if needed
+        var filterSelect = document.getElementById('meteoFilterClasse');
+        if (filterSelect && filterSelect.options.length <= 1) {
+            var classes = [];
+            allLogs.forEach(function(l) {
+                var c = l.classeId || l.classeDocId || '';
+                if (c && classes.indexOf(c) < 0) classes.push(c);
+            });
+            classes.sort();
+            classes.forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                filterSelect.appendChild(opt);
+            });
+        }
+
+        if (data.length === 0) {
+            document.getElementById('meteoChartContainer').innerHTML = '<div class="empty" style="padding:40px 0;"><div class="icon">📊</div><p>Aucune donnée météo. Saisissez des séances avec l\'emoji météo dans log.html.</p></div>';
+            document.getElementById('meteoSummary').style.display = 'none';
+            return;
+        }
+
+        // Destroy old chart
+        if (meteoChartInstance) { meteoChartInstance.destroy(); meteoChartInstance = null; }
+
+        // Ensure canvas exists
+        var container = document.getElementById('meteoChartContainer');
+        container.innerHTML = '<canvas id="meteoChart"></canvas>';
+        container.style.minHeight = '350px';
+        var canvas = document.getElementById('meteoChart');
+        var ctx = canvas.getContext('2d');
+
+        var config;
+        switch (currentMeteoView) {
+            case 'semaine': config = renderMeteoSemaine(data); break;
+            case 'mensuel': config = renderMeteoMensuel(data); break;
+            case 'annuel': config = renderMeteoAnnuel(data); break;
+            case 'classe': config = renderMeteoClasse(data); break;
+            default: config = renderMeteoSemaine(data);
+        }
+
+        meteoChartInstance = new Chart(ctx, config);
+        renderMeteoSummary(data);
+    };
+
+    // ══════════════════════════════════════════════
+    // PATCH TABS — Agenda + Météo lazy-load
+    // ══════════════════════════════════════════════
+    function patchTabsForAgendaAndMeteo() {
         document.querySelectorAll('.tab').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 if (btn.dataset.tab === 'agenda') {
@@ -2566,15 +3238,15 @@
                         renderAgenda();
                     }
                 }
+                if (btn.dataset.tab === 'meteo') {
+                    renderMeteo();
+                }
             });
         });
     }
 
-    // capitalize deja definie plus haut avec support "agenda"
-
-
     // Patch tabs après init
-    patchTabsForAgenda();
+    patchTabsForAgendaAndMeteo();
 </script>
 </body>
 </html>
