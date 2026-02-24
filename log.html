@@ -902,125 +902,16 @@
     let selectedEvalForm = '';
     let selectedEvalSomm = '';
 
-    // Séance options
+    // Séance options (local list used by UI dropdowns — SEANCES_UTILS imported from utils.js is the compact version)
     const SEANCES = ['Séance 1', 'Séance 1-2', 'Séance 2', 'Séance 2-3', 'Séance 3', 'Séance 3-4', 'Séance 4', 'Séance 4-5', 'Séance 5', 'Séance 6', 'Évaluation', 'Correction', 'Corr.+séance 1'];
 
-    // ═══════ MODULES PSE PAR NIVEAU (source: CockpitPSE/data_modules.js) ═══════
-    var CLASSES_CONFIG = {
-        // CAP 1ère année
-        'C1CAN': 'CAP', 'C1HORT': 'CAP', 'C1JP': 'CAP', 'C1PSR': 'CAP', 'C1VAN': 'CAP',
-        // CAP 2ème année
-        'C2CAN': 'CAP', 'C2HORT': 'CAP', 'C2JP': 'CAP', 'C2PSR': 'CAP', 'C2VAN': 'CAP',
-        // BAC PRO 2nde
-        'B2GATL1': 'BAC_PRO_2NDE', 'B2GATL2': 'BAC_PRO_2NDE', 'B2MELEC': 'BAC_PRO_2NDE',
-        'B2AGO': 'BAC_PRO_2NDE', 'B2AGORA': 'BAC_PRO_2NDE',
-        // BAC PRO 1ère
-        'B1AGO1': 'BAC_PRO_1ERE', 'B1AGO2': 'BAC_PRO_1ERE', 'B1AGO': 'BAC_PRO_1ERE',
-        'B1MELEC': 'BAC_PRO_1ERE', 'B1AGORA': 'BAC_PRO_1ERE',
-        // BAC PRO Terminale
-        'BTAGO1': 'BAC_PRO_TERM', 'BTAGO2': 'BAC_PRO_TERM', 'BTAGO': 'BAC_PRO_TERM',
-        'BTMELEC': 'BAC_PRO_TERM', 'BTAGORA': 'BAC_PRO_TERM'
-    };
+    // CLASSES_CONFIG, MODULES_PSE, THEME_LABELS → imported from utils.js (no redeclaration)
 
-    var MODULES_PSE = {
-        'CAP': [
-            { id: 'PRES', titre: 'Présentation PSE', theme: 'A' },
-            { id: 'A1', titre: 'Le système de santé', theme: 'A' },
-            { id: 'A2', titre: 'Le sommeil, un rythme biologique', theme: 'A' },
-            { id: 'A3', titre: "L'activité physique", theme: 'A' },
-            { id: 'A4', titre: 'Les addictions', theme: 'A' },
-            { id: 'A5', titre: 'La sexualité – La contraception', theme: 'A' },
-            { id: 'A6', titre: 'Prévenir les IST', theme: 'A' },
-            { id: 'A7', titre: "L'alimentation adaptée à son activité", theme: 'A' },
-            { id: 'B1', titre: 'Les ressources en eau', theme: 'B' },
-            { id: 'B2', titre: 'Le risque majeur', theme: 'B' },
-            { id: 'B3', titre: "Les ressources en énergie", theme: 'B' },
-            { id: 'B4', titre: 'Le bruit au quotidien', theme: 'B' },
-            { id: 'C1', titre: 'Les différents contrats de travail', theme: 'C' },
-            { id: 'C2', titre: 'Les enjeux de la santé et sécurité au travail', theme: 'C' },
-            { id: 'C3', titre: 'La démarche de prévention (activité de travail)', theme: 'C' },
-            { id: 'C4', titre: 'La démarche de prévention (risque spécifique au métier)', theme: 'C' },
-            { id: 'C4.1', titre: 'Le risque lié au bruit', theme: 'C' },
-            { id: 'C4.2', titre: 'Le risque lié aux poussières', theme: 'C' },
-            { id: 'C4.3', titre: 'Le risque chimique', theme: 'C' },
-            { id: 'C4.4', titre: 'Le risque mécanique', theme: 'C' },
-            { id: 'C4.5', titre: 'Le risque électrique', theme: 'C' },
-            { id: 'C4.6', titre: "Le risque lié à l'éclairage", theme: 'C' },
-            { id: 'C4.7', titre: 'Le risque de chute', theme: 'C' },
-            { id: 'C4.8', titre: 'Le risque incendie', theme: 'C' },
-            { id: 'C5', titre: "Les risques liés à l'activité physique du métier", theme: 'C' },
-            { id: 'C6', titre: 'Les acteurs et organismes de prévention', theme: 'C' },
-            { id: 'C7', titre: 'Le suivi médical des salariés et la vaccination', theme: 'C' },
-            { id: 'C8', titre: 'Fiches de secourisme', theme: 'C' },
-            { id: 'D1', titre: "L'assurance", theme: 'D' },
-            { id: 'D2', titre: 'Le budget', theme: 'D' },
-            { id: 'D3', titre: 'Les achats', theme: 'D' },
-            { id: 'CG1.1', titre: 'PSE (ESC)', theme: 'E' },
-            { id: 'CDO', titre: "Chef d'œuvre", theme: 'E' }
-        ],
-        'BAC_PRO_2NDE': [
-            { id: 'A1', titre: 'Le système de santé', theme: 'A' },
-            { id: 'A2', titre: 'Les rythmes biologiques – Le sommeil', theme: 'A' },
-            { id: 'A3', titre: "L'activité physique", theme: 'A' },
-            { id: 'A4', titre: 'Les addictions', theme: 'A' },
-            { id: 'A5', titre: 'La sexualité – La contraception', theme: 'A' },
-            { id: 'B1', titre: "L'alimentation écoresponsable", theme: 'B' },
-            { id: 'B2', titre: 'Les risques majeurs', theme: 'B' },
-            { id: 'C1', titre: 'Les enjeux de la santé et sécurité au travail', theme: 'C' },
-            { id: 'C2', titre: 'Les notions de base en prévention', theme: 'C' }
-        ],
-        'BAC_PRO_1ERE': [
-            { id: 'A6', titre: 'Les infections sexuellement transmissibles', theme: 'A' },
-            { id: 'A7', titre: 'Les pratiques alimentaires', theme: 'A' },
-            { id: 'A8', titre: 'Le stress au quotidien', theme: 'A' },
-            { id: 'B3', titre: 'Le bruit au quotidien', theme: 'B' },
-            { id: 'B4', titre: "L'eau et le développement durable", theme: 'B' },
-            { id: 'C3', titre: 'Les acteurs de prévention', theme: 'C' },
-            { id: 'C4', titre: "L'assistance et le secours en milieu professionnel", theme: 'C' },
-            { id: 'C5', titre: "L'analyse des risques professionnels", theme: 'C' },
-            { id: 'C6', titre: "L'analyse d'un risque spécifique", theme: 'C' }
-        ],
-        'BAC_PRO_TERM': [
-            { id: 'A9', titre: 'La sécurité alimentaire', theme: 'A' },
-            { id: 'B5', titre: 'Les ressources en énergie et développement durable', theme: 'B' },
-            { id: 'C7', titre: 'Le suivi de la santé au travail', theme: 'C' },
-            { id: 'C8', titre: 'Déclaration et réparation des AT/MP', theme: 'C' },
-            { id: 'C9', titre: 'Les risques psychosociaux', theme: 'C' },
-            { id: 'C10', titre: "Les risques liés à l'activité physique", theme: 'C' },
-            { id: 'C11', titre: "L'analyse d'une situation de travail", theme: 'C' },
-            { id: 'C12', titre: "L'égalité de traitement au travail", theme: 'C' }
-        ]
-    };
-
-    var THEME_LABELS = {
-        'A': 'Thème A — Santé', 'B': 'Thème B — Environnement',
-        'C': 'Thème C — Travail', 'D': 'Thème D — Consommation',
-        'E': "Chef d'œuvre"
-    };
-
-    // Emploi du temps — fallback statique (remplacé par Pronote si synchronisé)
-    let EMPLOI_DU_TEMPS = [
-        // Lundi
-        { jour: 1, heure: '09:30', classe: 'C2PSR', salle: '010' },
-        { jour: 1, heure: '10:30', classe: 'C1PSR', salle: '010' },
-        { jour: 1, heure: '15:00', classe: 'C1PSR', salle: '010', note: "Chef d'œuvre" },
-        { jour: 1, heure: '17:00', classe: 'B2GATL1', salle: '205' },
-        // Mardi
-        { jour: 2, heure: '08:30', classe: 'B1MELEC', salle: '205' },
-        { jour: 2, heure: '09:30', classe: 'C2HORT', salle: '205' },
-        { jour: 2, heure: '10:30', classe: 'BTAGO', salle: '205' },
-        { jour: 2, heure: '11:30', classe: 'BTAGO', salle: '205' },
-        // Jeudi
-        { jour: 4, heure: '08:30', classe: 'B2GATL2', salle: '205' },
-        { jour: 4, heure: '09:30', classe: 'C2JP', salle: '205' },
-        { jour: 4, heure: '11:30', classe: 'BTMELEC', salle: '205' },
-        { jour: 4, heure: '14:00', classe: 'C1JP', salle: '205' },
-        // Vendredi
-        { jour: 5, heure: '08:30', classe: 'C1JP', salle: '118' },
-        { jour: 5, heure: '09:30', classe: 'B2MELEC', salle: '118' },
-        { jour: 5, heure: '11:30', classe: 'C1PSR', salle: '205' },
-        { jour: 5, heure: '15:00', classe: 'C1CAN', salle: '205' }
-    ];
+    // MODULES_PSE, THEME_LABELS → imported from utils.js
+    // EDT → imported from utils.js, alias for legacy code
+    let EMPLOI_DU_TEMPS = EDT.map(function(c) {
+        return { jour: c.jour, heure: c.heure, classe: c.classe, salle: c.salle || '', note: c.note || '' };
+    });
 
     // Try to load Pronote EDT from Firestore for smarter auto-detect
     let pronoteEvents = [];
