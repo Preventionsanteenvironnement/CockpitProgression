@@ -121,6 +121,57 @@
             flex-wrap: wrap;
         }
         .filter-bar label { font-size: 0.85em; font-weight: 700; color: var(--muted); }
+        .btn-students {
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--text);
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 0.8em;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-students:hover { border-color: var(--primary); color: var(--primary); }
+        .students-help {
+            font-size: 0.78em;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .students-box {
+            margin-top: 14px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+        .students-box summary {
+            cursor: pointer;
+            font-size: 0.82em;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .students-list {
+            margin-top: 8px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            font-size: 0.78em;
+            color: #334155;
+        }
+        .student-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 7px 9px;
+            line-height: 1.25;
+        }
+        .student-code {
+            font-weight: 800;
+            color: #475569;
+            margin-right: 6px;
+        }
 
         /* ── LEGEND ── */
         .legend {
@@ -343,6 +394,10 @@
         <div class="filter-bar">
             <label>Classe :</label>
             <select id="filterClasse"><option value="">-- Toutes --</option></select>
+            <input type="file" id="studentsCsvInput" multiple accept=".csv,.txt" style="display:none;">
+            <button type="button" class="btn-students" id="btnImportStudents">Importer CSV élèves</button>
+            <button type="button" class="btn-students" id="btnClearStudents">Effacer liste locale</button>
+            <span class="students-help" id="studentsStatus">Aucune liste élèves locale</span>
         </div>
 
         <div class="legend">
@@ -420,6 +475,7 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script src="../PSE/data_eleves.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
@@ -449,6 +505,324 @@
     let logsByClasse = {};
     let unsubPrevue = null;
     let unsubLogs = null;
+    const STUDENTS_STORAGE_KEY = 'cockpit_progression_students_v1';
+    let localStudents = [];
+    let codeClasseIndex = {};
+
+    const CLASS_ALIAS_GROUPS = {
+        CAP_VAN: ['CPSE1', 'CAPVAN', 'C1VAN', 'C2VAN', 'C1VANC2VAN', 'VAN'],
+        PREMIERE_AGORA: ['BPSE2', '1AGORA', '1EREAGORA', 'PREMIEREAGORA', 'B1AGO', 'B1AGORA', 'B1AGO1', 'B1AGO2'],
+        TERMINALE_AGORA: ['TAGORA', 'BTAGO', 'BTAGORA', 'BTAGO1', 'BTAGO2'],
+        B2_AGORA: ['B2GATL1', 'B2GATL2', 'B2AGO', 'B2AGORA', '2GATL']
+    };
+
+    function normalizeKey(v) {
+        return (v || '')
+            .toString()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '');
+    }
+
+    function detectClassGroup(rawClass) {
+        var norm = normalizeKey(rawClass);
+        if (!norm) return '';
+        var groups = Object.keys(CLASS_ALIAS_GROUPS);
+        for (var i = 0; i < groups.length; i++) {
+            var aliases = CLASS_ALIAS_GROUPS[groups[i]];
+            for (var j = 0; j < aliases.length; j++) {
+                var aliasNorm = normalizeKey(aliases[j]);
+                if (!aliasNorm) continue;
+                if (norm === aliasNorm || norm.includes(aliasNorm) || aliasNorm.includes(norm)) {
+                    return groups[i];
+                }
+            }
+        }
+        return '';
+    }
+
+    function classesMatch(a, b) {
+        var na = normalizeKey(a);
+        var nb = normalizeKey(b);
+        if (!na || !nb) return false;
+        if (na === nb) return true;
+        if (na.includes(nb) || nb.includes(na)) return true;
+        var ga = detectClassGroup(na);
+        var gb = detectClassGroup(nb);
+        return !!(ga && gb && ga === gb);
+    }
+
+    function looksLikeCode(raw) {
+        var n = normalizeKey(raw);
+        return /^([A-Z]{2}\d{2}|PROFPSE|[A-Z0-9]{5,12})$/.test(n);
+    }
+
+    function looksLikeClass(raw) {
+        var n = normalizeKey(raw);
+        if (!n) return false;
+        if (n === 'N' || n === 'NA' || n === 'AUCUN' || n === 'AUTRE') return false;
+        if (/^(B1|B2|BT|C1|C2|CAP|TAGORA|BPSE2|CPSE1)/.test(n)) return true;
+        if (/AGORA|MELEC|PSR|JP|HORT|CAN|VAN|GATL/.test(n)) return true;
+        return false;
+    }
+
+    function parseCsvLine(line, delimiter) {
+        var out = [];
+        var cur = '';
+        var inQuotes = false;
+        for (var i = 0; i < line.length; i++) {
+            var ch = line[i];
+            if (ch === '"') {
+                if (inQuotes && line[i + 1] === '"') {
+                    cur += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch === delimiter && !inQuotes) {
+                out.push(cur.trim());
+                cur = '';
+            } else {
+                cur += ch;
+            }
+        }
+        out.push(cur.trim());
+        return out;
+    }
+
+    function detectDelimiter(line) {
+        var candidates = [',', ';', '\t'];
+        var best = ',';
+        var bestCount = -1;
+        candidates.forEach(function(d) {
+            var count = (line.match(new RegExp('\\' + d, 'g')) || []).length;
+            if (count > bestCount) {
+                best = d;
+                bestCount = count;
+            }
+        });
+        return best;
+    }
+
+    function normalizeHeader(raw) {
+        return normalizeKey(raw);
+    }
+
+    function buildCodeClasseIndex() {
+        codeClasseIndex = {};
+        var bdd = window.BDD_ELEVES;
+        if (!Array.isArray(bdd)) return;
+        bdd.forEach(function(e) {
+            var code = normalizeKey(e && e.userCode);
+            var classe = (e && e.classe) ? e.classe : '';
+            if (code && classe) codeClasseIndex[code] = classe;
+        });
+    }
+
+    function saveLocalStudents() {
+        try { localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(localStudents)); }
+        catch (_) {}
+    }
+
+    function loadLocalStudents() {
+        try {
+            var raw = localStorage.getItem(STUDENTS_STORAGE_KEY);
+            var parsed = raw ? JSON.parse(raw) : [];
+            localStudents = Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            localStudents = [];
+        }
+    }
+
+    function parseStudentsCsv(text, filename) {
+        var lines = (text || '').replace(/\r/g, '').split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+        if (lines.length === 0) return [];
+        var delimiter = detectDelimiter(lines[0]);
+        var firstCols = parseCsvLine(lines[0], delimiter);
+
+        var headerMap = {};
+        var hasHeader = false;
+        firstCols.forEach(function(h, idx) {
+            var nh = normalizeHeader(h);
+            if (['CODE', 'USERCODE', 'IDENTIFIANT', 'CODEELEVE', 'ID'].includes(nh)) { headerMap.code = idx; hasHeader = true; }
+            if (['CLASSE', 'CLASS', 'GROUPE'].includes(nh)) { headerMap.classe = idx; hasHeader = true; }
+            if (['PRENOM', 'PRENOMELEVE'].includes(nh)) { headerMap.prenom = idx; hasHeader = true; }
+            if (['NOM', 'NOMFAMILLE'].includes(nh)) { headerMap.nom = idx; hasHeader = true; }
+            if (['ELEVE', 'NOMPRENOM', 'PRENOMNOM', 'NOMETPRENOM', 'FULLNAME'].includes(nh)) { headerMap.fullname = idx; hasHeader = true; }
+        });
+
+        var startRow = hasHeader ? 1 : 0;
+        var records = [];
+        for (var i = startRow; i < lines.length; i++) {
+            var cols = parseCsvLine(lines[i], delimiter);
+            if (!cols.length) continue;
+
+            var code = '';
+            var classe = '';
+            var name = '';
+
+            if (hasHeader) {
+                if (headerMap.code !== undefined) code = cols[headerMap.code] || '';
+                if (headerMap.classe !== undefined) classe = cols[headerMap.classe] || '';
+                if (headerMap.fullname !== undefined) {
+                    name = cols[headerMap.fullname] || '';
+                } else {
+                    var prenom = headerMap.prenom !== undefined ? (cols[headerMap.prenom] || '') : '';
+                    var nom = headerMap.nom !== undefined ? (cols[headerMap.nom] || '') : '';
+                    name = (prenom + ' ' + nom).trim();
+                }
+            } else {
+                var c0 = cols[0] || '';
+                var c1 = cols[1] || '';
+                var c2 = cols[2] || '';
+
+                if (looksLikeCode(c0)) {
+                    code = c0;
+                    name = c1;
+                    if (looksLikeClass(c2)) classe = c2;
+                } else if (looksLikeClass(c0)) {
+                    classe = c0;
+                    name = c1;
+                    if (looksLikeCode(c2)) code = c2;
+                } else {
+                    name = c0;
+                    if (looksLikeClass(c1)) classe = c1;
+                    else if (looksLikeCode(c1)) code = c1;
+                }
+            }
+
+            code = normalizeKey(code);
+            if (!classe && code && codeClasseIndex[code]) classe = codeClasseIndex[code];
+            if (!name && code) name = code;
+
+            if (!name && !code) continue;
+            records.push({
+                code: code || '',
+                name: (name || '').trim(),
+                classe: (classe || '').trim(),
+                source: filename || 'import'
+            });
+        }
+        return records;
+    }
+
+    function mergeStudents(newRecords) {
+        var map = {};
+        function keyOf(r) {
+            var codeKey = normalizeKey(r.code || '');
+            if (codeKey) return 'C:' + codeKey;
+            return 'N:' + normalizeKey(r.name || '') + '|K:' + normalizeKey(r.classe || '');
+        }
+        localStudents.forEach(function(r) { map[keyOf(r)] = Object.assign({}, r); });
+        newRecords.forEach(function(r) {
+            var key = keyOf(r);
+            if (!map[key]) {
+                map[key] = Object.assign({}, r);
+                return;
+            }
+            var cur = map[key];
+            if (!cur.name && r.name) cur.name = r.name;
+            if (!cur.classe && r.classe) cur.classe = r.classe;
+            if (!cur.code && r.code) cur.code = r.code;
+            cur.source = r.source || cur.source;
+        });
+        localStudents = Object.keys(map).map(function(k) { return map[k]; });
+        localStudents.sort(function(a, b) {
+            var ac = (a.classe || '').localeCompare(b.classe || '');
+            if (ac !== 0) return ac;
+            return (a.name || a.code || '').localeCompare(b.name || b.code || '');
+        });
+    }
+
+    function getStudentsForClass(classeId) {
+        if (!classeId) return [];
+        return localStudents.filter(function(s) {
+            return s.classe && classesMatch(s.classe, classeId);
+        });
+    }
+
+    function buildStudentsBlock(classeId) {
+        var students = getStudentsForClass(classeId);
+        if (students.length === 0) {
+            return '<div class="students-box"><div class="students-help">Aucun élève local pour cette classe.</div></div>';
+        }
+
+        var list = students.map(function(s) {
+            var code = s.code ? ('<span class="student-code">' + s.code + '</span>') : '';
+            var label = s.name || s.code || 'Élève';
+            return '<div class="student-item">' + code + label + '</div>';
+        }).join('');
+
+        return '<details class="students-box">' +
+            '<summary>Élèves de la classe (' + students.length + ')</summary>' +
+            '<div class="students-list">' + list + '</div>' +
+            '</details>';
+    }
+
+    function updateStudentsStatus() {
+        var info = document.getElementById('studentsStatus');
+        if (!info) return;
+        var classSet = {};
+        localStudents.forEach(function(s) {
+            if (s.classe) classSet[normalizeKey(s.classe)] = true;
+        });
+        var nbClasses = Object.keys(classSet).length;
+        if (!localStudents.length) {
+            info.textContent = 'Aucune liste élèves locale';
+        } else {
+            info.textContent = localStudents.length + ' élève(s) · ' + nbClasses + ' classe(s) (stockage local téléphone)';
+        }
+    }
+
+    async function importStudentsFiles(fileList) {
+        if (!fileList || !fileList.length) return;
+        var imported = [];
+        for (var i = 0; i < fileList.length; i++) {
+            var file = fileList[i];
+            var text = await file.text();
+            var records = parseStudentsCsv(text, file.name);
+            imported = imported.concat(records);
+        }
+        mergeStudents(imported);
+        saveLocalStudents();
+        updateStudentsStatus();
+        refreshViews();
+        showToast('✅ Élèves importés: ' + imported.length + ' ligne(s)');
+    }
+
+    function setupStudentsImportUI() {
+        var input = document.getElementById('studentsCsvInput');
+        var btnImport = document.getElementById('btnImportStudents');
+        var btnClear = document.getElementById('btnClearStudents');
+        if (!input || !btnImport || !btnClear) return;
+
+        btnImport.addEventListener('click', function() { input.click(); });
+        input.addEventListener('change', async function(e) {
+            var files = Array.from(e.target.files || []);
+            try {
+                await importStudentsFiles(files);
+            } catch (err) {
+                console.error('Import élèves CSV error:', err);
+                showToast('❌ Erreur import élèves');
+            } finally {
+                input.value = '';
+            }
+        });
+
+        btnClear.addEventListener('click', function() {
+            localStudents = [];
+            saveLocalStudents();
+            updateStudentsStatus();
+            refreshViews();
+            showToast('🗑️ Liste élèves locale effacée');
+        });
+    }
+
+    buildCodeClasseIndex();
+    loadLocalStudents();
+    setupStudentsImportUI();
+    updateStudentsStatus();
 
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
@@ -499,6 +873,7 @@
             if (!logsByClasse[key]) logsByClasse[key] = [];
             logsByClasse[key].push(log);
         });
+        updateStudentsStatus();
         renderStats();
         populateFilters();
         renderClasseView();
@@ -799,7 +1174,7 @@
             // Week cells
             var cellsHtml = '';
             var currentModule = '';
-            semaines.forEach(function(sem) {
+            semaines.forEach(function(sem, i) {
                 var cls = situationClass(sem);
                 var isCurrent = sem.date === currentMonday;
 
@@ -856,7 +1231,8 @@
                 '<div class="month-headers">' + monthsHtml + '</div>' +
                 '<div class="timeline-row">' + cellsHtml + '</div>' +
                 '</div>' +
-                modulesSummary;
+                modulesSummary +
+                buildStudentsBlock(prevue.classeId);
 
             // Click handler for timeline cells
             (function(p) {
@@ -1439,6 +1815,14 @@
             '</div>' +
             (alert.date ? '<span class="alert-date">' + alert.date + '</span>' : '');
         return div;
+    }
+
+    function showToast(message) {
+        var toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 2400);
     }
 
 </script>
