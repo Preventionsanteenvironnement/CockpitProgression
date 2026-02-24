@@ -2059,7 +2059,9 @@
         };
 
         try {
-            var docId = today + '_' + classeDocId;
+            var now2 = new Date();
+            var hhmm = String(now2.getHours()).padStart(2, '0') + String(now2.getMinutes()).padStart(2, '0');
+            var docId = today + '_' + hhmm + '_' + classeDocId;
             await setDoc(doc(db, 'progression_logs', docId), data);
 
             // Sync progression_prevue pour le dashboard
