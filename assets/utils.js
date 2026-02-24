@@ -122,6 +122,7 @@ export const EDT = [
     // LUNDI
     { jour: 1, heure: '09:30', heureFin: '10:30', classe: 'C2PSR',   salle: '010', alternance: 'toutes' },
     { jour: 1, heure: '10:30', heureFin: '11:30', classe: 'C1PSR',   salle: '010', alternance: 'SB' },
+    { jour: 1, heure: '14:00', heureFin: '17:00', classe: 'C1PSR',   salle: '010', type: 'chef_oeuvre', alternance: 'toutes' },
     { jour: 1, heure: '17:00', heureFin: '18:00', classe: 'B2AGORA', salle: '205', alternance: 'toutes' },
     // MARDI
     { jour: 2, heure: '08:30', heureFin: '09:30', classe: 'B1MELEC', salle: '205', alternance: 'toutes' },
@@ -403,8 +404,9 @@ export function computeSeancesDisponibles(classeId, dateDebut, dateFin, edt, vac
         if (isAbsencePerso(d)) continue;
         if (isPFMP(d, classeId, pfmpData)) continue;
 
-        // Vérifier si cette classe a un cours ce jour selon l'EDT
+        // Vérifier si cette classe a un cours PSE ce jour selon l'EDT (exclure chef_oeuvre)
         const coursJour = edt.filter(c =>
+            !c.type &&
             c.jour === day &&
             classesMatch(c.classe, classeId) &&
             coursSePasse(c, d)

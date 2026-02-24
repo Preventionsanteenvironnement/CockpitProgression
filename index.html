@@ -479,13 +479,40 @@
     });
 
     document.getElementById('btnGoogle').addEventListener('click', async () => {
-        try { await signInWithPopup(auth, googleProvider); }
-        catch (e) {
-            if (e.code === 'auth/popup-blocked') await signInWithRedirect(auth, googleProvider);
-            else alert('Erreur: ' + e.message);
+        try {
+            await signInWithPopup(auth, googleProvider);
+        } catch (e) {
+            // Ignore user-initiated cancellations silently
+            const ignoreCodes = [
+                'auth/popup-closed-by-user',
+                'auth/cancelled-popup-request',
+                'auth/user-cancelled'
+            ];
+            if (ignoreCodes.includes(e.code)) {
+                console.log('Auth popup cancelled by user');
+                return;
+            }
+            // Popup blocked → fallback to redirect
+            if (e.code === 'auth/popup-blocked' || e.code === 'auth/internal-error') {
+                try { await signInWithRedirect(auth, googleProvider); }
+                catch (redirectErr) { console.error('Redirect auth error:', redirectErr); }
+                return;
+            }
+            console.error('Auth error:', e);
+            showToast('❌ Erreur connexion');
         }
     });
-    getRedirectResult(auth).catch(() => {});
+
+    // Handle redirect result (silently — don't block navigation)
+    getRedirectResult(auth).then(result => {
+        if (result && result.user) console.log('Redirect auth OK:', result.user.email);
+    }).catch(err => {
+        // Never block — just log
+        if (err.code !== 'auth/popup-closed-by-user') {
+            console.warn('Redirect result error (non-bloquant):', err.code);
+        }
+    });
+
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
     // ═══ LOAD DATA ═══
@@ -524,6 +551,34 @@
         currentMonday = getLundi(new Date());
         renderWeek();
     });
+
+    // ═══ GROUP CONCURRENT COURSES (C1VAN + C2VAN same slot) ═══
+    function groupConcurrentCourses(courses) {
+        const groups = {};
+        courses.forEach(c => {
+            if (c.type === 'chef_oeuvre') {
+                groups['__co_' + c.heure] = [c];
+                return;
+            }
+            const key = c.heure + '|' + (c.heureFin || '') + '|' + (c.salle || '');
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(c);
+        });
+        const result = [];
+        Object.values(groups).forEach(group => {
+            if (group.length === 1) {
+                result.push(group[0]);
+            } else {
+                const merged = Object.assign({}, group[0]);
+                merged.classe = group.map(c => c.classe).join(' + ');
+                merged._grouped = true;
+                merged._classes = group.map(c => c.classe);
+                result.push(merged);
+            }
+        });
+        result.sort((a, b) => a.heure.localeCompare(b.heure));
+        return result;
+    }
 
     // ═══ RENDER WEEK VIEW ═══
     function renderWeek() {
@@ -615,8 +670,9 @@
                 continue;
             }
 
-            // Get courses for this day
-            const courses = getCoursForDay(dayDate);
+            // Get courses for this day and group concurrent ones (C1VAN + C2VAN)
+            const rawCourses = getCoursForDay(dayDate);
+            const courses = groupConcurrentCourses(rawCourses);
 
             if (courses.length === 0) {
                 const empty = document.createElement('div');
@@ -652,9 +708,28 @@
         const classeId = cours.classe;
         const block = document.createElement('div');
 
-        // Check PFMP for this class on this day
-        const pfmpPeriod = isPFMP(dayDate, classeId);
-        if (pfmpPeriod) {
+        // ── CHEF D'OEUVRE → gray non-clickable ──
+        if (cours.type === 'chef_oeuvre') {
+            block.className = 'course-block no-click';
+            block.style.cssText = 'background:var(--surface);color:var(--muted);cursor:default;';
+            block.innerHTML = `
+                <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
+                <div class="cb-classe">🎨 Chef d'œuvre · ${cours.classe} · ${cours.salle || ''}</div>`;
+            return block;
+        }
+
+        // Determine which classes to check (for grouped courses)
+        const classesToCheck = cours._grouped ? cours._classes : [classeId];
+
+        // Check PFMP — for grouped courses, ALL classes must be in PFMP
+        let pfmpPeriod = null;
+        let allPfmp = true;
+        classesToCheck.forEach(c => {
+            const p = isPFMP(dayDate, c);
+            if (p) { if (!pfmpPeriod) pfmpPeriod = p; }
+            else { allPfmp = false; }
+        });
+        if (pfmpPeriod && allPfmp) {
             block.className = 'course-block cb-pfmp no-click';
             block.innerHTML = `
                 <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
@@ -663,10 +738,18 @@
             return block;
         }
 
-        // Find matching log
-        const log = findLog(dateISO, classeId);
-        // Find matching prevue for this week
-        const prevue = findPrevueForWeek(classeId, dayDate);
+        // Find matching log (check any class in the group)
+        let log = null;
+        classesToCheck.forEach(c => { if (!log) log = findLog(dateISO, c); });
+
+        // Find matching prevue (check any class in the group)
+        let prevue = null;
+        if (cours._grouped) {
+            cours._classes.forEach(c => { if (!prevue) prevue = findPrevueForWeek(c, dayDate); });
+        } else {
+            prevue = findPrevueForWeek(classeId, dayDate);
+        }
+
         // Alternance badge
         const altBadge = cours.alternance !== 'toutes' ? `<span class="cb-badge-alt">${cours.alternance}</span>` : '';
 
@@ -701,7 +784,11 @@
                 <div class="cb-module">${moduleText || 'À saisir'}</div>
                 <div class="cb-status">○ Non saisi</div>`;
             block.addEventListener('click', () => {
-                window.location.href = `log.html?date=${dateISO}&classe=${classeId}`;
+                if (cours._grouped) {
+                    showGroupedClassPicker(cours._classes, dateISO);
+                } else {
+                    window.location.href = `log.html?date=${dateISO}&classe=${classeId}`;
+                }
             });
 
         } else if (prevue) {
@@ -715,7 +802,13 @@
                 <div class="cb-classe">${classeId}</div>
                 <div class="cb-module">${moduleText}${seanceText ? ' — ' + seanceText : ''}</div>
                 <div class="cb-status">📅 Planifié</div>`;
-            block.addEventListener('click', () => showPlanDetail(prevue, cours, dateISO, classeId));
+            block.addEventListener('click', () => {
+                if (cours._grouped) {
+                    showGroupedClassPicker(cours._classes, dateISO, cours, prevue);
+                } else {
+                    showPlanDetail(prevue, cours, dateISO, classeId);
+                }
+            });
 
         } else {
             // ── FUTURE WITHOUT PLAN ──
@@ -724,10 +817,59 @@
                 <div class="cb-heure">${cours.heure}–${cours.heureFin}</div>
                 <div class="cb-classe">${classeId}</div>
                 <div class="cb-module" style="color:var(--muted);">Non planifié</div>`;
-            block.addEventListener('click', () => showPlanDetail(null, cours, dateISO, classeId));
+            block.addEventListener('click', () => {
+                if (cours._grouped) {
+                    showGroupedClassPicker(cours._classes, dateISO, cours, null);
+                } else {
+                    showPlanDetail(null, cours, dateISO, classeId);
+                }
+            });
         }
 
         return block;
+    }
+
+    // ═══ GROUPED CLASS PICKER (C1VAN + C2VAN) ═══
+    function showGroupedClassPicker(classes, dateISO, coursObj, prevueObj) {
+        const isFutureMode = arguments.length > 2;
+        const existing = document.getElementById('groupedClassPicker');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'groupedClassPicker';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background:var(--surface);border-radius:var(--radius);padding:24px;min-width:260px;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+        modal.innerHTML = '<div style="font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text);">Quelle classe ?</div>';
+
+        classes.forEach(c => {
+            const btn = document.createElement('button');
+            btn.textContent = c;
+            btn.style.cssText = 'display:block;width:100%;padding:14px;margin-bottom:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;transition:all 0.15s;';
+            btn.addEventListener('mouseenter', () => { btn.style.background = 'var(--primary)'; btn.style.borderColor = 'var(--primary)'; });
+            btn.addEventListener('mouseleave', () => { btn.style.background = 'var(--surface-2)'; btn.style.borderColor = 'var(--border)'; });
+            btn.addEventListener('click', () => {
+                overlay.remove();
+                if (isFutureMode) {
+                    const chosenPrevue = findPrevueForWeek(c, new Date(dateISO + 'T12:00:00'));
+                    showPlanDetail(chosenPrevue, coursObj, dateISO, c);
+                } else {
+                    window.location.href = `log.html?date=${dateISO}&classe=${c}`;
+                }
+            });
+            modal.appendChild(btn);
+        });
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Annuler';
+        cancelBtn.style.cssText = 'display:block;width:100%;padding:10px;border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;margin-top:4px;';
+        cancelBtn.addEventListener('click', () => overlay.remove());
+        modal.appendChild(cancelBtn);
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
     }
 
     // ═══ FIND DATA HELPERS ═══

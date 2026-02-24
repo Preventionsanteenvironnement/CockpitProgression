@@ -143,8 +143,8 @@
             display: inline-block; padding: 2px 8px; border-radius: 6px;
             font-size: 0.7em; font-weight: 600; margin-left: 6px;
         }
-        .phase-badge.cours { background: var(--success-light); color: #166534; }
-        .phase-badge.evaluation { background: #fef3c7; color: #92400e; }
+        .phase-badge.cours { background: var(--success-light); color: #34d399; }
+        .phase-badge.evaluation { background: rgba(245,158,11,0.15); color: #fbbf24; }
         .phase-badge.correction { background: var(--primary-light); color: #818cf8; }
 
         /* ── STATUS BUTTONS ── */
@@ -217,14 +217,23 @@
         .quality-btn.selected.q-correct { border-color: var(--warning); background: var(--warning-light); }
         .quality-btn.selected.q-difficile { border-color: var(--danger); background: var(--danger-light); }
 
-        /* ── TEXT INPUTS ── */
-        input[type="text"], textarea {
+        /* ── TEXT INPUTS (dark theme) ── */
+        input[type="text"], input[type="date"], input[type="time"], textarea, select {
             width: 100%; padding: 12px; border: 2px solid var(--border);
             border-radius: 12px; font-size: 0.95em; font-family: inherit;
             margin-bottom: 12px; color: var(--text);
+            background: var(--surface-2); caret-color: #f1f5f9;
         }
-        input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        input[type="text"]:focus, input[type="date"]:focus, input[type="time"]:focus,
+        textarea:focus, select:focus { outline: none; border-color: var(--primary); }
         textarea { resize: vertical; min-height: 60px; }
+        ::placeholder { color: var(--muted); opacity: 1; }
+        ::-webkit-input-placeholder { color: var(--muted); }
+        /* Fix Safari date/time picker */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.7);
+        }
 
         /* ── SAVE BAR ── */
         .save-bar {
@@ -248,9 +257,9 @@
         /* ── LAST LOG INFO ── */
         .last-log {
             padding: 12px 14px; border-radius: 10px; margin-bottom: 14px;
-            background: #eff6ff; border: 1px solid #bfdbfe; font-size: 0.82em;
+            background: var(--primary-light); border: 1px solid rgba(99,102,241,0.3); font-size: 0.82em;
         }
-        .last-log strong { color: #1e40af; }
+        .last-log strong { color: #818cf8; }
 
         /* ── VALIDE TOGGLE ── */
         .valide-toggle {
@@ -284,8 +293,8 @@
             transition: all 0.15s; -webkit-tap-highlight-color: transparent;
         }
         .missed-banner:active { transform: scale(0.98); }
-        .missed-title { font-weight: 700; font-size: 0.85em; color: #c2410c; margin-bottom: 4px; }
-        .missed-detail { font-size: 0.78em; color: #9a3412; }
+        .missed-title { font-weight: 700; font-size: 0.85em; color: #fb923c; margin-bottom: 4px; }
+        .missed-detail { font-size: 0.78em; color: #fdba74; }
 
         /* ── TODO NEXT GRID ── */
         .todo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
@@ -297,24 +306,26 @@
         }
         .todo-btn:active { transform: scale(0.95); }
         .todo-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
-        .todo-btn.eval-option { border-color: #f59e0b; color: #92400e; }
-        .todo-btn.eval-option.selected { border-color: #f59e0b; background: var(--warning-light); color: #92400e; }
+        .todo-btn.seance-chip { border-color: var(--primary); color: #818cf8; font-weight: 800; }
+        .todo-btn.seance-chip.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .todo-btn.eval-option { border-color: #f59e0b; color: #fbbf24; }
+        .todo-btn.eval-option.selected { border-color: #f59e0b; background: rgba(245,158,11,0.2); color: #fbbf24; }
 
         /* ── PRONOTE REMINDER ── */
         .pronote-banner {
             padding: 14px; border-radius: 12px; margin-bottom: 10px;
             background: rgba(251,146,60,0.1); border: 2px solid #fb923c;
         }
-        .pronote-banner .reminder-title { font-weight: 700; font-size: 0.85em; color: #c2410c; margin-bottom: 4px; }
-        .pronote-banner .reminder-detail { font-size: 0.78em; color: #9a3412; }
+        .pronote-banner .reminder-title { font-weight: 700; font-size: 0.85em; color: #fb923c; margin-bottom: 4px; }
+        .pronote-banner .reminder-detail { font-size: 0.78em; color: #fdba74; }
 
         /* ── CONTINUATION REMINDER ── */
         .continuation-banner {
             padding: 14px; border-radius: 12px; margin-bottom: 10px;
-            background: #eff6ff; border: 2px solid #60a5fa;
+            background: rgba(96,165,250,0.1); border: 2px solid #60a5fa;
         }
-        .continuation-banner .reminder-title { font-weight: 700; font-size: 0.85em; color: #1e40af; margin-bottom: 4px; }
-        .continuation-banner .reminder-detail { font-size: 0.78em; color: #1e3a8a; }
+        .continuation-banner .reminder-title { font-weight: 700; font-size: 0.85em; color: #60a5fa; margin-bottom: 4px; }
+        .continuation-banner .reminder-detail { font-size: 0.78em; color: #93c5fd; }
 
         /* ── QR SCANNER ── */
         .qr-scanner-card {
@@ -354,7 +365,7 @@
             border: 1px solid var(--border); margin-bottom: 6px;
             background: var(--surface-2); font-size: 0.82em;
         }
-        .history-card:first-child { border-color: var(--primary); background: #eff6ff; }
+        .history-card:first-child { border-color: var(--primary); background: var(--primary-light); }
         .history-card-header {
             display: flex; justify-content: space-between;
             align-items: center; margin-bottom: 4px;
@@ -420,30 +431,30 @@
         .chip.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
         .chip.autre { border-style:dashed; }
         .chip.autre.selected { border-style:solid; border-color:#6366f1; background:#e0e7ff; color:#4338ca; }
-        .chip-autre-input { width:100%; padding:10px 13px; border:2px solid #6366f1; border-radius:10px; font-size:.9em; font-family:inherit; margin-top:4px; margin-bottom:8px; color:var(--text); display:none; }
-        .chip-autre-input:focus { outline:none; }
+        .chip-autre-input { width:100%; padding:10px 13px; border:2px solid #6366f1; border-radius:10px; font-size:.9em; font-family:inherit; margin-top:4px; margin-bottom:8px; color:var(--text); background:var(--surface-2); caret-color:#f1f5f9; display:none; }
+        .chip-autre-input:focus { outline:none; border-color:var(--primary); }
 
         /* ── HISTORIQUE TOP ── */
         .history-compact { padding:11px 13px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); margin-bottom:7px; font-size:.82em; }
-        .history-compact:first-child { border-color:var(--primary); background:#f0fdf9; }
+        .history-compact:first-child { border-color:var(--primary); background:var(--primary-light); }
         .history-compact-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
         .history-compact-date { font-weight:800; color:var(--muted); }
         .history-compact-statut { font-weight:700; font-size:.9em; }
         .history-compact-detail { color:var(--muted); line-height:1.4; }
 
-        /* ── BANNERS ── */
+        /* ── BANNERS (dark theme) ── */
         .banner { padding:12px 14px; border-radius:11px; margin-bottom:8px; }
-        .banner-warn { background:#fff7ed; border:2px solid #fb923c; }
-        .banner-info { background:#eff6ff; border:2px solid #60a5fa; }
-        .banner-situation { background:#fef3c7; border:2px solid #fbbf24; }
+        .banner-warn { background:rgba(251,146,60,0.1); border:2px solid #fb923c; }
+        .banner-info { background:rgba(96,165,250,0.1); border:2px solid #60a5fa; }
+        .banner-situation { background:rgba(251,191,36,0.1); border:2px solid #fbbf24; }
         .banner-title { font-weight:800; font-size:.84em; margin-bottom:2px; }
-        .banner-warn .banner-title { color:#c2410c; }
-        .banner-info .banner-title { color:#1e40af; }
-        .banner-situation .banner-title { color:#b45309; }
+        .banner-warn .banner-title { color:#fb923c; }
+        .banner-info .banner-title { color:#60a5fa; }
+        .banner-situation .banner-title { color:#fbbf24; }
         .banner-detail { font-size:.77em; }
-        .banner-warn .banner-detail { color:#9a3412; }
-        .banner-info .banner-detail { color:#1e3a8a; }
-        .banner-situation .banner-detail { color:#92400e; }
+        .banner-warn .banner-detail { color:#fdba74; }
+        .banner-info .banner-detail { color:#93c5fd; }
+        .banner-situation .banner-detail { color:#fcd34d; }
 
         /* ── QUALITÉ ÉTENDUE ── */
         .quality-dim { margin-bottom:10px; }
@@ -510,7 +521,7 @@
     <div id="planifSection" style="display:none; margin-bottom:14px;">
         <div style="padding:12px; border-radius:10px; background:var(--bg); border:1px solid var(--border);">
             <label class="field-label">Date cible</label>
-            <input type="date" id="planifDate" style="width:100%; padding:12px; border:2px solid var(--border); border-radius:12px; font-size:1em; font-family:inherit; margin-bottom:10px;">
+            <input type="date" id="planifDate" style="width:100%; padding:12px; border:2px solid var(--border); border-radius:12px; font-size:1em; font-family:inherit; margin-bottom:10px; background:var(--surface-2); color:var(--text);">
             <label class="field-label">Type</label>
             <div class="chip-grid">
                 <button class="chip" onclick="selectPlanifType('CCF', this)">CCF</button>
@@ -702,12 +713,23 @@
         <div class="card-title">👥 Classe</div>
 
         <label class="field-label">Absences</label>
-        <div class="stepper">
+        <div class="stepper" id="absStepper">
             <button class="stepper-btn" onclick="changeAbs(-1)">−</button>
             <span class="stepper-value" id="absCount">0</span>
             <button class="stepper-btn" onclick="changeAbs(1)">+</button>
         </div>
-        <input type="text" id="absencesNoms" placeholder="Noms des absents (optionnel)" style="margin-bottom:14px;">
+        <div id="absChipsContainer" style="display:none; margin-bottom:10px;">
+            <div style="font-size:.72em; color:var(--muted); margin-bottom:6px; font-weight:600;">Cliquer pour marquer absent :</div>
+            <div id="absChipsGrid" class="students-checklist"></div>
+        </div>
+        <div id="absNoList" style="display:none; font-size:.78em; color:var(--muted); margin-bottom:10px; padding:8px 12px; background:var(--bg); border-radius:8px; border:1px dashed var(--border);">
+            Aucune liste élève — saisie manuelle uniquement
+        </div>
+        <input type="text" id="absencesNoms" placeholder="Noms des absents (optionnel)" style="margin-bottom:10px;">
+        <div id="elevesSansCours" style="display:none; margin-bottom:14px;">
+            <div style="font-size:.72em; color:var(--warning); margin-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">⚠️ Élèves sans cours (absents ce jour)</div>
+            <div id="elevesSansCoursGrid" class="students-checklist"></div>
+        </div>
 
         <label class="field-label">Qualité de la séance</label>
         <div class="quality-dim">
@@ -874,6 +896,17 @@
     const paramDate = params.get('date') || '';  // YYYY-MM-DD from index.html
     const paramClasse = params.get('classe') || '';  // class ID from index.html
 
+    function getContextDateISO() {
+        return paramDate || formatDateISO(new Date());
+    }
+
+    function getContextDateObject() {
+        var iso = getContextDateISO();
+        var d = iso ? new Date(iso + 'T12:00:00') : new Date();
+        if (Number.isNaN(d.getTime())) d = new Date();
+        return d;
+    }
+
     // Checklist items
     const CHECKLIST = [
         { key: 'eval_diagnostique', label: 'Éval diagnostique', icon: '🔍' },
@@ -1009,7 +1042,11 @@
         var detection;
         if (paramClasse) {
             detection = { classe: paramClasse, location: '', source: 'url_param' };
-            selectClasseFromDetected(paramClasse);
+            var selectedFromParam = selectClasseFromDetected(paramClasse);
+            if (!selectedFromParam) {
+                console.warn('Classe URL non trouvée dans progression_prevue:', paramClasse);
+                showToast('⚠️ Classe non trouvée : sélectionnez-la manuellement');
+            }
         } else {
             detection = detectCurrentClass(room);
         }
@@ -1432,12 +1469,22 @@
     }
 
     // ═══════ FIND CURRENT WEEK FROM PROGRESSION PREVUE ═══════
-    function findCurrentWeekPrevue(classeDocId) {
+    function findCurrentWeekPrevue(classeDocId, targetDate) {
         if (!classeDocId) return null;
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue || !prevue.semaines) return null;
 
-        var today = new Date();
+        var refDate;
+        if (typeof targetDate === 'string' && targetDate) {
+            refDate = new Date(targetDate + 'T12:00:00');
+        } else if (targetDate instanceof Date) {
+            refDate = new Date(targetDate);
+        } else {
+            refDate = getContextDateObject();
+        }
+        if (Number.isNaN(refDate.getTime())) refDate = new Date();
+        refDate.setHours(12, 0, 0, 0);
+
         for (var i = 0; i < prevue.semaines.length; i++) {
             var sem = prevue.semaines[i];
             if (!sem.date) continue;
@@ -1449,7 +1496,7 @@
             } else {
                 semDate = new Date(sem.date);
             }
-            var diffDays = (today - semDate) / (1000 * 60 * 60 * 24);
+            var diffDays = (refDate - semDate) / (1000 * 60 * 60 * 24);
             if (diffDays >= 0 && diffDays < 7) {
                 return { week: sem, index: i };
             }
@@ -1459,9 +1506,10 @@
 
     // ═══════ SYNC PREVUE AFTER LOG SAVE ═══════
     async function syncPrevue(classeDocId, statut, situation) {
-        // Use planified date if set, otherwise current week
+        // Use planified date if set, otherwise session context date
         var planifDate = planifEnabled ? document.getElementById('planifDate').value : '';
-        var weekInfo = planifDate ? findWeekByDate(classeDocId, planifDate) : findCurrentWeekPrevue(classeDocId);
+        var contextDate = planifDate || getContextDateISO();
+        var weekInfo = findWeekByDate(classeDocId, contextDate) || findCurrentWeekPrevue(classeDocId, contextDate);
         if (!weekInfo) return;
 
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
@@ -1546,7 +1594,8 @@
         }
 
         // ── AUTO-SELECT MODULE from progression_prevue (current week) ──
-        var weekInfo = findCurrentWeekPrevue(classeDocId);
+        var contextDate = getContextDateISO();
+        var weekInfo = findWeekByDate(classeDocId, contextDate) || findCurrentWeekPrevue(classeDocId, contextDate);
         if (weekInfo && weekInfo.week.module) {
             var expectedId = extractModuleId(weekInfo.week.module);
             var matched = false;
@@ -1574,7 +1623,7 @@
         // Afficher historique en haut de page
         showHistoryTop(classeDocId, prevue.classeId);
         // Situation auto depuis progression prévue
-        var weekInfoSit = findCurrentWeekPrevue(classeDocId);
+        var weekInfoSit = findWeekByDate(classeDocId, contextDate) || findCurrentWeekPrevue(classeDocId, contextDate);
         if (weekInfoSit) {
             var sitPrevue = (weekInfoSit.week.situation || '').toLowerCase();
             var situAutoCard = document.getElementById('situationAutoCard');
@@ -1596,6 +1645,9 @@
 
         // Rebuild checklist when module changes too
         selectModule.onchange = function() { buildChecklist(); };
+
+        // Load student chips for absence tracking
+        renderAbsenceChips(classeDocId, prevue ? prevue.classeId : classeDocId);
     }
 
     // ═══════ LAST LOG + HISTORIQUE ═══════
@@ -1905,6 +1957,7 @@
                 btn.addEventListener('click', function() {
                     checklist[item.key] = !checklist[item.key];
                     btn.classList.toggle('active', checklist[item.key]);
+                    updateElevesSansCours();
                 });
                 grid.appendChild(btn);
             }
@@ -1919,12 +1972,18 @@
         var isEval = /[Éé]valuation/i.test(currentSeance);
         var isCorrection = /[Cc]orr/i.test(currentSeance);
 
+        // ── Chips séances toujours visibles en premier (S1-S4) ──
+        for (var s = 1; s <= 4; s++) {
+            options.push({ action: 'seance_' + s, label: 'Séance ' + s, isSeanceChip: true });
+        }
+
+        // ── Options contextuelles ──
         if (seanceNum > 0) {
-            options.push({ action: 'poursuivre_s' + seanceNum, label: 'Poursuivre séance ' + seanceNum });
-            if (seanceNum < 6) {
+            options.push({ action: 'poursuivre_s' + seanceNum, label: 'Poursuivre S' + seanceNum });
+            if (seanceNum >= 4 && seanceNum < 6) {
                 options.push({ action: 'seance_' + (seanceNum + 1), label: 'Séance ' + (seanceNum + 1) });
             }
-            options.push({ action: 'seance_' + seanceNum + '_eval', label: 'Séance ' + seanceNum + ' + évaluation' });
+            options.push({ action: 'seance_' + seanceNum + '_eval', label: 'S' + seanceNum + ' + évaluation' });
         }
 
         if (isEval) {
@@ -1935,10 +1994,6 @@
         if (isCorrection) {
             options.push({ action: 'seance_suivante', label: 'Séance suivante' });
             options.push({ action: 'rendre_copies', label: 'Rendre les copies' });
-        }
-
-        if (!currentSeance) {
-            options.push({ action: 'seance_1', label: 'Séance 1' });
         }
 
         // Options évaluation (toujours disponibles)
@@ -1962,10 +2017,18 @@
         var grid = document.getElementById('todoGrid');
         grid.innerHTML = '';
         var options = generateTodoOptions(selectedSeance);
+        var addedSeparator = false;
 
         options.forEach(function(opt) {
+            // Add separator after séance chips
+            if (!opt.isSeanceChip && !addedSeparator) {
+                addedSeparator = true;
+                var sep = document.createElement('div');
+                sep.style.cssText = 'width:100%;height:1px;background:var(--border);margin:4px 0;';
+                grid.appendChild(sep);
+            }
             var btn = document.createElement('button');
-            btn.className = 'todo-btn' + (opt.reminderPronote ? ' eval-option' : '');
+            btn.className = 'todo-btn' + (opt.reminderPronote ? ' eval-option' : '') + (opt.isSeanceChip ? ' seance-chip' : '');
             btn.textContent = opt.label;
             btn.addEventListener('click', function() {
                 grid.querySelectorAll('.todo-btn').forEach(function(b) { b.classList.remove('selected'); });
@@ -2083,18 +2146,17 @@
     function buildCourseNav() {
         var nav = document.getElementById('courseNav');
         var now = new Date();
-        var todayStr = now.toISOString().split('T')[0];
+        var contextDate = getContextDateObject();
+        var contextDateStr = getContextDateISO();
 
-        // Calculate Monday and Friday of current week
-        var dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-        var monday = new Date(now);
-        monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+        // Calculate Monday and Friday of the target week (clicked date if provided)
+        var monday = getLundi(contextDate);
         monday.setHours(0, 0, 0, 0);
         var friday = new Date(monday);
         friday.setDate(monday.getDate() + 4);
         friday.setHours(23, 59, 59, 999);
-        var mondayStr = monday.toISOString().split('T')[0];
-        var fridayStr = friday.toISOString().split('T')[0];
+        var mondayStr = formatDateISO(monday);
+        var fridayStr = formatDateISO(friday);
 
         todayCourses = [];
 
@@ -2102,7 +2164,7 @@
             pronoteEvents.forEach(function(ev) {
                 if (!ev.start || !ev.classe) return;
                 var evDate = new Date(ev.start);
-                var evDateStr = evDate.toISOString().split('T')[0];
+                var evDateStr = formatDateISO(evDate);
                 // Filter Monday→Friday of current week
                 if (evDateStr < mondayStr || evDateStr > fridayStr) return;
                 todayCourses.push({
@@ -2120,7 +2182,7 @@
                 var dayTarget = new Date(monday);
                 dayTarget.setDate(monday.getDate() + d);
                 var targetDay = dayTarget.getDay();
-                var dayStr = dayTarget.toISOString().split('T')[0];
+                var dayStr = formatDateISO(dayTarget);
 
                 EMPLOI_DU_TEMPS.forEach(function(e) {
                     if (e.jour !== targetDay) return;
@@ -2146,41 +2208,63 @@
         // Find best initial index — prioritize today's current course
         var currentMs = now.getTime();
         var bestIdx = -1;
-        var bestDiff = Infinity;
-
-        // 1st pass: current course today
-        todayCourses.forEach(function(ev, idx) {
-            if (ev.dateStr !== todayStr) return;
-            var evStart = new Date(ev.start).getTime();
-            var diffMin = (currentMs - evStart) / 60000;
-            if (diffMin >= -30 && diffMin < 120 && Math.abs(diffMin) < bestDiff) {
-                bestDiff = Math.abs(diffMin);
-                bestIdx = idx;
+        // If opened from a clicked slot, target that exact date/class first
+        if (paramDate) {
+            for (var exact = 0; exact < todayCourses.length; exact++) {
+                var evExact = todayCourses[exact];
+                if (evExact.dateStr !== paramDate) continue;
+                if (paramClasse && !classesMatch(evExact.classe, paramClasse)) continue;
+                bestIdx = exact;
+                break;
             }
-        });
-
-        // 2nd: latest past course today
-        if (bestIdx === -1) {
-            for (var i = todayCourses.length - 1; i >= 0; i--) {
-                if (todayCourses[i].dateStr !== todayStr) continue;
-                if (new Date(todayCourses[i].start).getTime() < currentMs) {
-                    bestIdx = i;
-                    break;
+            if (bestIdx === -1) {
+                for (var sameDay = 0; sameDay < todayCourses.length; sameDay++) {
+                    if (todayCourses[sameDay].dateStr === paramDate) {
+                        bestIdx = sameDay;
+                        break;
+                    }
                 }
             }
         }
 
-        // 3rd: first future course this week
+        // Default behavior (current context day/time)
         if (bestIdx === -1) {
-            for (var j = 0; j < todayCourses.length; j++) {
-                if (new Date(todayCourses[j].start).getTime() > currentMs) {
-                    bestIdx = j;
-                    break;
+            var bestDiff = Infinity;
+
+            // 1st pass: current course of context day
+            todayCourses.forEach(function(ev, idx) {
+                if (ev.dateStr !== contextDateStr) return;
+                var evStart = new Date(ev.start).getTime();
+                var diffMin = (currentMs - evStart) / 60000;
+                if (diffMin >= -30 && diffMin < 120 && Math.abs(diffMin) < bestDiff) {
+                    bestDiff = Math.abs(diffMin);
+                    bestIdx = idx;
+                }
+            });
+
+            // 2nd: latest past course of context day
+            if (bestIdx === -1) {
+                for (var i = todayCourses.length - 1; i >= 0; i--) {
+                    if (todayCourses[i].dateStr !== contextDateStr) continue;
+                    if (new Date(todayCourses[i].start).getTime() < currentMs) {
+                        bestIdx = i;
+                        break;
+                    }
+                }
+            }
+
+            // 3rd: first future course this week
+            if (bestIdx === -1) {
+                for (var j = 0; j < todayCourses.length; j++) {
+                    if (new Date(todayCourses[j].start).getTime() > currentMs) {
+                        bestIdx = j;
+                        break;
+                    }
                 }
             }
         }
 
-        // 4th: fallback to first course
+        // Fallback to first course
         if (bestIdx === -1) bestIdx = 0;
 
         courseNavIndex = bestIdx;
@@ -2287,6 +2371,94 @@
         absences = Math.max(0, Math.min(35, absences + delta));
         document.getElementById('absCount').textContent = absences;
     };
+
+    // ═══════ ABSENCE CHIPS — Liste élèves cliquables ═══════
+    function renderAbsenceChips(classeDocId, classeLabel) {
+        var container = document.getElementById('absChipsContainer');
+        var grid = document.getElementById('absChipsGrid');
+        var noList = document.getElementById('absNoList');
+        if (!container || !grid) return;
+
+        // Load students from localStorage
+        var allStudents = [];
+        try {
+            var raw = localStorage.getItem(STUDENTS_STORAGE_KEY);
+            allStudents = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(allStudents)) allStudents = [];
+        } catch (_) { allStudents = []; }
+
+        // Filter for this class
+        var students = allStudents.filter(function(s) {
+            if (!s.classe) return false;
+            return classesMatchUtil(s.classe, classeDocId) || classesMatchUtil(s.classe, classeLabel);
+        });
+
+        if (students.length === 0) {
+            container.style.display = 'none';
+            noList.style.display = 'block';
+            return;
+        }
+
+        noList.style.display = 'none';
+        // Sort by name
+        students.sort(function(a, b) { return (a.name || a.code || '').localeCompare(b.name || b.code || ''); });
+
+        container.style.display = 'block';
+        grid.innerHTML = '';
+
+        students.forEach(function(s) {
+            var name = s.name || s.code || 'Élève';
+            var item = document.createElement('div');
+            item.className = 'student-item';
+            item.textContent = name;
+            item.dataset.studentName = name;
+
+            // Check if already marked absent
+            var isAbsent = absentsEleves.indexOf(name) >= 0;
+            if (isAbsent) item.classList.add('absent');
+
+            item.addEventListener('click', function() {
+                var idx = absentsEleves.indexOf(name);
+                if (idx >= 0) {
+                    absentsEleves.splice(idx, 1);
+                    item.classList.remove('absent');
+                } else {
+                    absentsEleves.push(name);
+                    item.classList.add('absent');
+                }
+                // Sync count + text field
+                absences = absentsEleves.length;
+                document.getElementById('absCount').textContent = absences;
+                document.getElementById('absencesNoms').value = absentsEleves.join(', ');
+                // Update "élèves sans cours"
+                updateElevesSansCours();
+            });
+
+            grid.appendChild(item);
+        });
+    }
+
+    function updateElevesSansCours() {
+        var container = document.getElementById('elevesSansCours');
+        var grid = document.getElementById('elevesSansCoursGrid');
+        if (!container || !grid) return;
+
+        // Only show if "cours distribué" is checked AND there are absents
+        var coursDistrib = checklist.cours_complet || checklist.cours_seance || checklist.docs_distribues;
+        if (!coursDistrib || absentsEleves.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'block';
+        grid.innerHTML = '';
+        absentsEleves.forEach(function(name) {
+            var item = document.createElement('div');
+            item.className = 'student-item no-cours';
+            item.innerHTML = '<span>' + name + '</span><span style="font-size:.7em;margin-left:auto;">absent ce jour</span>';
+            grid.appendChild(item);
+        });
+    }
 
     window.toggleValide = function() {
         isValide = !isValide;
@@ -2400,26 +2572,40 @@
         };
 
         try {
-            var now2 = new Date();
-            var hhmm = String(now2.getHours()).padStart(2, '0') + String(now2.getMinutes()).padStart(2, '0');
             // UPSERT: même docId par jour + classe = pas de doublon
             var docId = today + '_' + classeDocId;
-            await setDoc(doc(db, 'progression_logs', docId), data);
 
-            // Sync progression_prevue pour le dashboard
+            // Promise.race avec timeout 10s pour éviter le blocage mobile
+            var savePromise = setDoc(doc(db, 'progression_logs', docId), data);
+            var timeoutPromise = new Promise(function(_, reject) {
+                setTimeout(function() { reject(new Error('Timeout — vérifiez votre connexion')); }, 10000);
+            });
+            await Promise.race([savePromise, timeoutPromise]);
+
+            // Sync progression_prevue (timeout 5s, non bloquant)
             try {
-                await syncPrevue(classeDocId, selectedStatut, selectedSituation);
+                var syncTimeout = new Promise(function(_, reject) {
+                    setTimeout(function() { reject(new Error('Sync timeout')); }, 5000);
+                });
+                await Promise.race([syncPrevue(classeDocId, selectedStatut, selectedSituation), syncTimeout]);
             } catch (syncErr) {
                 console.warn('Prevue sync failed (log saved):', syncErr);
             }
 
+            btnSave.textContent = '✅ Enregistré !';
+            btnSave.style.background = 'linear-gradient(135deg, #10b981, #059669)';
             showToast('✅ Enregistré !');
             setTimeout(function() { window.location.href = 'index.html'; }, 1500);
         } catch (err) {
             console.error('Save error:', err);
-            showToast('❌ Erreur: ' + err.message);
-            btnSave.disabled = false;
-            btnSave.textContent = '💾 ENREGISTRER';
+            btnSave.textContent = '❌ Erreur — réessayer';
+            btnSave.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            showToast('❌ Erreur : ' + err.message);
+            setTimeout(function() {
+                btnSave.disabled = false;
+                btnSave.textContent = '💾 ENREGISTRER';
+                btnSave.style.background = '';
+            }, 3000);
         }
     }
 
@@ -2621,7 +2807,8 @@
 
     // ═══════ MODULE DELAY DETECTION ═══════
     async function checkModuleDelay(classeDocId) {
-        var weekInfo = findCurrentWeekPrevue(classeDocId);
+        var contextDate = getContextDateISO();
+        var weekInfo = findWeekByDate(classeDocId, contextDate) || findCurrentWeekPrevue(classeDocId, contextDate);
         if (!weekInfo) return;
         var currentWeek = weekInfo.week;
 
