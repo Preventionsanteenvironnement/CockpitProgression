@@ -436,6 +436,25 @@
     </div>
     <div class="date-display" id="dateJour"></div>
 
+    <!-- PLANIFICATION FUTURE -->
+    <div class="module-suivant-toggle" id="planifToggle" style="margin-bottom:10px;">
+        <span id="planifIcon">☐</span>
+        <span>📅 Planifier (date future / CCF / événement)</span>
+    </div>
+    <div id="planifSection" style="display:none; margin-bottom:14px;">
+        <div style="padding:12px; border-radius:10px; background:#f8fafc; border:1px solid var(--border);">
+            <label class="field-label">Date cible</label>
+            <input type="date" id="planifDate" style="width:100%; padding:12px; border:2px solid var(--border); border-radius:12px; font-size:1em; font-family:inherit; margin-bottom:10px;">
+            <label class="field-label">Type</label>
+            <div class="situation-grid">
+                <button class="situation-btn" onclick="selectPlanifType('CCF', this)">CCF</button>
+                <button class="situation-btn" onclick="selectPlanifType('Réunion', this)">Réunion</button>
+                <button class="situation-btn" onclick="selectPlanifType('Événement', this)">Événement</button>
+                <button class="situation-btn" onclick="selectPlanifType('Rattrapage', this)">Rattrapage</button>
+            </div>
+        </div>
+    </div>
+
     <!-- QR SCANNER -->
     <div class="qr-scanner-card">
         <button class="btn-scan" id="btnScan" onclick="toggleQrScanner()">📷 Scanner un QR code</button>
@@ -596,6 +615,7 @@
             <span class="stepper-value" id="absCount">0</span>
             <button class="stepper-btn" onclick="changeAbs(1)">+</button>
         </div>
+        <input type="text" id="absencesNoms" placeholder="Noms des absents (optionnel)" style="margin-bottom:14px;">
 
         <label class="field-label">Qualité de la séance</label>
         <div class="quality-grid">
@@ -671,7 +691,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
-        getFirestore, doc, setDoc, getDoc, getDocs, updateDoc,
+        getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, onSnapshot,
         collection, query, orderBy, limit, serverTimestamp, where
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import {
@@ -729,6 +749,9 @@
     let cps = { cognitif: '', emotionnel: '', social: '' };
     let isValide = false;
     let selectedEvalDiag = '';
+    // Planification future
+    let planifEnabled = false;
+    let planifType = '';
     let selectedEvalForm = '';
     let selectedEvalSomm = '';
 
@@ -906,22 +929,26 @@
             document.getElementById('roomNum').textContent = room;
         }
 
-        // Load progressions from Firestore
-        try {
-            var snap = await getDocs(collection(db, 'progression_prevue'));
-            allPrevue = [];
-            snap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
-        } catch (e) { console.error('Load prevue error:', e); }
-
-        // Populate classe dropdown
+        // Load progressions from Firestore (real-time)
         var select = document.getElementById('selectClasse');
-        allPrevue.sort(function(a, b) { return a.classeId.localeCompare(b.classeId); });
-        allPrevue.forEach(function(p) {
-            var opt = document.createElement('option');
-            opt.value = p.id;
-            opt.textContent = p.classeId;
-            opt.dataset.niveau = p.niveau;
-            select.appendChild(opt);
+        await new Promise(function(resolve) {
+            onSnapshot(collection(db, 'progression_prevue'), function(snap) {
+                allPrevue = [];
+                snap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
+                allPrevue.sort(function(a, b) { return a.classeId.localeCompare(b.classeId); });
+                // Rebuild classe dropdown
+                var currentVal = select.value;
+                select.innerHTML = '<option value="">-- Sélectionner --</option>';
+                allPrevue.forEach(function(p) {
+                    var opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.classeId;
+                    opt.dataset.niveau = p.niveau;
+                    select.appendChild(opt);
+                });
+                if (currentVal) select.value = currentVal;
+                resolve();
+            }, function(e) { console.error('Load prevue error:', e); resolve(); });
         });
 
         // Load Pronote events from Firestore
@@ -963,9 +990,10 @@
         buildSeancePicker();
         // Build todo grid
         buildTodoGrid();
-        // Init phase & module suivant
+        // Init phase & module suivant & planification
         buildPhaseSelector('phaseGrid', true);
         initModuleSuivantToggle();
+        initPlanifToggle();
 
         // Bind classe change
         select.addEventListener('change', onClasseChange);
@@ -1126,6 +1154,35 @@
         if (section) { section.style.display = 'none'; }
     }
 
+    // ═══════ RESOLVE NIVEAU (with fallbacks) ═══════
+    function resolveNiveau(prevue) {
+        // 1) Try CLASSES_CONFIG mapping
+        var niveau = CLASSES_CONFIG[prevue.classeId] || null;
+        if (niveau && MODULES_PSE[niveau]) return niveau;
+        // 2) Try prevue.niveau directly (stored from CSV import)
+        if (prevue.niveau && MODULES_PSE[prevue.niveau]) return prevue.niveau;
+        // 3) Try fuzzy match on classeId
+        var cid = (prevue.classeId || '').toUpperCase();
+        if (/^C[12]/.test(cid) || /CAP/i.test(cid)) return 'CAP';
+        if (/^BT/.test(cid) || /TERM/i.test(cid)) return 'BAC_PRO_TERM';
+        if (/^B1/.test(cid) || /1[EÈ]RE/i.test(cid)) return 'BAC_PRO_1ERE';
+        if (/^B2/.test(cid) || /2NDE/i.test(cid)) return 'BAC_PRO_2NDE';
+        return null;
+    }
+
+    function extractModulesFromSemaines(prevue) {
+        var modules = [];
+        var seen = {};
+        (prevue.semaines || []).forEach(function(s) {
+            var m = (s.module || s.moduleBase || '').trim();
+            if (m && m !== 'N/A' && m !== 'Présentation PSE' && !seen[m]) {
+                seen[m] = true;
+                modules.push(m);
+            }
+        });
+        return modules;
+    }
+
     function populateModuleSuivantDropdown() {
         var selectSuivant = document.getElementById('selectModuleSuivant');
         if (!selectSuivant) return;
@@ -1134,9 +1191,16 @@
         if (!classeDocId) return;
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue) return;
-        var niveau = CLASSES_CONFIG[prevue.classeId] || null;
+        var niveau = resolveNiveau(prevue);
         if (niveau && MODULES_PSE[niveau]) {
             populateModuleDropdown(selectSuivant, MODULES_PSE[niveau]);
+        } else {
+            // Fallback: extract from semaines
+            extractModulesFromSemaines(prevue).forEach(function(m) {
+                var opt = document.createElement('option');
+                opt.value = m; opt.textContent = m;
+                selectSuivant.appendChild(opt);
+            });
         }
         selectSuivant.onchange = function() {
             selectedModuleSuivant = selectSuivant.value;
@@ -1160,6 +1224,46 @@
                 selectedPhaseSuivant = 'cours';
             }
         });
+    }
+
+    // ═══════ PLANIFICATION FUTURE ═══════
+    function initPlanifToggle() {
+        var toggle = document.getElementById('planifToggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', function() {
+            planifEnabled = !planifEnabled;
+            toggle.classList.toggle('active', planifEnabled);
+            document.getElementById('planifIcon').textContent = planifEnabled ? '☑' : '☐';
+            document.getElementById('planifSection').style.display = planifEnabled ? 'block' : 'none';
+            if (!planifEnabled) {
+                planifType = '';
+                document.getElementById('planifDate').value = '';
+                document.querySelectorAll('#planifSection .situation-btn').forEach(function(b) { b.classList.remove('selected'); });
+            }
+        });
+    }
+
+    window.selectPlanifType = function(type, btn) {
+        document.querySelectorAll('#planifSection .situation-btn').forEach(function(b) { b.classList.remove('selected'); });
+        if (planifType === type) { planifType = ''; }
+        else { planifType = type; btn.classList.add('selected'); }
+    };
+
+    function findWeekByDate(classeDocId, dateStr) {
+        if (!classeDocId || !dateStr) return null;
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) return null;
+        var target = new Date(dateStr);
+        for (var i = 0; i < prevue.semaines.length; i++) {
+            var sem = prevue.semaines[i];
+            if (!sem.date) continue;
+            var parts = sem.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            if (!parts) continue;
+            var semDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
+            var diffDays = (target - semDate) / (1000 * 60 * 60 * 24);
+            if (diffDays >= 0 && diffDays < 7) return { week: sem, index: i };
+        }
+        return null;
     }
 
     // ═══════ FIND CURRENT WEEK FROM PROGRESSION PREVUE ═══════
@@ -1190,7 +1294,9 @@
 
     // ═══════ SYNC PREVUE AFTER LOG SAVE ═══════
     async function syncPrevue(classeDocId, statut, situation) {
-        var weekInfo = findCurrentWeekPrevue(classeDocId);
+        // Use planified date if set, otherwise current week
+        var planifDate = planifEnabled ? document.getElementById('planifDate').value : '';
+        var weekInfo = planifDate ? findWeekByDate(classeDocId, planifDate) : findCurrentWeekPrevue(classeDocId);
         if (!weekInfo) return;
 
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
@@ -1224,6 +1330,22 @@
             sem.valide = false;
         }
 
+        // ── Propager module suivant sur la prochaine semaine utile ──
+        if (moduleSuivantEnabled && selectedModuleSuivant) {
+            for (var j = weekInfo.index + 1; j < prevue.semaines.length; j++) {
+                var nextSem = prevue.semaines[j];
+                var sit = (nextSem.situation || 'Normal').toLowerCase();
+                var isNormal = sit === 'normal' || sit === '' || sit === 'n/a';
+                if (isNormal) {
+                    nextSem.moduleBase = selectedModuleSuivant;
+                    nextSem.module = selectedModuleSuivant;
+                    nextSem.phase = selectedPhaseSuivant;
+                    nextSem.transition = '';
+                    break;
+                }
+            }
+        }
+
         await updateDoc(doc(db, 'progression_prevue', classeDocId), { semaines: prevue.semaines });
     }
 
@@ -1243,24 +1365,14 @@
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue) return;
 
-        // Determine niveau from CLASSES_CONFIG
-        var niveau = CLASSES_CONFIG[prevue.classeId] || null;
+        // Determine niveau with fallbacks
+        var niveau = resolveNiveau(prevue);
 
         if (niveau && MODULES_PSE[niveau]) {
-            // ── NEW: Populate from complete module list ──
             populateModuleDropdown(selectModule, MODULES_PSE[niveau]);
         } else {
-            // ── FALLBACK: Extract from prevue.semaines (legacy) ──
-            var modules = [];
-            var seen = {};
-            (prevue.semaines || []).forEach(function(s) {
-                var m = (s.module || '').trim();
-                if (m && m !== 'N/A' && m !== 'Présentation PSE' && !seen[m]) {
-                    seen[m] = true;
-                    modules.push(m);
-                }
-            });
-            modules.forEach(function(m) {
+            // Fallback: extract from prevue.semaines
+            extractModulesFromSemaines(prevue).forEach(function(m) {
                 var opt = document.createElement('option');
                 opt.value = m;
                 opt.textContent = m;
@@ -2007,10 +2119,12 @@
 
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         var classeLabel = prevue ? prevue.classeId : classeDocId;
-        var today = new Date().toISOString().split('T')[0];
+        var planifDate = planifEnabled ? document.getElementById('planifDate').value : '';
+        var today = planifDate || new Date().toISOString().split('T')[0];
 
         var data = {
             timestamp: serverTimestamp(),
+            planification: planifEnabled ? { type: planifType, dateCible: planifDate } : null,
             date: today,
             room: room,
             classeDocId: classeDocId,
@@ -2040,6 +2154,7 @@
             evalSomm: selectedEvalSomm || '',
             cps: Object.assign({}, cps),
             absences: absences,
+            absencesNoms: document.getElementById('absencesNoms').value.trim(),
             qualite: selectedQualite,
             remarque: document.getElementById('remarque').value.trim(),
             todoNext: selectedTodo ? {

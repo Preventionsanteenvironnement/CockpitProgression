@@ -893,33 +893,38 @@
         container.appendChild(div);
     }
 
-    // ═══════ LOAD DATA ═══════
+    // ═══════ LOAD DATA (real-time) ═══════
     var allPrevue = [];
     var allLogs = [];
+    var unsubPrevue = null;
+    var unsubLogs = null;
 
-    async function loadData() {
-        try {
-            // Load progression prevue
-            var prevueSnap = await getDocs(collection(db, 'progression_prevue'));
+    function refreshIndexViews() {
+        allLogs.sort(function(a, b) {
+            var ta = a.timestamp ? a.timestamp.seconds : 0;
+            var tb = b.timestamp ? b.timestamp.seconds : 0;
+            return tb - ta;
+        });
+        renderOverview();
+        renderClasses();
+        renderImported();
+    }
+
+    function loadData() {
+        if (unsubPrevue) { unsubPrevue(); unsubPrevue = null; }
+        if (unsubLogs) { unsubLogs(); unsubLogs = null; }
+
+        unsubPrevue = onSnapshot(collection(db, 'progression_prevue'), function(snap) {
             allPrevue = [];
-            prevueSnap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
+            snap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
+            refreshIndexViews();
+        }, function(err) { console.error('onSnapshot prevue error:', err); });
 
-            // Load logs
-            var logsSnap = await getDocs(collection(db, 'progression_logs'));
+        unsubLogs = onSnapshot(collection(db, 'progression_logs'), function(snap) {
             allLogs = [];
-            logsSnap.forEach(function(d) { allLogs.push({ id: d.id, ...d.data() }); });
-            allLogs.sort(function(a, b) {
-                var ta = a.timestamp ? a.timestamp.seconds : 0;
-                var tb = b.timestamp ? b.timestamp.seconds : 0;
-                return tb - ta;
-            });
-
-            renderOverview();
-            renderClasses();
-            renderImported();
-        } catch (err) {
-            console.error('loadData error:', err);
-        }
+            snap.forEach(function(d) { allLogs.push({ id: d.id, ...d.data() }); });
+            refreshIndexViews();
+        }, function(err) { console.error('onSnapshot logs error:', err); });
     }
 
     // ═══════ RENDER OVERVIEW ═══════

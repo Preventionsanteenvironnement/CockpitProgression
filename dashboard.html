@@ -407,6 +407,13 @@
         </div>
     </div>
 
+<!-- ── WEEK DETAIL PANEL ── -->
+<div id="weekDetailOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:200;" onclick="closeWeekDetail()"></div>
+<div id="weekDetail" style="display:none; position:fixed; bottom:0; left:0; right:0; max-height:70vh; overflow-y:auto; background:white; border-radius:20px 20px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,0.15); z-index:201; padding:24px 20px 30px; transition:transform 0.3s ease;">
+    <div style="width:40px; height:4px; background:#e2e8f0; border-radius:2px; margin:0 auto 16px;"></div>
+    <div id="weekDetailContent"></div>
+</div>
+
 </div>
 </div>
 
@@ -416,7 +423,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import {
-        getFirestore, doc, getDocs, collection
+        getFirestore, doc, getDocs, collection, onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import {
         getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect,
@@ -440,6 +447,8 @@
     let allPrevue = [];
     let allLogs = [];
     let logsByClasse = {};
+    let unsubPrevue = null;
+    let unsubLogs = null;
 
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
@@ -463,7 +472,11 @@
         }
     });
     getRedirectResult(auth).catch(function() {});
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+    document.getElementById('btnLogout').addEventListener('click', function() {
+        if (unsubPrevue) { unsubPrevue(); unsubPrevue = null; }
+        if (unsubLogs) { unsubLogs(); unsubLogs = null; }
+        signOut(auth);
+    });
 
     // ═══════ TABS ═══════
     document.querySelectorAll('.tab').forEach(function(btn) {
@@ -477,35 +490,99 @@
 
     function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-    // ═══════ LOAD ALL DATA ═══════
-    async function loadAll() {
-        try {
-            var prevueSnap = await getDocs(collection(db, 'progression_prevue'));
+    // ═══════ LOAD ALL DATA (real-time) ═══════
+    function refreshViews() {
+        // Index logs by classeId
+        logsByClasse = {};
+        allLogs.forEach(function(log) {
+            var key = log.classeId || log.classeDocId || '';
+            if (!logsByClasse[key]) logsByClasse[key] = [];
+            logsByClasse[key].push(log);
+        });
+        renderStats();
+        populateFilters();
+        renderClasseView();
+        renderModuleView();
+        renderTimeline();
+        renderAlertes();
+    }
+
+    function loadAll() {
+        // Cleanup previous listeners
+        if (unsubPrevue) { unsubPrevue(); unsubPrevue = null; }
+        if (unsubLogs) { unsubLogs(); unsubLogs = null; }
+
+        unsubPrevue = onSnapshot(collection(db, 'progression_prevue'), function(snap) {
             allPrevue = [];
-            prevueSnap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
+            snap.forEach(function(d) { allPrevue.push({ id: d.id, ...d.data() }); });
             allPrevue.sort(function(a, b) { return a.classeId.localeCompare(b.classeId); });
+            refreshViews();
+        }, function(err) { console.error('onSnapshot prevue error:', err); });
 
-            var logsSnap = await getDocs(collection(db, 'progression_logs'));
+        unsubLogs = onSnapshot(collection(db, 'progression_logs'), function(snap) {
             allLogs = [];
-            logsSnap.forEach(function(d) { allLogs.push({ id: d.id, ...d.data() }); });
+            snap.forEach(function(d) { allLogs.push({ id: d.id, ...d.data() }); });
+            refreshViews();
+        }, function(err) { console.error('onSnapshot logs error:', err); });
+    }
 
-            // Index logs by classeId
-            logsByClasse = {};
-            allLogs.forEach(function(log) {
-                var key = log.classeId || log.classeDocId || '';
-                if (!logsByClasse[key]) logsByClasse[key] = [];
-                logsByClasse[key].push(log);
-            });
+    // ═══════ WEEK DETAIL PANEL ═══════
+    window.closeWeekDetail = function() {
+        document.getElementById('weekDetail').style.display = 'none';
+        document.getElementById('weekDetailOverlay').style.display = 'none';
+    };
 
-            renderStats();
-            populateFilters();
-            renderClasseView();
-            renderModuleView();
-            renderTimeline();
-            renderAlertes();
-        } catch (err) {
-            console.error('loadAll error:', err);
+    function showWeekDetail(classeId, sem, classeDocId) {
+        var panel = document.getElementById('weekDetail');
+        var overlay = document.getElementById('weekDetailOverlay');
+        var content = document.getElementById('weekDetailContent');
+
+        // Find matching log
+        var matchLog = null;
+        allLogs.forEach(function(log) {
+            if ((log.classeId === classeId || log.classeDocId === classeDocId) && log.date) {
+                // Match by week date
+                var parts = (sem.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                if (parts) {
+                    var semDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
+                    var logDate = new Date(log.date);
+                    var diff = Math.abs(semDate - logDate) / (1000 * 60 * 60 * 24);
+                    if (diff < 7 && (!matchLog || log.date > matchLog.date)) matchLog = log;
+                }
+            }
+        });
+
+        var html = '<h3 style="margin-bottom:12px; font-size:1.1em;">' + classeId + ' — ' + (sem.semaine || sem.date || '') + '</h3>';
+        html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.85em; margin-bottom:14px;">';
+        html += '<div><strong>Date :</strong> ' + (sem.date || '-') + '</div>';
+        html += '<div><strong>Module :</strong> ' + (sem.moduleBase || sem.module || '-') + '</div>';
+        html += '<div><strong>Phase :</strong> ' + (sem.phase || 'cours') + '</div>';
+        html += '<div><strong>Statut :</strong> ' + (sem.statut || '-') + '</div>';
+        html += '<div><strong>Séance :</strong> ' + (sem.seance || '-') + '</div>';
+        html += '<div><strong>Situation :</strong> ' + (sem.situation || 'Normal') + '</div>';
+        if (sem.objectifModule) html += '<div style="grid-column:1/-1;"><strong>Objectif module :</strong> ' + sem.objectifModule + '</div>';
+        if (sem.objectifSeance) html += '<div style="grid-column:1/-1;"><strong>Objectif séance :</strong> ' + sem.objectifSeance + '</div>';
+        if (sem.evalDiag && sem.evalDiag !== 'N/A') html += '<div><strong>Éval diag :</strong> ' + sem.evalDiag + '</div>';
+        if (sem.evalForm && sem.evalForm !== 'N/A') html += '<div><strong>Éval form :</strong> ' + sem.evalForm + '</div>';
+        if (sem.evaluation && sem.evaluation !== 'N/A') html += '<div><strong>Évaluation :</strong> ' + sem.evaluation + '</div>';
+        html += '</div>';
+
+        if (matchLog) {
+            html += '<div style="padding:12px; border-radius:10px; background:#eff6ff; border:1px solid #bfdbfe; font-size:0.82em; margin-bottom:14px;">';
+            html += '<strong>Log du ' + matchLog.date + '</strong><br>';
+            html += (matchLog.moduleId || '') + ' — ' + (matchLog.seance || '') + ' [' + (matchLog.statut || '') + ']';
+            if (matchLog.qualite) html += '<br>Qualité : ' + matchLog.qualite;
+            if (matchLog.absences > 0) html += '<br>Absences : ' + matchLog.absences;
+            if (matchLog.absencesNoms) html += ' (' + matchLog.absencesNoms + ')';
+            if (matchLog.remarque) html += '<br>Note : ' + matchLog.remarque;
+            html += '</div>';
         }
+
+        html += '<a href="log.html" style="display:block; text-align:center; padding:14px; border-radius:12px; background:linear-gradient(135deg,#10b981,#059669); color:white; font-weight:700; text-decoration:none; font-size:0.95em;">📝 Saisir pour ' + classeId + '</a>';
+
+        content.innerHTML = html;
+        overlay.style.display = 'block';
+        panel.style.display = 'block';
     }
 
     // ═══════ STATS ═══════
@@ -514,14 +591,27 @@
 
         var totalRealise = 0;
         var totalEnCours = 0;
+        var today = new Date();
         allPrevue.forEach(function(p) {
+            var hasActiveSemaine = false;
             (p.semaines || []).forEach(function(s) {
-                if (s.valide || s.statut === 'Realise' || s.statut === 'Réalisé') totalRealise++;
+                if (s.valide || s.statut === 'Realise' || s.statut === 'Réalisé') {
+                    totalRealise++;
+                } else {
+                    // Semaine passée, situation normale, non validée = en cours
+                    var sit = (s.situation || 'Normal').toLowerCase();
+                    var isNormal = sit === 'normal' || sit === '' || sit === 'n/a';
+                    if (isNormal && s.date) {
+                        var parts = s.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                        if (parts) {
+                            var semDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
+                            var diffDays = (today - semDate) / (1000 * 60 * 60 * 24);
+                            if (diffDays >= 0 && diffDays < 14) hasActiveSemaine = true;
+                        }
+                    }
+                }
             });
-        });
-        // Count "en cours" from logs
-        allLogs.forEach(function(log) {
-            if (log.statut === 'en_cours') totalEnCours++;
+            if (hasActiveSemaine) totalEnCours++;
         });
 
         document.getElementById('stRealise').textContent = totalRealise;
@@ -752,7 +842,7 @@
                 if (sem.evaluation && sem.evaluation !== 'N/A') tooltipText += '\\n📝 Éval: ' + sem.evaluation;
                 if (sem.situation && sem.situation !== 'Normal') tooltipText += '\\n⚡ ' + sem.situation;
 
-                cellsHtml += '<div class="timeline-cell ' + cls + (isCurrent ? ' c-current' : '') + '">' +
+                cellsHtml += '<div class="timeline-cell ' + cls + (isCurrent ? ' c-current' : '') + '" data-sem-idx="' + i + '" style="cursor:pointer;">' +
                     cellContent +
                     '<div class="tooltip">' + tooltipText.replace(/\\n/g, '<br>') + '</div>' +
                     '</div>';
@@ -767,6 +857,18 @@
                 '<div class="timeline-row">' + cellsHtml + '</div>' +
                 '</div>' +
                 modulesSummary;
+
+            // Click handler for timeline cells
+            (function(p) {
+                card.addEventListener('click', function(e) {
+                    var cell = e.target.closest('.timeline-cell');
+                    if (!cell || !cell.dataset.semIdx) return;
+                    var idx = parseInt(cell.dataset.semIdx);
+                    if (p.semaines && p.semaines[idx]) {
+                        showWeekDetail(p.classeId, p.semaines[idx], p.id);
+                    }
+                });
+            })(prevue);
 
             container.appendChild(card);
         });
@@ -1158,13 +1260,19 @@
                     td.style.position = 'relative';
                 }
 
-                // Tooltip
+                // Tooltip + click
                 if (sem) {
                     var tipText = w.date + ' (' + w.semaine + ')';
                     var module = cleanModuleName(sem.module || '');
                     if (module && module !== 'N/A') tipText += ' — ' + module;
                     if (sem.situation && sem.situation !== 'Normal') tipText += ' — ' + sem.situation;
                     td.innerHTML = '<div class="tooltip">' + tipText + '</div>';
+                    td.style.cursor = 'pointer';
+                    (function(p, s) {
+                        td.addEventListener('click', function() {
+                            showWeekDetail(p.classeId, s, p.id);
+                        });
+                    })(prevue, sem);
                 }
 
                 tr.appendChild(td);
