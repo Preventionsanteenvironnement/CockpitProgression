@@ -440,6 +440,9 @@
                 <button type="button" class="btn-import-action danger" id="btnClearLogs">
                     🗑️ Effacer l'historique de saisie (progression_logs)
                 </button>
+                <button type="button" class="btn-import-action danger" id="btnPurgeHistory">
+                    🧨 Purge complète historique (logs + agenda)
+                </button>
             </div>
             <div class="import-progress" id="importProgress"></div>
         </div>
@@ -911,19 +914,11 @@
     }
 
     function findPrevueForWeek(classeId, dayDate) {
-        const dateStr = formatDateISO(dayDate);
-        // Convert to DD/MM/YYYY for matching against prevue semaines
-        const dd = String(dayDate.getDate()).padStart(2, '0');
-        const mm = String(dayDate.getMonth() + 1).padStart(2, '0');
-        const yyyy = dayDate.getFullYear();
-        const dateFR = `${dd}/${mm}/${yyyy}`;
-
-        // Find the Monday of this week in DD/MM/YYYY format for week matching
-        const mondayOfWeek = getLundi(dayDate);
-        const mondayDD = String(mondayOfWeek.getDate()).padStart(2, '0');
-        const mondayMM = String(mondayOfWeek.getMonth() + 1).padStart(2, '0');
-        const mondayYYYY = mondayOfWeek.getFullYear();
-        const mondayStr = `${mondayDD}/${mondayMM}/${mondayYYYY}`;
+        const targetDate = parseWeekDate(dayDate);
+        if (!targetDate) return null;
+        targetDate.setHours(12, 0, 0, 0);
+        const targetMonday = getLundi(targetDate);
+        targetMonday.setHours(12, 0, 0, 0);
 
         for (let i = 0; i < allPrevue.length; i++) {
             const p = allPrevue[i];
@@ -931,14 +926,17 @@
             const semaines = p.semaines || [];
             for (let j = 0; j < semaines.length; j++) {
                 const sem = semaines[j];
-                const semDate = (sem.date || '').trim();
-                // Match: semaine date is the Monday of this week
-                if (semDate === mondayStr || semDate === dateFR) {
-                    // Skip vacances/PFMP situations
-                    const sit = (sem.situation || '').toLowerCase();
-                    if (sit.includes('vacances') || sit.includes('pfmp')) continue;
-                    return sem;
-                }
+                const semDate = parseWeekDate(sem && sem.date);
+                if (!semDate) continue;
+                const semMonday = getLundi(semDate);
+                semMonday.setHours(12, 0, 0, 0);
+                const sameWeek = semMonday.getTime() === targetMonday.getTime();
+                const sameDay = semDate.getTime() === targetDate.getTime();
+                if (!sameWeek && !sameDay) continue;
+
+                const sit = (sem.situation || '').toLowerCase();
+                if (sit.includes('vacances') || sit.includes('pfmp')) continue;
+                return sem;
             }
         }
         return null;
@@ -1124,13 +1122,15 @@
 
     function parseWeekDate(value) {
         if (!value) return null;
+        if (value instanceof Date) return new Date(value.getFullYear(), value.getMonth(), value.getDate(), 12, 0, 0, 0);
         var str = String(value).trim();
         var m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
         if (m) return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), 12, 0, 0, 0);
+        var iso = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T)/);
+        if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]), 12, 0, 0, 0);
         var d = new Date(str);
         if (isNaN(d.getTime())) return null;
-        d.setHours(12, 0, 0, 0);
-        return d;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
     }
 
     function formatDateFrLocal(date) {
@@ -1374,6 +1374,7 @@
     var fileInput = document.getElementById('fileInput');
     var btnResetManual = document.getElementById('btnResetManual');
     var btnClearLogs = document.getElementById('btnClearLogs');
+    var btnPurgeHistory = document.getElementById('btnPurgeHistory');
 
     importZone.addEventListener('click', () => fileInput.click());
     importZone.addEventListener('dragover', (e) => { e.preventDefault(); importZone.classList.add('dragover'); });
@@ -1382,6 +1383,7 @@
     fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
     btnResetManual.addEventListener('click', resetProgressionsToManual);
     btnClearLogs.addEventListener('click', clearProgressionLogs);
+    btnPurgeHistory.addEventListener('click', purgeHistoryAndAgenda);
 
     async function handleFiles(files) {
         var progressDiv = document.getElementById('importProgress');
@@ -1408,6 +1410,60 @@
         showToast('Import terminé !');
     }
 
+    async function resetProgressionsToManualCore(progressDiv) {
+        var seen = {};
+        var targetIds = [];
+        allPrevue.forEach(function(p) {
+            if (!seen[p.id]) {
+                seen[p.id] = true;
+                targetIds.push(p.id);
+            }
+        });
+        ALL_CLASSES.forEach(function(cls) {
+            if (!seen[cls]) {
+                seen[cls] = true;
+                targetIds.push(cls);
+            }
+        });
+
+        var updated = 0;
+        for (var i = 0; i < targetIds.length; i++) {
+            var docId = targetIds[i];
+            var prev = allPrevue.find(function(p) { return p.id === docId; }) || null;
+            var sourceSemaines = (prev && Array.isArray(prev.semaines) && prev.semaines.length > 0)
+                ? sortSemainesByDate(prev.semaines)
+                : buildManualSemainesTemplate();
+            var cleaned = sourceSemaines.map(normalizeSemaineForManual).filter(Boolean);
+            if (cleaned.length === 0) cleaned = buildManualSemainesTemplate();
+
+            var classeId = prev && prev.classeId ? prev.classeId : docId;
+            var niveau = (prev && prev.niveau) || CLASSES_CONFIG[classeId] || CLASSES_CONFIG[docId] || 'CAP';
+            await setDoc(doc(db, 'progression_prevue', docId), {
+                classeId: classeId,
+                niveau: niveau,
+                csvFilename: '',
+                semaines: cleaned,
+                manualMode: true,
+                manualResetAt: serverTimestamp(),
+                manualResetBy: currentUser.uid
+            });
+            updated++;
+            if (progressDiv) addItem(progressDiv, classeId + ' (' + cleaned.length + ' sem.)', '✓ Réinitialisé', 'ok');
+        }
+        return updated;
+    }
+
+    async function clearCollectionDocs(collectionName, progressDiv) {
+        var snap = await getDocs(collection(db, collectionName));
+        var count = 0;
+        for (var i = 0; i < snap.docs.length; i++) {
+            await deleteDoc(doc(db, collectionName, snap.docs[i].id));
+            count++;
+        }
+        if (progressDiv) addItem(progressDiv, collectionName, '✓ ' + count + ' suppression(s)', 'ok');
+        return count;
+    }
+
     async function resetProgressionsToManual() {
         if (!currentUser) { showToast('Connectez-vous d’abord'); return; }
         if (!confirm("Réinitialiser toutes les progressions en mode manuel ?\n\n- Les semaines sont conservées (ou générées si absentes)\n- Modules/séances/statuts importés CSV sont vidés\n- Vous pourrez repartir classe par classe")) return;
@@ -1419,45 +1475,7 @@
         progressDiv.innerHTML = '';
 
         try {
-            var seen = {};
-            var targetIds = [];
-            allPrevue.forEach(function(p) {
-                if (!seen[p.id]) {
-                    seen[p.id] = true;
-                    targetIds.push(p.id);
-                }
-            });
-            ALL_CLASSES.forEach(function(cls) {
-                if (!seen[cls]) {
-                    seen[cls] = true;
-                    targetIds.push(cls);
-                }
-            });
-
-            var updated = 0;
-            for (var i = 0; i < targetIds.length; i++) {
-                var docId = targetIds[i];
-                var prev = allPrevue.find(function(p) { return p.id === docId; }) || null;
-                var sourceSemaines = (prev && Array.isArray(prev.semaines) && prev.semaines.length > 0)
-                    ? sortSemainesByDate(prev.semaines)
-                    : buildManualSemainesTemplate();
-                var cleaned = sourceSemaines.map(normalizeSemaineForManual).filter(Boolean);
-                if (cleaned.length === 0) cleaned = buildManualSemainesTemplate();
-
-                var classeId = prev && prev.classeId ? prev.classeId : docId;
-                var niveau = (prev && prev.niveau) || CLASSES_CONFIG[classeId] || CLASSES_CONFIG[docId] || 'CAP';
-                await setDoc(doc(db, 'progression_prevue', docId), {
-                    classeId: classeId,
-                    niveau: niveau,
-                    csvFilename: '',
-                    semaines: cleaned,
-                    manualMode: true,
-                    manualResetAt: serverTimestamp(),
-                    manualResetBy: currentUser.uid
-                });
-                updated++;
-                addItem(progressDiv, classeId + ' (' + cleaned.length + ' sem.)', '✓ Réinitialisé', 'ok');
-            }
+            var updated = await resetProgressionsToManualCore(progressDiv);
             showToast('✅ Mode manuel activé (' + updated + ' classes)');
         } catch (err) {
             console.error('Manual reset error:', err);
@@ -1479,14 +1497,7 @@
         btn.textContent = '⏳ Suppression...';
 
         try {
-            var snap = await getDocs(collection(db, 'progression_logs'));
-            var count = 0;
-            for (var i = 0; i < snap.docs.length; i++) {
-                var id = snap.docs[i].id;
-                await deleteDoc(doc(db, 'progression_logs', id));
-                count++;
-            }
-            addItem(progressDiv, 'progression_logs', '✓ ' + count + ' suppression(s)', 'ok');
+            var count = await clearCollectionDocs('progression_logs', progressDiv);
             showToast('🗑️ ' + count + ' saisie(s) supprimée(s)');
         } catch (err) {
             console.error('Clear logs error:', err);
@@ -1495,6 +1506,38 @@
         } finally {
             btn.disabled = false;
             btn.textContent = "🗑️ Effacer l'historique de saisie (progression_logs)";
+        }
+    }
+
+    async function purgeHistoryAndAgenda() {
+        if (!currentUser) { showToast('Connectez-vous d’abord'); return; }
+        if (!confirm("Purge complète ?\n\nCette action va :\n1) Réinitialiser les progressions en mode manuel\n2) Effacer progression_logs\n3) Effacer agenda_events\n\nAction irréversible.")) return;
+
+        var progressDiv = document.getElementById('importProgress');
+        var btnReset = document.getElementById('btnResetManual');
+        var btnLogs = document.getElementById('btnClearLogs');
+        var btnPurge = document.getElementById('btnPurgeHistory');
+        progressDiv.innerHTML = '';
+
+        btnReset.disabled = true;
+        btnLogs.disabled = true;
+        btnPurge.disabled = true;
+        btnPurge.textContent = '⏳ Purge en cours...';
+
+        try {
+            var resetCount = await resetProgressionsToManualCore(progressDiv);
+            var logsCount = await clearCollectionDocs('progression_logs', progressDiv);
+            var agendaCount = await clearCollectionDocs('agenda_events', progressDiv);
+            showToast('✅ Purge terminée (' + resetCount + ' classes, ' + logsCount + ' logs, ' + agendaCount + ' événements)');
+        } catch (err) {
+            console.error('Purge error:', err);
+            addItem(progressDiv, 'Purge', 'Erreur: ' + err.message, 'err');
+            showToast('❌ Échec de la purge');
+        } finally {
+            btnReset.disabled = false;
+            btnLogs.disabled = false;
+            btnPurge.disabled = false;
+            btnPurge.textContent = '🧨 Purge complète historique (logs + agenda)';
         }
     }
 

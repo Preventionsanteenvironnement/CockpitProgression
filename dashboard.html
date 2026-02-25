@@ -1083,12 +1083,11 @@
         var matchLog = null;
         allLogs.forEach(function(log) {
             if ((log.classeId === classeId || log.classeDocId === classeDocId) && log.date) {
-                var parts = (sem.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                if (parts) {
-                    var semDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
-                    var logDate = new Date(log.date);
-                    var diff = Math.abs(semDate - logDate) / (1000 * 60 * 60 * 24);
-                    if (diff < 7 && (!matchLog || log.date > matchLog.date)) matchLog = log;
+                var semDate = parseDate(sem && sem.date);
+                var logDate = parseDate(log.date);
+                if (!semDate || !logDate) return;
+                if ((sameWeekDate(semDate, logDate) || sameDayDate(semDate, logDate)) && (!matchLog || log.date > matchLog.date)) {
+                    matchLog = log;
                 }
             }
         });
@@ -1180,12 +1179,10 @@
 
         // Link to log
         var logLink = 'log.html?quick=1';
-        if (sem.date) {
-            var dateParts = (sem.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            if (dateParts) {
-                var isoDate = dateParts[3] + '-' + dateParts[2].padStart(2,'0') + '-' + dateParts[1].padStart(2,'0');
-                logLink = 'log.html?date=' + isoDate + '&classe=' + encodeURIComponent(classeId);
-            }
+        var semDateForLink = parseDate(sem && sem.date);
+        if (semDateForLink) {
+            var isoDate = formatDateISODate(semDateForLink);
+            logLink = 'log.html?date=' + isoDate + '&classe=' + encodeURIComponent(classeId);
         }
         html += '<a href="' + logLink + '" style="display:block; text-align:center; padding:12px; border-radius:12px; border:2px solid var(--border); color:var(--text); font-weight:700; text-decoration:none; font-size:.85em;">📝 Saisir dans log.html</a>';
 
@@ -1226,6 +1223,7 @@
         if (!classeDocId) { showToast('Progression non trouvée'); return; }
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue || !prevue.semaines) { showToast('Progression non trouvée'); return; }
+        prevue.semaines = sortSemainesChrono(prevue.semaines || []);
 
         var module = (document.getElementById('editWeekModule') || {}).value || '';
         var situation = (document.getElementById('editWeekSituation') || {}).value || 'Normal';
@@ -1244,10 +1242,12 @@
         });
 
         // Find the matching semaine
-        var target = dateStr;
+        var target = parseDate(dateStr);
+        if (!target) { showToast('Date semaine invalide'); return; }
         var found = false;
         prevue.semaines.forEach(function(sem) {
-            if (sem.date === target) {
+            var semDate = parseDate(sem && sem.date);
+            if (sameDayDate(semDate, target)) {
                 if (module) sem.module = module;
                 if (seance) sem.seance = seance;
                 sem.phase = phase;
@@ -1269,6 +1269,7 @@
         if (!classeDocId) { showToast('Progression non trouvée'); return; }
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue || !prevue.semaines) { showToast('Progression non trouvée'); return; }
+        prevue.semaines = sortSemainesChrono(prevue.semaines || []);
 
         var module = (document.getElementById('editWeekModule') || {}).value || '';
         var situation = (document.getElementById('editWeekSituation') || {}).value || 'Normal';
@@ -1284,9 +1285,11 @@
         if (!module) { showToast('Sélectionnez un module pour propager'); return; }
 
         // Find the starting week and propagate forward
+        var targetDate = parseDate(dateStr);
+        if (!targetDate) { showToast('Date semaine invalide'); return; }
         var startIdx = -1;
         for (var i = 0; i < prevue.semaines.length; i++) {
-            if (prevue.semaines[i].date === dateStr) { startIdx = i; break; }
+            if (sameDayDate(parseDate(prevue.semaines[i] && prevue.semaines[i].date), targetDate)) { startIdx = i; break; }
         }
         if (startIdx < 0) { showToast('Semaine non trouvée'); return; }
 
@@ -1406,14 +1409,51 @@
     // ═══════ PARSE DATE ═══════
     function parseDate(dateStr) {
         if (!dateStr) return null;
-        // Format: DD/MM/YYYY
-        var parts = dateStr.split('/');
-        if (parts.length === 3) {
-            return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        if (dateStr instanceof Date) return new Date(dateStr.getFullYear(), dateStr.getMonth(), dateStr.getDate(), 12, 0, 0, 0);
+        var str = String(dateStr).trim();
+        // Format FR: DD/MM/YYYY
+        var fr = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (fr) {
+            return new Date(parseInt(fr[3]), parseInt(fr[2]) - 1, parseInt(fr[1]), 12, 0, 0, 0);
         }
-        // Try ISO
-        var d = new Date(dateStr);
-        return isNaN(d.getTime()) ? null : d;
+        // Format ISO date (avoid UTC shift from new Date('YYYY-MM-DD'))
+        var iso = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T)/);
+        if (iso) {
+            return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]), 12, 0, 0, 0);
+        }
+        var d = new Date(str);
+        if (isNaN(d.getTime())) return null;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+    }
+
+    function formatDateISODate(date) {
+        var d = new Date(date);
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    function sameDayDate(a, b) {
+        if (!a || !b) return false;
+        return formatDateISODate(a) === formatDateISODate(b);
+    }
+
+    function getMondayDate(dateValue) {
+        var d = parseDate(dateValue);
+        if (!d) return null;
+        var day = d.getDay();
+        var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        var monday = new Date(d);
+        monday.setDate(diff);
+        monday.setHours(12, 0, 0, 0);
+        return monday;
+    }
+
+    function sameWeekDate(a, b) {
+        var ma = getMondayDate(a);
+        var mb = getMondayDate(b);
+        if (!ma || !mb) return false;
+        return ma.getTime() === mb.getTime();
     }
 
     function sortSemainesChrono(semaines) {
@@ -1434,9 +1474,8 @@
         var diff = now.getDate() - day + (day === 0 ? -6 : 1);
         var monday = new Date(now);
         monday.setDate(diff);
-        var dd = String(monday.getDate()).padStart(2, '0');
-        var mm = String(monday.getMonth() + 1).padStart(2, '0');
-        return dd + '/' + mm + '/' + monday.getFullYear();
+        monday.setHours(12, 0, 0, 0);
+        return monday;
     }
 
     // ═══════ STATUT HELPERS ═══════
@@ -1544,7 +1583,7 @@
             var currentModule = '';
             semaines.forEach(function(sem, i) {
                 var cls = situationClass(sem);
-                var isCurrent = sem.date === currentMonday;
+                var isCurrent = sameDayDate(parseDate(sem.date), currentMonday);
 
                 // Determine display text — show phase icon or week number
                 var label = sem.semaine || '';
@@ -1908,10 +1947,12 @@
         var weekSet = {};
         allPrevue.forEach(function(p) {
             (p.semaines || []).forEach(function(s) {
-                if (s.date && !weekSet[s.date]) {
-                    weekSet[s.date] = true;
-                    allWeeks.push({ date: s.date, semaine: s.semaine, parsed: parseDate(s.date) });
-                }
+                var parsed = parseDate(s && s.date);
+                if (!parsed) return;
+                var key = formatDateISODate(parsed);
+                if (weekSet[key]) return;
+                weekSet[key] = true;
+                allWeeks.push({ key: key, date: s.date, semaine: s.semaine, parsed: parsed });
             });
         });
         allWeeks.sort(function(a, b) {
@@ -1925,6 +1966,7 @@
         }
 
         var currentMonday = getCurrentWeekMonday();
+        var currentMondayKey = formatDateISODate(currentMonday);
 
         // Build month header spans
         var monthNames = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1986,18 +2028,20 @@
             // Build week lookup for this class
             var weekMap = {};
             (prevue.semaines || []).forEach(function(s) {
-                weekMap[s.date] = s;
+                var d = parseDate(s && s.date);
+                if (!d) return;
+                weekMap[formatDateISODate(d)] = s;
             });
 
             // One cell per week
             allWeeks.forEach(function(w) {
                 var td = document.createElement('td');
                 td.className = 'week-cell';
-                var sem = weekMap[w.date];
+                var sem = weekMap[w.key];
                 var color = sem ? situationColor(sem) : '#1e293b';
                 td.style.background = color;
 
-                var isCurrent = w.date === currentMonday;
+                var isCurrent = w.key === currentMondayKey;
                 if (isCurrent) {
                     td.style.outline = '2px solid var(--primary)';
                     td.style.outlineOffset = '0px';
@@ -2037,7 +2081,7 @@
     function computeAlerts() {
         var alerts = [];
         var today = new Date();
-        var todayISO = today.toISOString().split('T')[0];
+        var todayISO = formatDateISODate(today);
 
         // ── 1. COPIES CHAIN: ramassées → corrigées → rendues ──
         allLogs.forEach(function(log) {
@@ -2123,14 +2167,14 @@
         // ── 3. COURS NON SAISIS (passés sans log) ──
         // Check the last 2 weeks for missing logs
         var twoWeeksAgo = new Date(today.getTime() - 14 * 86400000);
-        var twoWeeksISO = twoWeeksAgo.toISOString().split('T')[0];
+        var twoWeeksISO = formatDateISODate(twoWeeksAgo);
         var missingByClasse = {};
 
         // Iterate over EDT to find courses that should have happened
         for (var dayOffset = 0; dayOffset < 14; dayOffset++) {
             var checkDate = new Date(twoWeeksAgo.getTime() + dayOffset * 86400000);
             if (checkDate >= today) break;
-            var checkISO = checkDate.toISOString().split('T')[0];
+            var checkISO = formatDateISODate(checkDate);
             var dayOfWeek = checkDate.getDay(); // 0=Sun
 
             EDT.forEach(function(cours) {
@@ -2393,14 +2437,14 @@
     window.setAgendaView = setAgendaView;
 
     function getAgendaCoursForDay(date) {
-        var dateStr = date.toISOString().split('T')[0];
+        var dateStr = formatDateISODate(date);
         var courses = [];
 
         if (pronoteEvents.length > 0) {
             pronoteEvents.forEach(function(ev) {
                 if (!ev.start || !ev.classe) return;
                 var evDate = new Date(ev.start);
-                if (evDate.toISOString().split('T')[0] !== dateStr) return;
+                if (formatDateISODate(evDate) !== dateStr) return;
                 var endDate = ev.end ? new Date(ev.end) : null;
                 courses.push({
                     classe: ev.classe,
@@ -2429,7 +2473,7 @@
     }
 
     function getEventsForDay(date) {
-        var dateStr = date.toISOString().split('T')[0];
+        var dateStr = formatDateISODate(date);
         return customEvents.filter(function(ev) {
             if (!ev.dateStart) return false;
             var start = ev.dateStart, end = ev.dateEnd || ev.dateStart;
@@ -2473,7 +2517,7 @@
         var moisNoms = ['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
         var label = jourNoms[d.getDay()] + ' ' + d.getDate() + ' ' + moisNoms[d.getMonth()] + ' ' + d.getFullYear();
         document.getElementById('agendaDateLabel').textContent = label;
-        var dateStr = d.toISOString().split('T')[0];
+        var dateStr = formatDateISODate(d);
         var courses = getAgendaCoursForDay(d);
         var events = getEventsForDay(d);
         var container = document.getElementById('agendaContent');
@@ -2561,7 +2605,7 @@
             var card = document.createElement('div');
             card.className = 'week-day-card' + (isT ? ' today' : '');
             var dots = dayCourses.map(function(c) {
-                var dateStr = dayDate.toISOString().split('T')[0];
+                var dateStr = formatDateISODate(dayDate);
                 var log = getLogForCourse(c, dateStr);
                 var color = log ? (log.statut === 'Réalisé' ? '#22c55e' : log.statut === 'Reporté' ? '#f59e0b' : '#dc2626') : '#c7d2fe';
                 return '<div class="week-dot" style="background:'+color+'"></div>';
@@ -2590,7 +2634,7 @@
             var courses2 = getAgendaCoursForDay(dayDate2);
             var events2 = getEventsForDay(dayDate2);
             if (courses2.length === 0 && events2.length === 0) continue;
-            var dateStr2 = dayDate2.toISOString().split('T')[0];
+            var dateStr2 = formatDateISODate(dayDate2);
             var isT2 = dayDate2.getTime() === today.getTime();
             var dayDiv = document.createElement('div');
             dayDiv.className = 'agenda-day';
@@ -2701,15 +2745,13 @@
 
     function findCurrentWeekSemaine(prevue, dateStr) {
         if (!prevue || !prevue.semaines) return null;
-        var d = new Date(dateStr);
+        var d = parseDate(dateStr);
+        if (!d) return null;
         for (var i = 0; i < prevue.semaines.length; i++) {
             var sem = prevue.semaines[i];
-            if (!sem.date) continue;
-            var parts = sem.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            if (!parts) continue;
-            var semDate = new Date(parseInt(parts[3]), parseInt(parts[2])-1, parseInt(parts[1]));
-            var diff = (d - semDate) / (1000*60*60*24);
-            if (diff >= 0 && diff < 7) return sem;
+            var semDate = parseDate(sem && sem.date);
+            if (!semDate) continue;
+            if (sameWeekDate(d, semDate) || sameDayDate(d, semDate)) return sem;
         }
         return null;
     }
@@ -2717,7 +2759,9 @@
     function computeCountdown(dateStr) {
         if (!dateStr) return '';
         var today = new Date(); today.setHours(0,0,0,0);
-        var target = new Date(dateStr);
+        var target = parseDate(dateStr) || new Date(dateStr);
+        if (isNaN(target.getTime())) return '';
+        target.setHours(0, 0, 0, 0);
         var diff = Math.round((target - today)/(1000*60*60*24));
         if (diff < 0) return diff + 'j';
         if (diff === 0) return 'Aujourd\'hui';
@@ -2802,15 +2846,16 @@
     async function updateSituationInPrevue(classeDocId, dateStr, situation) {
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue || !prevue.semaines) { showToast('Progression non trouvée'); return; }
-        var target = new Date(dateStr);
+        var target = parseDate(dateStr);
+        if (!target) { showToast('Date invalide'); return; }
         var found = false;
         prevue.semaines.forEach(function(sem) {
-            if (!sem.date) return;
-            var parts = sem.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            if (!parts) return;
-            var semDate = new Date(parseInt(parts[3]), parseInt(parts[2])-1, parseInt(parts[1]));
-            var diff = (target - semDate) / (1000*60*60*24);
-            if (diff >= 0 && diff < 7) { sem.situation = situation; found = true; }
+            var semDate = parseDate(sem && sem.date);
+            if (!semDate) return;
+            if (sameWeekDate(target, semDate) || sameDayDate(target, semDate)) {
+                sem.situation = situation;
+                found = true;
+            }
         });
         if (!found) { showToast('Semaine non trouvée dans la progression'); return; }
         try {
@@ -2828,7 +2873,7 @@
         var overlay = document.getElementById('eventModalOverlay');
         eventModalData = { type: '', classes: [] };
         document.getElementById('eventTitle').value = '';
-        document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('eventDate').value = formatDateISODate(new Date());
         document.getElementById('eventDateEnd').value = '';
         document.getElementById('eventTimeStart').value = '';
         document.getElementById('eventTimeEnd').value = '';

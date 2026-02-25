@@ -909,9 +909,47 @@
 
     function getContextDateObject() {
         var iso = getContextDateISO();
-        var d = iso ? new Date(iso + 'T12:00:00') : new Date();
+        var d = parseLocalDate(iso) || new Date();
         if (Number.isNaN(d.getTime())) d = new Date();
         return d;
+    }
+
+    function parseLocalDate(value) {
+        if (!value) return null;
+        if (value instanceof Date) return new Date(value.getFullYear(), value.getMonth(), value.getDate(), 12, 0, 0, 0);
+        var str = String(value).trim();
+        var fr = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (fr) return new Date(parseInt(fr[3]), parseInt(fr[2]) - 1, parseInt(fr[1]), 12, 0, 0, 0);
+        var iso = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T)/);
+        if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]), 12, 0, 0, 0);
+        var d = new Date(str);
+        if (Number.isNaN(d.getTime())) return null;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+    }
+
+    function toISODateLocal(date) {
+        var d = new Date(date);
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    function getMondayLocal(date) {
+        var d = parseLocalDate(date) || new Date(date);
+        if (Number.isNaN(d.getTime())) return null;
+        var day = d.getDay();
+        var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        var monday = new Date(d);
+        monday.setDate(diff);
+        monday.setHours(12, 0, 0, 0);
+        return monday;
+    }
+
+    function sameWeekLocal(a, b) {
+        var ma = getMondayLocal(a);
+        var mb = getMondayLocal(b);
+        if (!ma || !mb) return false;
+        return ma.getTime() === mb.getTime();
     }
 
     // Checklist items
@@ -996,7 +1034,7 @@
     // ═══════ INIT FORM ═══════
     async function initForm() {
         // Date — use paramDate if provided (from index.html click)
-        var now = paramDate ? new Date(paramDate + 'T12:00:00') : new Date();
+        var now = parseLocalDate(paramDate) || new Date();
         var displayDate = now.toLocaleDateString('fr-FR', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         });
@@ -1044,7 +1082,7 @@
         } catch (e) { console.error('Load EDT error:', e); }
 
         // ── AUTO-DETECT CLASS ──
-        var todayStr = paramDate || now.toISOString().split('T')[0];
+        var todayStr = paramDate || toISODateLocal(now);
         // If paramClasse is provided (from index.html), use it directly
         var detection;
         if (paramClasse) {
@@ -1192,7 +1230,7 @@
         var now = new Date();
         var detectedClasse = '';
         var detectedEvent = null;
-        var todayStr = now.toISOString().split('T')[0];
+        var todayStr = toISODateLocal(now);
         var currentMs = now.getTime();
         var select = document.getElementById('selectClasse');
 
@@ -1204,7 +1242,7 @@
             pronoteEvents.forEach(function(ev) {
                 if (!ev.start) return;
                 var evDate = new Date(ev.start);
-                var evDateStr = evDate.toISOString().split('T')[0];
+                var evDateStr = toISODateLocal(evDate);
                 if (evDateStr !== todayStr) return;
 
                 // If room param, filter by room
@@ -1462,15 +1500,15 @@
         if (!classeDocId || !dateStr) return null;
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         if (!prevue || !prevue.semaines) return null;
-        var target = new Date(dateStr);
+        var target = parseLocalDate(dateStr);
+        if (!target) return null;
         for (var i = 0; i < prevue.semaines.length; i++) {
             var sem = prevue.semaines[i];
-            if (!sem.date) continue;
-            var parts = sem.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            if (!parts) continue;
-            var semDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
-            var diffDays = (target - semDate) / (1000 * 60 * 60 * 24);
-            if (diffDays >= 0 && diffDays < 7) return { week: sem, index: i };
+            var semDate = parseLocalDate(sem && sem.date);
+            if (!semDate) continue;
+            if (sameWeekLocal(target, semDate) || semDate.getTime() === target.getTime()) {
+                return { week: sem, index: i };
+            }
         }
         return null;
     }
@@ -1483,7 +1521,7 @@
 
         var refDate;
         if (typeof targetDate === 'string' && targetDate) {
-            refDate = new Date(targetDate + 'T12:00:00');
+            refDate = parseLocalDate(targetDate);
         } else if (targetDate instanceof Date) {
             refDate = new Date(targetDate);
         } else {
@@ -1495,16 +1533,9 @@
         for (var i = 0; i < prevue.semaines.length; i++) {
             var sem = prevue.semaines[i];
             if (!sem.date) continue;
-            // Parse DD/MM/YYYY safely (cross-browser)
-            var semDate;
-            var dateParts = sem.date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            if (dateParts) {
-                semDate = new Date(parseInt(dateParts[3]), parseInt(dateParts[2]) - 1, parseInt(dateParts[1]));
-            } else {
-                semDate = new Date(sem.date);
-            }
-            var diffDays = (refDate - semDate) / (1000 * 60 * 60 * 24);
-            if (diffDays >= 0 && diffDays < 7) {
+            var semDate = parseLocalDate(sem.date);
+            if (!semDate) continue;
+            if (sameWeekLocal(refDate, semDate) || semDate.getTime() === refDate.getTime()) {
                 return { week: sem, index: i };
             }
         }
@@ -2294,8 +2325,8 @@
             String(startDate.getDate()).padStart(2, '0') + '/' +
             String(startDate.getMonth() + 1).padStart(2, '0');
 
-        var todayStr = new Date().toISOString().split('T')[0];
-        var evDateStr = ev.dateStr || startDate.toISOString().split('T')[0];
+        var todayStr = toISODateLocal(new Date());
+        var evDateStr = ev.dateStr || toISODateLocal(startDate);
         var isToday = evDateStr === todayStr;
 
         document.getElementById('navTime').textContent =
@@ -2508,7 +2539,7 @@
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
         var classeLabel = prevue ? prevue.classeId : classeDocId;
         var planifDate = planifEnabled ? document.getElementById('planifDate').value : '';
-        var today = planifDate || paramDate || new Date().toISOString().split('T')[0];
+        var today = planifDate || paramDate || toISODateLocal(new Date());
 
         var data = {
             timestamp: serverTimestamp(),
@@ -2626,7 +2657,7 @@
             if (!ev.start || !ev.classe) return;
             var evDate = new Date(ev.start);
             var evEnd = ev.end ? new Date(ev.end) : null;
-            var evDateStr = evDate.toISOString().split('T')[0];
+            var evDateStr = toISODateLocal(evDate);
             if (evDateStr !== todayStr) return;
             // Only past events (ended more than 5 min ago)
             if (evEnd && now.getTime() - evEnd.getTime() > 5 * 60000) {
