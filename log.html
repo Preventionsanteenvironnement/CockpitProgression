@@ -890,6 +890,8 @@
     let checklist = {};
     let selectedTodo = null; // { action, label, reminderPronote, reminderType }
     let allPrevue = [];
+    let studentsCache = [];
+    const STUDENTS_DOC_REF = ['progression_config', 'students_roster'];
 
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room') || '';
@@ -932,6 +934,35 @@
         return d.getFullYear() + '-' +
             String(d.getMonth() + 1).padStart(2, '0') + '-' +
             String(d.getDate()).padStart(2, '0');
+    }
+
+    function readStudentsFromLocal() {
+        try {
+            var raw = localStorage.getItem(STUDENTS_STORAGE_KEY);
+            var parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+            return [];
+        }
+    }
+
+    async function hydrateStudentsCache() {
+        var local = readStudentsFromLocal();
+        if (local.length > 0) {
+            studentsCache = local;
+            return;
+        }
+        try {
+            var snap = await getDoc(doc(db, STUDENTS_DOC_REF[0], STUDENTS_DOC_REF[1]));
+            if (!snap.exists()) return;
+            var data = snap.data() || {};
+            var cloudStudents = Array.isArray(data.students) ? data.students : [];
+            if (!cloudStudents.length) return;
+            studentsCache = cloudStudents;
+            localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(cloudStudents));
+        } catch (err) {
+            console.warn('Students cloud fetch error:', err);
+        }
     }
 
     function getMondayLocal(date) {
@@ -1080,6 +1111,9 @@
                 pronoteEvents = edtDoc.data().events || [];
             }
         } catch (e) { console.error('Load EDT error:', e); }
+
+        // Load students cache (local first, cloud fallback)
+        await hydrateStudentsCache();
 
         // ── AUTO-DETECT CLASS ──
         var todayStr = paramDate || toISODateLocal(now);
@@ -2417,13 +2451,9 @@
         var noList = document.getElementById('absNoList');
         if (!container || !grid) return;
 
-        // Load students from localStorage
-        var allStudents = [];
-        try {
-            var raw = localStorage.getItem(STUDENTS_STORAGE_KEY);
-            allStudents = raw ? JSON.parse(raw) : [];
-            if (!Array.isArray(allStudents)) allStudents = [];
-        } catch (_) { allStudents = []; }
+        // Load students from cache/localStorage
+        var allStudents = Array.isArray(studentsCache) && studentsCache.length ? studentsCache : readStudentsFromLocal();
+        if (!studentsCache.length && allStudents.length) studentsCache = allStudents;
 
         // Filter for this class
         var students = allStudents.filter(function(s) {

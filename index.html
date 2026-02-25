@@ -437,6 +437,9 @@
                 <button type="button" class="btn-import-action warn" id="btnResetManual">
                     🧹 Réinitialiser les progressions (mode manuel)
                 </button>
+                <button type="button" class="btn-import-action warn" id="btnClearModulesOnly">
+                    🧽 Effacer modules/cours (garde PFMP, fériés, vacances)
+                </button>
                 <button type="button" class="btn-import-action danger" id="btnClearLogs">
                     🗑️ Effacer l'historique de saisie (progression_logs)
                 </button>
@@ -1373,6 +1376,7 @@
     var importZone = document.getElementById('importZone');
     var fileInput = document.getElementById('fileInput');
     var btnResetManual = document.getElementById('btnResetManual');
+    var btnClearModulesOnly = document.getElementById('btnClearModulesOnly');
     var btnClearLogs = document.getElementById('btnClearLogs');
     var btnPurgeHistory = document.getElementById('btnPurgeHistory');
 
@@ -1382,6 +1386,7 @@
     importZone.addEventListener('drop', (e) => { e.preventDefault(); importZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
     fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
     btnResetManual.addEventListener('click', resetProgressionsToManual);
+    btnClearModulesOnly.addEventListener('click', clearModulesOnly);
     btnClearLogs.addEventListener('click', clearProgressionLogs);
     btnPurgeHistory.addEventListener('click', purgeHistoryAndAgenda);
 
@@ -1464,6 +1469,64 @@
         return count;
     }
 
+    async function clearModulesOnly() {
+        if (!currentUser) { showToast('Connectez-vous d’abord'); return; }
+        if (!confirm("Effacer uniquement les modules/cours de la progression ?\n\nConservé:\n- Vacances scolaires\n- PFMP\n- Jours fériés\n- Situations spéciales\n\nEffacé:\n- Module, séance, phase, objectifs, évaluations, statut")) return;
+
+        var btn = document.getElementById('btnClearModulesOnly');
+        var progressDiv = document.getElementById('importProgress');
+        btn.disabled = true;
+        btn.textContent = '⏳ Nettoyage...';
+        progressDiv.innerHTML = '';
+
+        try {
+            var updated = 0;
+            var list = allPrevue.slice();
+            for (var i = 0; i < list.length; i++) {
+                var prev = list[i];
+                var semaines = Array.isArray(prev.semaines) ? prev.semaines : [];
+                var cleaned = semaines.map(function(sem) {
+                    var copy = Object.assign({}, sem || {});
+                    copy.module = '';
+                    copy.moduleBase = '';
+                    copy.transition = '';
+                    copy.suiteModule = '';
+                    copy.suiteTransition = '';
+                    copy.seance = '';
+                    copy.phase = 'cours';
+                    copy.nbSeancesPrevues = 0;
+                    copy.objectifModule = '';
+                    copy.objectifSeance = '';
+                    copy.evalDiag = '';
+                    copy.evalForm = '';
+                    copy.evaluation = '';
+                    copy.statut = '';
+                    copy.valide = false;
+                    return copy;
+                });
+                await setDoc(doc(db, 'progression_prevue', prev.id), {
+                    classeId: prev.classeId || prev.id,
+                    niveau: prev.niveau || CLASSES_CONFIG[prev.classeId || prev.id] || 'CAP',
+                    csvFilename: prev.csvFilename || '',
+                    semaines: cleaned,
+                    manualMode: true,
+                    modulesClearedAt: serverTimestamp(),
+                    modulesClearedBy: currentUser.uid
+                }, { merge: true });
+                updated++;
+                addItem(progressDiv, prev.classeId || prev.id, '✓ Modules effacés', 'ok');
+            }
+            showToast('✅ Modules/cours effacés sur ' + updated + ' classes');
+        } catch (err) {
+            console.error('Clear modules only error:', err);
+            addItem(progressDiv, 'Effacement modules', 'Erreur: ' + err.message, 'err');
+            showToast('❌ Échec effacement modules');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🧽 Effacer modules/cours (garde PFMP, fériés, vacances)';
+        }
+    }
+
     async function resetProgressionsToManual() {
         if (!currentUser) { showToast('Connectez-vous d’abord'); return; }
         if (!confirm("Réinitialiser toutes les progressions en mode manuel ?\n\n- Les semaines sont conservées (ou générées si absentes)\n- Modules/séances/statuts importés CSV sont vidés\n- Vous pourrez repartir classe par classe")) return;
@@ -1515,11 +1578,13 @@
 
         var progressDiv = document.getElementById('importProgress');
         var btnReset = document.getElementById('btnResetManual');
+        var btnModules = document.getElementById('btnClearModulesOnly');
         var btnLogs = document.getElementById('btnClearLogs');
         var btnPurge = document.getElementById('btnPurgeHistory');
         progressDiv.innerHTML = '';
 
         btnReset.disabled = true;
+        btnModules.disabled = true;
         btnLogs.disabled = true;
         btnPurge.disabled = true;
         btnPurge.textContent = '⏳ Purge en cours...';
@@ -1535,6 +1600,7 @@
             showToast('❌ Échec de la purge');
         } finally {
             btnReset.disabled = false;
+            btnModules.disabled = false;
             btnLogs.disabled = false;
             btnPurge.disabled = false;
             btnPurge.textContent = '🧨 Purge complète historique (logs + agenda)';
