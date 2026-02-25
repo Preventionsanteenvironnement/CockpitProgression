@@ -178,6 +178,129 @@
             margin-right: 6px;
         }
 
+        /* ── PLANIF TABLEUR ── */
+        .planif-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .planif-toolbar label {
+            font-size: 0.82em;
+            font-weight: 700;
+            color: var(--muted);
+        }
+        .btn-planif-primary {
+            border: 1px solid var(--primary);
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: #fff;
+            border-radius: 10px;
+            padding: 9px 13px;
+            font-size: 0.8em;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-planif-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .planif-summary {
+            margin-bottom: 12px;
+            font-size: 0.8em;
+            color: var(--muted);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .planif-grid-wrap {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: auto;
+            background: var(--bg);
+        }
+        .planif-table {
+            width: 100%;
+            min-width: 980px;
+            border-collapse: collapse;
+            font-size: 0.8em;
+        }
+        .planif-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--card);
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-size: 0.72em;
+            font-weight: 800;
+            border-bottom: 1px solid var(--border);
+            padding: 10px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .planif-table td {
+            border-bottom: 1px solid var(--border);
+            padding: 8px;
+            vertical-align: middle;
+        }
+        .planif-table tbody tr:hover {
+            background: rgba(99,102,241,0.06);
+        }
+        .planif-row-locked {
+            background: rgba(148,163,184,0.12);
+        }
+        .planif-badge-lock {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 0.72em;
+            font-weight: 700;
+            background: rgba(148,163,184,0.2);
+            color: #cbd5e1;
+            white-space: nowrap;
+        }
+        .planif-slot {
+            font-size: 0.74em;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+        .planif-field,
+        .planif-select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 8px;
+            background: var(--surface-2);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9em;
+        }
+        .planif-field:disabled,
+        .planif-select:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            background: var(--surface);
+        }
+        .planif-row-date {
+            font-weight: 700;
+        }
+        .planif-mini {
+            font-size: 0.72em;
+            color: var(--muted);
+        }
+        .planif-empty {
+            padding: 22px 14px;
+            text-align: center;
+            color: var(--muted);
+            font-style: italic;
+        }
+
         /* ── LEGEND ── */
         .legend {
             display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;
@@ -344,6 +467,9 @@
             .timeline-cell { width: 28px; height: 32px; font-size: 0.5em; }
             .module-grid { grid-template-columns: 1fr; }
             .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .planif-table { min-width: 760px; }
+            .planif-toolbar { align-items: stretch; }
+            .planif-toolbar label { width: 100%; }
         }
 
         /* ── AGENDA ── */
@@ -433,6 +559,7 @@
         <button class="tab active" data-tab="classe">Par classe</button>
         <button class="tab" data-tab="module">Par module</button>
         <button class="tab" data-tab="timeline">Timeline annee</button>
+        <button class="tab" data-tab="planif">🧩 Planif</button>
         <button class="tab" data-tab="alertes">Alertes</button>
         <button class="tab" data-tab="agenda">📅 Agenda</button>
         <button class="tab" data-tab="meteo">📊 Météo</button>
@@ -504,7 +631,31 @@
         </div>
     </div>
 
-    <!-- ── VUE 4 : ALERTES ── -->
+    <!-- ── VUE 4 : PLANIF TABLEUR ── -->
+    <div id="tabPlanif" class="section">
+        <div class="card">
+            <div class="card-title">Éditeur annuel par classe <span class="count">Type Excel</span></div>
+
+            <div class="planif-toolbar">
+                <label for="planifClasseSelect">Classe :</label>
+                <select id="planifClasseSelect" style="min-width:200px;">
+                    <option value="">-- Choisir une classe --</option>
+                </select>
+                <button type="button" class="btn-students" id="btnPlanifClearClass">🧽 Effacer modules de la classe</button>
+                <button type="button" class="btn-planif-primary" id="btnPlanifSave" disabled>💾 Enregistrer la classe</button>
+                <span class="students-help" id="planifStatus">Aucune modification en attente.</span>
+            </div>
+
+            <div class="planif-summary" id="planifSummary">Sélectionnez une classe pour éditer la progression semaine par semaine.</div>
+            <datalist id="planifModuleList"></datalist>
+
+            <div class="planif-grid-wrap" id="planifTableWrap">
+                <div class="planif-empty">Aucune classe sélectionnée.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── VUE 5 : ALERTES ── -->
     <div id="tabAlertes" class="section">
         <div id="alertesContent">
             <div class="empty"><div class="icon">✅</div><p>Aucune alerte.</p></div>
@@ -512,7 +663,7 @@
     </div>
 
 
-    <!-- ── VUE 5 : AGENDA DYNAMIQUE ── -->
+    <!-- ── VUE 6 : AGENDA DYNAMIQUE ── -->
     <div id="tabAgenda" class="section">
 
         <!-- Barre de contrôle -->
@@ -699,6 +850,8 @@
     let logsByClasse = {};
     let unsubPrevue = null;
     let unsubLogs = null;
+    let currentPlanifClasseId = '';
+    let planifDirty = false;
     // STUDENTS_STORAGE_KEY imported from utils.js
     let localStudents = [];
     const STUDENTS_DOC_REF = ['progression_config', 'students_roster'];
@@ -1014,6 +1167,7 @@
     buildCodeClasseIndex();
     loadLocalStudents();
     setupStudentsImportUI();
+    setupPlanifUI();
     updateStudentsStatus();
 
     // ═══════ AUTH ═══════
@@ -1051,6 +1205,16 @@
     // ═══════ TABS ═══════
     document.querySelectorAll('.tab').forEach(function(btn) {
         btn.addEventListener('click', function() {
+            var leavingPlanifWithUnsaved = planifDirty &&
+                btn.dataset.tab !== 'planif' &&
+                document.getElementById('tabPlanif') &&
+                document.getElementById('tabPlanif').classList.contains('active');
+            if (leavingPlanifWithUnsaved) {
+                var proceed = confirm('Vous avez des modifications non enregistrées dans Planif.\n\nQuitter sans enregistrer ?');
+                if (!proceed) return;
+                setPlanifDirtyState(false);
+                renderPlanifView();
+            }
             document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
             document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
             btn.classList.add('active');
@@ -1079,6 +1243,8 @@
         renderClasseView();
         renderModuleView();
         renderTimeline();
+        populatePlanifClassFilter();
+        if (!planifDirty) renderPlanifView();
         renderAlertes();
         // Rafraîchir agenda si actif
         if (document.getElementById('tabAgenda') && document.getElementById('tabAgenda').classList.contains('active')) renderAgenda();
@@ -2389,7 +2555,424 @@
     }
 
     // ════════════════════════════════════════
-    // VUE 4 : ALERTES
+    // VUE 4 : PLANIF TABLEUR
+    // ════════════════════════════════════════
+    function escHtml(v) {
+        return String(v || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function escAttr(v) {
+        return escHtml(v).replace(/"/g, '&quot;');
+    }
+
+    function normalizeLoose(v) {
+        return String(v || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    function isProtectedSituationValue(situation) {
+        var s = normalizeLoose(situation);
+        return s.indexOf('vacances') >= 0 || s.indexOf('pfmp') >= 0 || s.indexOf('ferie') >= 0;
+    }
+
+    function getWeekSlotInfoForPlanif(classeId, semDateValue) {
+        var monday = getMondayDate(semDateValue);
+        if (!monday || !classeId) return { count: 0, slots: [], reason: 'Date invalide' };
+        var dayShort = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+        var slots = [];
+        var blockedReasons = [];
+
+        for (var d = 0; d < 5; d++) {
+            var dayDate = new Date(monday);
+            dayDate.setDate(monday.getDate() + d);
+            dayDate.setHours(12, 0, 0, 0);
+
+            var dayReason = getSlotBlockReason(dayDate, classeId);
+            var dayCourses = getCoursForDay(dayDate).filter(function(c) {
+                return classesMatch(c.classe, classeId);
+            });
+
+            if (dayReason && dayCourses.length > 0 && blockedReasons.indexOf(dayReason) < 0) {
+                blockedReasons.push(dayReason);
+            }
+
+            if (dayReason) continue;
+            dayCourses.forEach(function(c) {
+                slots.push({
+                    label: dayShort[dayDate.getDay()] + ' ' + (c.heure || '') + (c.heureFin ? ('-' + c.heureFin) : ''),
+                    room: c.salle || ''
+                });
+            });
+        }
+
+        var reason = '';
+        if (slots.length === 0) {
+            reason = blockedReasons.length > 0 ? blockedReasons.join(', ') : 'Aucun cours EDT cette semaine';
+        }
+        return { count: slots.length, slots: slots, reason: reason };
+    }
+
+    function getPlanifModuleSuggestions(prevue) {
+        var out = [];
+        var seen = {};
+        if (!prevue) return out;
+        var fromRef = [];
+        try { fromRef = getModulesForClasse(prevue.classeId) || []; } catch(e) { fromRef = []; }
+        if (fromRef.length === 0 && prevue.niveau && MODULES_PSE[prevue.niveau]) {
+            fromRef = MODULES_PSE[prevue.niveau];
+        }
+        fromRef.forEach(function(m) {
+            var val = '';
+            if (typeof m === 'string') {
+                val = m.trim();
+            } else if (m) {
+                var id = (m.id || '').toString().trim();
+                var titre = (m.titre || '').toString().trim();
+                val = id && titre ? (id + ' - ' + titre) : (id || titre);
+            }
+            if (!val || seen[val]) return;
+            seen[val] = true;
+            out.push(val);
+        });
+
+        (prevue.semaines || []).forEach(function(sem) {
+            var v = ((sem.module || sem.moduleBase || '') + '').trim();
+            if (!v || seen[v]) return;
+            seen[v] = true;
+            out.push(v);
+        });
+        return out;
+    }
+
+    function populatePlanifModuleList(prevue) {
+        var list = document.getElementById('planifModuleList');
+        if (!list) return;
+        var options = getPlanifModuleSuggestions(prevue);
+        list.innerHTML = options.map(function(v) {
+            return '<option value="' + escAttr(v) + '"></option>';
+        }).join('');
+    }
+
+    function setPlanifDirtyState(isDirty) {
+        planifDirty = !!isDirty;
+        var btnSave = document.getElementById('btnPlanifSave');
+        var status = document.getElementById('planifStatus');
+        if (btnSave) btnSave.disabled = !planifDirty;
+        if (status) {
+            status.textContent = planifDirty ? 'Modifications non enregistrées.' : 'Aucune modification en attente.';
+            status.style.color = planifDirty ? '#f59e0b' : 'var(--muted)';
+        }
+    }
+
+    function syncPlanifAutreInput(row) {
+        if (!row) return;
+        var select = row.querySelector('select[data-planif-field="situation"]');
+        var autre = row.querySelector('input[data-planif-autre]');
+        if (!select || !autre) return;
+        var show = select.value === '__autre__' && !select.disabled;
+        autre.style.display = show ? 'block' : 'none';
+        if (!show) autre.value = '';
+    }
+
+    function populatePlanifClassFilter() {
+        var sel = document.getElementById('planifClasseSelect');
+        if (!sel) return;
+        var wanted = currentPlanifClasseId || sel.value || '';
+        var options = allPrevue.slice().sort(function(a, b) {
+            return (a.classeId || '').localeCompare(b.classeId || '');
+        });
+
+        sel.innerHTML = '<option value="">-- Choisir une classe --</option>';
+        options.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.classeId + (p.niveau ? (' (' + p.niveau + ')') : '');
+            sel.appendChild(opt);
+        });
+
+        if (!wanted && options.length > 0) wanted = options[0].id;
+        if (wanted && options.some(function(p) { return p.id === wanted; })) {
+            sel.value = wanted;
+            currentPlanifClasseId = wanted;
+        } else {
+            sel.value = '';
+            currentPlanifClasseId = '';
+        }
+    }
+
+    function renderPlanifView() {
+        var wrap = document.getElementById('planifTableWrap');
+        var summary = document.getElementById('planifSummary');
+        var sel = document.getElementById('planifClasseSelect');
+        if (!wrap || !summary || !sel) return;
+
+        var classeDocId = currentPlanifClasseId || sel.value || '';
+        if (!classeDocId) {
+            wrap.innerHTML = '<div class="planif-empty">Sélectionnez une classe pour commencer l\'édition.</div>';
+            summary.textContent = 'Sélectionnez une classe pour éditer la progression semaine par semaine.';
+            populatePlanifModuleList(null);
+            setPlanifDirtyState(false);
+            return;
+        }
+
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue) {
+            wrap.innerHTML = '<div class="planif-empty">Classe introuvable.</div>';
+            summary.textContent = 'Classe introuvable dans la progression.';
+            populatePlanifModuleList(null);
+            setPlanifDirtyState(false);
+            return;
+        }
+
+        populatePlanifModuleList(prevue);
+        var semaines = sortSemainesChrono(prevue.semaines || []);
+        if (semaines.length === 0) {
+            wrap.innerHTML = '<div class="planif-empty">Aucune semaine disponible pour cette classe.</div>';
+            summary.textContent = 'Aucune semaine à éditer.';
+            setPlanifDirtyState(false);
+            return;
+        }
+
+        var situationOptions = ['Normal','Vacances scolaires','PFMP','Jours fériés','CCF','BAC BLANC','Sortie scolaire','Annulé','Formation','Absent','Autre...'];
+        var phaseOptions = ['Cours','Évaluation','Correction','TP','Révision'];
+        var totalRows = 0;
+        var editableRows = 0;
+        var plannedRows = 0;
+        var lockedRows = 0;
+
+        var html = '<table class="planif-table"><thead><tr>' +
+            '<th>Sem.</th><th>Date</th><th>Créneaux disponibles</th><th>Situation</th><th>Module</th><th>Séance</th><th>Phase</th><th>État</th>' +
+            '</tr></thead><tbody>';
+
+        semaines.forEach(function(sem) {
+            var semDate = parseDate(sem && sem.date);
+            var weekKey = semDate ? formatDateISODate(semDate) : ((sem && sem.date) || '');
+            var slotInfo = getWeekSlotInfoForPlanif(prevue.classeId, sem && sem.date);
+            var situationVal = (sem && sem.situation) ? sem.situation : 'Normal';
+            var protectedSituation = isProtectedSituationValue(situationVal);
+            var noSlot = slotInfo.count === 0;
+            var isLocked = protectedSituation || noSlot;
+            var lockReason = protectedSituation ? ('⛔ ' + situationVal) : (noSlot ? ('⛔ ' + (slotInfo.reason || 'Aucun créneau')) : '');
+
+            var moduleVal = ((sem.moduleBase || sem.module || '') + '').trim();
+            var seanceVal = ((sem.seance || '') + '').trim();
+            var phaseVal = ((sem.phase || 'Cours') + '').trim();
+
+            var hasSituationOption = situationOptions.indexOf(situationVal) >= 0;
+            var situationSelectValue = hasSituationOption ? situationVal : 'Autre...';
+            var situationRawValue = situationSelectValue === 'Autre...' ? '__autre__' : situationSelectValue;
+            var autreValue = hasSituationOption ? '' : situationVal;
+            var autreDisplay = situationRawValue === '__autre__' && !isLocked ? 'block' : 'none';
+
+            var phaseNorm = normalizeLoose(phaseVal);
+            var phaseHtml = '<select class="planif-select" data-planif-field="phase"' + (isLocked ? ' disabled' : '') + '>';
+            phaseOptions.forEach(function(p) {
+                var selected = normalizeLoose(p) === phaseNorm ? ' selected' : '';
+                phaseHtml += '<option value="' + escAttr(p) + '"' + selected + '>' + escHtml(p) + '</option>';
+            });
+            phaseHtml += '</select>';
+
+            var situationHtml = '<select class="planif-select" data-planif-field="situation"' + (isLocked ? ' disabled' : '') + '>';
+            situationOptions.forEach(function(s) {
+                var raw = s === 'Autre...' ? '__autre__' : s;
+                var selected = raw === situationRawValue ? ' selected' : '';
+                situationHtml += '<option value="' + escAttr(raw) + '"' + selected + '>' + escHtml(s) + '</option>';
+            });
+            situationHtml += '</select>';
+            situationHtml += '<input class="planif-field" data-planif-autre="1" type="text" placeholder="Préciser..." value="' + escAttr(autreValue) + '" style="display:' + autreDisplay + '; margin-top:6px;"' + (isLocked ? ' disabled' : '') + '>';
+
+            var slotText = slotInfo.count > 0
+                ? (slotInfo.count + ' créneau(x)<div class="planif-mini">' + escHtml(slotInfo.slots.map(function(s) { return s.label + (s.room ? (' · ' + s.room) : ''); }).join(' | ')) + '</div>')
+                : ('<span class="planif-mini">' + escHtml(slotInfo.reason || 'Aucun créneau') + '</span>');
+
+            html += '<tr class="' + (isLocked ? 'planif-row-locked' : '') + '" data-week-key="' + escAttr(weekKey) + '" data-locked="' + (isLocked ? '1' : '0') + '">' +
+                '<td><strong>' + escHtml(sem.semaine || '-') + '</strong></td>' +
+                '<td><div class="planif-row-date">' + escHtml(sem.date || '-') + '</div><div class="planif-mini">' + escHtml((sem.ab || '') + (semDate ? (' · ' + formatDateISODate(semDate)) : '')) + '</div></td>' +
+                '<td class="planif-slot">' + slotText + '</td>' +
+                '<td>' + situationHtml + '</td>' +
+                '<td><input class="planif-field" data-planif-field="module" type="text" list="planifModuleList" value="' + escAttr(moduleVal) + '"' + (isLocked ? ' disabled' : '') + '></td>' +
+                '<td><input class="planif-field" data-planif-field="seance" type="text" value="' + escAttr(seanceVal) + '"' + (isLocked ? ' disabled' : '') + '></td>' +
+                '<td>' + phaseHtml + '</td>' +
+                '<td>' + (isLocked
+                    ? ('<span class="planif-badge-lock">' + escHtml(lockReason) + '</span>')
+                    : '<span class="planif-mini">Éditable</span>') +
+                '</td>' +
+                '</tr>';
+
+            totalRows++;
+            if (isLocked) lockedRows++;
+            if (!isLocked) editableRows++;
+            if (!isLocked && moduleVal) plannedRows++;
+        });
+
+        html += '</tbody></table>';
+        wrap.innerHTML = html;
+        var stats = computeClasseSessionStats(prevue.classeId);
+        summary.innerHTML = '<strong>' + escHtml(prevue.classeId || '') + '</strong> · ' +
+            editableRows + '/' + totalRows + ' semaines éditables · ' +
+            plannedRows + ' semaine(s) déjà planifiée(s) · ' +
+            lockedRows + ' semaine(s) verrouillée(s) (PFMP/fériés/vacances/sans créneau) · ' +
+            'Séances année ' + stats.total + ' (passées ' + stats.elapsed + ' / restantes ' + stats.remaining + ').';
+        setPlanifDirtyState(false);
+    }
+
+    window.savePlanifClassEdits = async function() {
+        var classeDocId = currentPlanifClasseId || ((document.getElementById('planifClasseSelect') || {}).value || '');
+        if (!classeDocId) { showToast('Choisissez une classe'); return; }
+        if (!planifDirty) { showToast('Aucune modification'); return; }
+
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) { showToast('Classe introuvable'); return; }
+
+        var rows = Array.from(document.querySelectorAll('#planifTableWrap tbody tr[data-week-key]'));
+        if (rows.length === 0) { showToast('Aucune ligne à enregistrer'); return; }
+
+        var rowMap = {};
+        rows.forEach(function(row) {
+            var weekKey = row.dataset.weekKey || '';
+            if (!weekKey) return;
+            var locked = row.dataset.locked === '1';
+            var moduleInput = row.querySelector('[data-planif-field="module"]');
+            var seanceInput = row.querySelector('[data-planif-field="seance"]');
+            var phaseSelect = row.querySelector('select[data-planif-field="phase"]');
+            var situationSelect = row.querySelector('select[data-planif-field="situation"]');
+            var situationAutre = row.querySelector('input[data-planif-autre]');
+
+            var situation = situationSelect ? (situationSelect.value || 'Normal') : 'Normal';
+            if (situation === '__autre__') {
+                situation = situationAutre ? (situationAutre.value || '').trim() : '';
+                if (!situation) situation = 'Normal';
+            }
+
+            rowMap[weekKey] = {
+                locked: locked,
+                module: moduleInput ? (moduleInput.value || '').trim() : '',
+                seance: seanceInput ? (seanceInput.value || '').trim() : '',
+                phase: phaseSelect ? (phaseSelect.value || 'Cours') : 'Cours',
+                situation: situation || 'Normal'
+            };
+        });
+
+        prevue.semaines.forEach(function(sem) {
+            var semDate = parseDate(sem && sem.date);
+            var key = semDate ? formatDateISODate(semDate) : ((sem && sem.date) || '');
+            var payload = rowMap[key];
+            if (!payload || payload.locked) return;
+
+            sem.module = payload.module;
+            sem.moduleBase = payload.module ? (baseModuleName(cleanModuleName(payload.module)) || payload.module) : '';
+            sem.seance = payload.seance;
+            sem.phase = payload.phase;
+            sem.situation = payload.situation;
+        });
+
+        var btnSave = document.getElementById('btnPlanifSave');
+        if (btnSave) btnSave.disabled = true;
+
+        try {
+            await updateDoc(doc(db, 'progression_prevue', classeDocId), { semaines: prevue.semaines });
+            setPlanifDirtyState(false);
+            showToast('✅ Progression de classe enregistrée');
+        } catch (e) {
+            console.error('savePlanifClassEdits error:', e);
+            showToast('❌ Erreur enregistrement');
+            if (btnSave) btnSave.disabled = false;
+        }
+    };
+
+    window.clearPlanifModulesForClass = async function() {
+        var classeDocId = currentPlanifClasseId || ((document.getElementById('planifClasseSelect') || {}).value || '');
+        if (!classeDocId) { showToast('Choisissez une classe'); return; }
+
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !prevue.semaines) { showToast('Classe introuvable'); return; }
+
+        var ok = confirm('Effacer les modules/séances de ' + (prevue.classeId || classeDocId) + ' ?\n\nPFMP, jours fériés et vacances seront conservés.');
+        if (!ok) return;
+
+        prevue.semaines.forEach(function(sem) {
+            sem.module = '';
+            sem.moduleBase = '';
+            sem.seance = '';
+            sem.phase = 'Cours';
+            sem.transition = '';
+            sem.suiteModule = '';
+            sem.suiteTransition = '';
+            sem.nbSeancesPrevues = 0;
+            sem.objectifModule = '';
+            sem.objectifSeance = '';
+            sem.evalDiag = '';
+            sem.evalForm = '';
+            sem.evaluation = '';
+        });
+
+        try {
+            await updateDoc(doc(db, 'progression_prevue', classeDocId), { semaines: prevue.semaines });
+            setPlanifDirtyState(false);
+            showToast('🧽 Modules de la classe effacés');
+        } catch (e) {
+            console.error('clearPlanifModulesForClass error:', e);
+            showToast('❌ Erreur suppression classe');
+        }
+    };
+
+    function setupPlanifUI() {
+        var sel = document.getElementById('planifClasseSelect');
+        var btnSave = document.getElementById('btnPlanifSave');
+        var btnClear = document.getElementById('btnPlanifClearClass');
+        var wrap = document.getElementById('planifTableWrap');
+        if (!sel || !btnSave || !btnClear || !wrap) return;
+
+        sel.addEventListener('change', function() {
+            if (planifDirty && (sel.value || '') !== (currentPlanifClasseId || '')) {
+                var keepEditing = confirm('Vous avez des modifications non enregistrées.\n\nChanger de classe sans enregistrer ?');
+                if (!keepEditing) {
+                    sel.value = currentPlanifClasseId || '';
+                    return;
+                }
+            }
+            currentPlanifClasseId = sel.value || '';
+            renderPlanifView();
+        });
+
+        btnSave.addEventListener('click', function() {
+            window.savePlanifClassEdits();
+        });
+
+        btnClear.addEventListener('click', function() {
+            window.clearPlanifModulesForClass();
+        });
+
+        wrap.addEventListener('change', function(e) {
+            var target = e.target;
+            if (!target) return;
+            if (target.matches('select[data-planif-field="situation"]')) {
+                syncPlanifAutreInput(target.closest('tr'));
+                setPlanifDirtyState(true);
+                return;
+            }
+            if (target.matches('[data-planif-field], [data-planif-autre]')) {
+                setPlanifDirtyState(true);
+            }
+        });
+
+        wrap.addEventListener('input', function(e) {
+            var target = e.target;
+            if (!target) return;
+            if (target.matches('[data-planif-field], [data-planif-autre]')) {
+                setPlanifDirtyState(true);
+            }
+        });
+    }
+
+    // ════════════════════════════════════════
+    // VUE 5 : ALERTES
     // ════════════════════════════════════════
     function computeAlerts() {
         var alerts = [];
