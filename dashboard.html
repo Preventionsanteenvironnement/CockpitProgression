@@ -1896,6 +1896,45 @@
         return slots;
     }
 
+    function computeClasseSessionStats(classeId) {
+        if (!classeId) return { total: 0, elapsed: 0, remaining: 0, logsRealises: 0 };
+
+        var yearStart = parseDate(ANNEE_SCOLAIRE.debut + 'T12:00:00') || new Date(new Date().getFullYear(), 8, 1, 12, 0, 0, 0);
+        var yearEnd = parseDate(ANNEE_SCOLAIRE.fin + 'T12:00:00') || new Date(new Date().getFullYear(), 6, 4, 12, 0, 0, 0);
+        var today = new Date();
+        today.setHours(12, 0, 0, 0);
+
+        var total = computeSeancesDisponibles(classeId, yearStart, yearEnd).count || 0;
+
+        var elapsed = 0;
+        if (today > yearStart) {
+            var elapsedEnd = new Date(today);
+            elapsedEnd.setDate(elapsedEnd.getDate() - 1);
+            if (elapsedEnd > yearEnd) elapsedEnd = new Date(yearEnd);
+            if (elapsedEnd >= yearStart) elapsed = computeSeancesDisponibles(classeId, yearStart, elapsedEnd).count || 0;
+        }
+
+        var remaining = 0;
+        if (today <= yearEnd) {
+            var remainingStart = today < yearStart ? yearStart : today;
+            remaining = computeSeancesDisponibles(classeId, remainingStart, yearEnd).count || 0;
+        }
+
+        var logsRealises = 0;
+        allLogs.forEach(function(log) {
+            if (!log || !classesMatch(log.classeId || log.classeDocId || '', classeId)) return;
+            var statut = (log.statut || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+            if (statut === 'realise') logsRealises++;
+        });
+
+        return {
+            total: total,
+            elapsed: elapsed,
+            remaining: remaining,
+            logsRealises: logsRealises
+        };
+    }
+
     function centerCurrentWeekInCard(cardEl) {
         if (!cardEl) return;
         var wrap = cardEl.querySelector('.timeline-weeks');
