@@ -1179,10 +1179,35 @@
             html += '<div style="margin-bottom:14px; padding:12px; border-radius:10px; background:var(--surface-2); border:1px solid var(--border);">';
             html += '<div style="font-size:.72em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;">Créneaux de la classe cette semaine</div>';
             semaineSlots.forEach(function(slot) {
-                html += '<a href="log.html?date=' + encodeURIComponent(slot.isoDate) + '&classe=' + encodeURIComponent(classeId) + '" style="display:block; text-decoration:none; color:var(--text); padding:7px 9px; border-radius:8px; background:var(--bg); margin-bottom:6px; font-size:.82em;">' +
-                    '<strong>' + slot.dayLabel + '</strong> · ' + slot.timeLabel + (slot.room ? ' · Salle ' + slot.room : '') +
+                var statusTxt = slot.blocked ? (' · ⚠ ' + slot.blockReason) : (slot.logStatut ? (' · ' + slot.logStatut) : ' · À saisir');
+                var bg = slot.blocked ? 'var(--surface)' : 'var(--bg)';
+                var opacity = slot.blocked ? '0.78' : '1';
+                html += '<a href="log.html?date=' + encodeURIComponent(slot.isoDate) + '&classe=' + encodeURIComponent(classeId) + '" style="display:block; text-decoration:none; color:var(--text); padding:7px 9px; border-radius:8px; background:' + bg + '; margin-bottom:6px; font-size:.82em; opacity:' + opacity + ';">' +
+                    '<strong>' + slot.dayLabel + '</strong> · ' + slot.timeLabel + (slot.room ? ' · Salle ' + slot.room : '') + statusTxt +
                     '</a>';
             });
+            html += '</div>';
+        }
+
+        var upcomingSlots = getFutureSlotsForClasse(classeId, sem && sem.date, 60);
+        var perf = computeClasseSessionStats(classeId);
+        if (upcomingSlots.length > 0) {
+            html += '<div style="margin-bottom:14px; padding:12px; border-radius:10px; background:var(--surface-2); border:1px solid var(--border);">';
+            html += '<div style="font-size:.72em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;">Prochains cours de la classe</div>';
+            html += '<div style="font-size:.78em;color:var(--muted);margin-bottom:8px;">' +
+                'Séances année: <strong>' + perf.total + '</strong> · Passées: <strong>' + perf.elapsed + '</strong> · Restantes: <strong>' + perf.remaining + '</strong> · Logs réalisés: <strong>' + perf.logsRealises + '</strong>' +
+                '</div>';
+            upcomingSlots.slice(0, 20).forEach(function(slot) {
+                var statusTxt = slot.blocked ? (' · ⚠ ' + slot.blockReason) : (slot.logStatut ? (' · ' + slot.logStatut) : ' · à venir');
+                var bg = slot.blocked ? 'var(--surface)' : 'var(--bg)';
+                var opacity = slot.blocked ? '0.74' : '1';
+                html += '<a href="log.html?date=' + encodeURIComponent(slot.isoDate) + '&classe=' + encodeURIComponent(classeId) + '" style="display:block; text-decoration:none; color:var(--text); padding:7px 9px; border-radius:8px; background:' + bg + '; margin-bottom:6px; font-size:.82em; opacity:' + opacity + ';">' +
+                    '<strong>' + slot.dayLabel + '</strong> · ' + slot.timeLabel + (slot.room ? ' · Salle ' + slot.room : '') + statusTxt +
+                    '</a>';
+            });
+            if (upcomingSlots.length > 20) {
+                html += '<div style="font-size:.74em;color:var(--muted);margin-top:4px;">+' + (upcomingSlots.length - 20) + ' autres créneaux...</div>';
+            }
             html += '</div>';
         }
 
@@ -1237,13 +1262,18 @@
 
         // Situation dropdown
         html += '<label style="font-size:.72em; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:4px;">Situation</label>';
-        html += '<select id="editWeekSituation" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text); font-family:inherit; font-size:.85em; margin-bottom:14px;">';
-        var situations = ['Normal','Vacances scolaires','PFMP','Jours fériés','CCF','BAC BLANC','Sortie scolaire','Annulé','Formation','Absent'];
+        html += '<select id="editWeekSituation" onchange="toggleWeekSituationAutre(this.value)" style="width:100%; padding:10px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text); font-family:inherit; font-size:.85em; margin-bottom:6px;">';
+        var situations = ['Normal','Vacances scolaires','PFMP','Jours fériés','CCF','BAC BLANC','Sortie scolaire','Annulé','Formation','Absent','Autre...'];
+        var currentSituation = (sem.situation || 'Normal');
+        var hasListedSituation = situations.indexOf(currentSituation) >= 0;
         situations.forEach(function(s) {
-            var selected = (sem.situation || 'Normal') === s ? ' selected' : '';
+            var selected = (hasListedSituation ? currentSituation : 'Autre...') === s ? ' selected' : '';
             html += '<option value="' + s + '"' + selected + '>' + s + '</option>';
         });
         html += '</select>';
+        var autreValue = hasListedSituation ? '' : currentSituation;
+        var autreDisplay = hasListedSituation ? 'none' : 'block';
+        html += '<input id="editWeekSituationAutre" type="text" placeholder="Préciser la situation..." value="' + autreValue.replace(/"/g, '&quot;') + '" style="display:' + autreDisplay + '; width:100%; margin-top:6px; margin-bottom:14px; padding:9px 10px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text); font-family:inherit; font-size:.82em;">';
 
         // Save button
         html += '<button onclick="saveWeekEdit(\'' + classeDocId + '\',\'' + (sem.date || '') + '\')" style="width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(135deg,#10b981,#059669); color:white; font-size:.95em; font-weight:800; cursor:pointer; font-family:inherit; margin-bottom:8px;">💾 Enregistrer</button>';
@@ -1293,6 +1323,23 @@
         btn.style.color = 'white';
     };
 
+    window.toggleWeekSituationAutre = function(value) {
+        var inp = document.getElementById('editWeekSituationAutre');
+        if (!inp) return;
+        var isOther = value === 'Autre...';
+        inp.style.display = isOther ? 'block' : 'none';
+        if (isOther) inp.focus();
+    };
+
+    function getEditedWeekSituation() {
+        var select = document.getElementById('editWeekSituation');
+        var val = select ? (select.value || 'Normal') : 'Normal';
+        if (val !== 'Autre...') return val;
+        var inp = document.getElementById('editWeekSituationAutre');
+        var custom = inp ? (inp.value || '').trim() : '';
+        return custom || 'Normal';
+    }
+
     window.saveWeekEdit = async function(classeDocId, dateStr) {
         if (!classeDocId) { showToast('Progression non trouvée'); return; }
         var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
@@ -1300,7 +1347,7 @@
         prevue.semaines = sortSemainesChrono(prevue.semaines || []);
 
         var module = (document.getElementById('editWeekModule') || {}).value || '';
-        var situation = (document.getElementById('editWeekSituation') || {}).value || 'Normal';
+        var situation = getEditedWeekSituation();
 
         // Collect selected seances
         var selectedSeances = [];
@@ -1322,11 +1369,9 @@
         prevue.semaines.forEach(function(sem) {
             var semDate = parseDate(sem && sem.date);
             if (sameDayDate(semDate, target)) {
-                if (module) {
-                    sem.module = module;
-                    sem.moduleBase = module;
-                }
-                if (seance) sem.seance = seance;
+                sem.module = module;
+                sem.moduleBase = module;
+                sem.seance = seance;
                 sem.phase = phase;
                 sem.situation = situation;
                 found = true;
@@ -1349,7 +1394,7 @@
         prevue.semaines = sortSemainesChrono(prevue.semaines || []);
 
         var module = (document.getElementById('editWeekModule') || {}).value || '';
-        var situation = (document.getElementById('editWeekSituation') || {}).value || 'Normal';
+        var situation = getEditedWeekSituation();
         var selectedSeances = [];
         document.querySelectorAll('#editWeekSeances .edit-seance-chip').forEach(function(btn) {
             if (btn.style.color === 'white') selectedSeances.push(btn.dataset.seance);
@@ -1389,7 +1434,7 @@
             sem.moduleBase = module;
             sem.seance = allSeances[seanceIdx];
             sem.phase = phase;
-            if (situation !== 'Normal') sem.situation = situation;
+            sem.situation = situation;
             seanceIdx++;
             count++;
         }
@@ -1732,6 +1777,7 @@
             })(prevue, semaines);
 
             container.appendChild(card);
+            centerCurrentWeekInCard(card);
         });
     }
 
@@ -1781,15 +1827,90 @@
                 return classesMatch(c.classe, classeId);
             });
             courses.forEach(function(c) {
+                var blockReason = getSlotBlockReason(dayDate, classeId);
+                var log = findLastLogForClasseAndDate(classeId, formatDateISODate(dayDate));
                 slots.push({
                     isoDate: formatDateISODate(dayDate),
                     dayLabel: jours[dayDate.getDay()] + ' ' + formatDateFR(dayDate),
                     timeLabel: (c.heure || '') + (c.heureFin ? ('→' + c.heureFin) : ''),
-                    room: c.salle || ''
+                    room: c.salle || '',
+                    blocked: !!blockReason,
+                    blockReason: blockReason || '',
+                    logStatut: log ? (log.statut || '') : ''
                 });
             });
         }
         return slots;
+    }
+
+    function getSlotBlockReason(dateObj, classeId) {
+        var vac = isVacances(dateObj);
+        if (vac) return vac.label || 'Vacances';
+        var fer = isFerie(dateObj);
+        if (fer) return fer.label || 'Férié';
+        var abs = isAbsencePerso(dateObj);
+        if (abs) return abs.label || 'Absence';
+        var pfmp = isPFMP(dateObj, classeId);
+        if (pfmp) return pfmp.label || 'PFMP';
+        return '';
+    }
+
+    function findLastLogForClasseAndDate(classeId, isoDate) {
+        var latest = null;
+        allLogs.forEach(function(log) {
+            if (!log || !log.date || log.date !== isoDate) return;
+            if (!classesMatch(log.classeId || log.classeDocId || '', classeId)) return;
+            if (!latest || (log.timestamp || 0) > (latest.timestamp || 0)) latest = log;
+        });
+        return latest;
+    }
+
+    function getFutureSlotsForClasse(classeId, fromDateValue, limit) {
+        var fromDate = parseDate(fromDateValue) || new Date();
+        fromDate.setHours(12, 0, 0, 0);
+        var endDate = parseDate(ANNEE_SCOLAIRE.fin + 'T12:00:00') || new Date(fromDate.getFullYear(), 11, 31, 12, 0, 0, 0);
+        var jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        var slots = [];
+        for (var d = new Date(fromDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            var dayDate = new Date(d);
+            var courses = getCoursForDay(dayDate).filter(function(c) {
+                return classesMatch(c.classe, classeId);
+            });
+            courses.forEach(function(c) {
+                if (limit && slots.length >= limit) return;
+                var isoDate = formatDateISODate(dayDate);
+                var blockReason = getSlotBlockReason(dayDate, classeId);
+                var log = findLastLogForClasseAndDate(classeId, isoDate);
+                slots.push({
+                    isoDate: isoDate,
+                    dayLabel: jours[dayDate.getDay()] + ' ' + formatDateFR(dayDate),
+                    timeLabel: (c.heure || '') + (c.heureFin ? ('→' + c.heureFin) : ''),
+                    room: c.salle || '',
+                    blocked: !!blockReason,
+                    blockReason: blockReason || '',
+                    logStatut: log ? (log.statut || '') : ''
+                });
+            });
+            if (limit && slots.length >= limit) break;
+        }
+        return slots;
+    }
+
+    function centerCurrentWeekInCard(cardEl) {
+        if (!cardEl) return;
+        var wrap = cardEl.querySelector('.timeline-weeks');
+        var currentCell = cardEl.querySelector('.timeline-cell.c-current');
+        if (!wrap || !currentCell) return;
+        var target = currentCell.offsetLeft - (wrap.clientWidth / 2) + (currentCell.clientWidth / 2);
+        wrap.scrollLeft = Math.max(0, target);
+    }
+
+    function centerYearTimelineOnCurrent(containerEl) {
+        if (!containerEl) return;
+        var currentCell = containerEl.querySelector('td.week-current');
+        if (!currentCell) return;
+        var target = currentCell.offsetLeft - (containerEl.clientWidth / 2) + (currentCell.clientWidth / 2);
+        containerEl.scrollLeft = Math.max(0, target);
     }
 
     function buildModuleSummary(prevue) {
@@ -1879,16 +2000,66 @@
             if (info.evalForm) evalDetail += '📊' + info.evalForm + ' ';
             if (info.evaluation) evalDetail += '📝' + info.evaluation;
 
-            html += '<div style="padding:6px 10px; border-radius:8px; font-size:0.72em; font-weight:600; ' +
-                'background:' + bgColor + '; border:1px solid ' + borderColor + '; color:' + textColor + ';">' +
+            html += '<button type="button" onclick="openModuleSummary(\'' + prevue.id + '\',\'' + encodeURIComponent(name) + '\')" ' +
+                'style="padding:6px 10px; border-radius:8px; font-size:0.72em; font-weight:600; text-align:left; cursor:pointer;' +
+                'background:' + bgColor + '; border:1px solid ' + borderColor + '; color:' + textColor + '; font-family:inherit;">' +
                 shortName +
                 '<div style="font-weight:500; font-size:0.9em; opacity:0.8; margin-top:2px;">' + detail + '</div>' +
                 (evalDetail ? '<div style="font-weight:500; font-size:0.85em; opacity:0.7; margin-top:1px;">' + evalDetail + '</div>' : '') +
-                '</div>';
+                '</button>';
         });
         html += '</div></div>';
         return html;
     }
+
+    window.openModuleSummary = function(classeDocId, moduleEncoded) {
+        var moduleName = decodeURIComponent(moduleEncoded || '');
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !moduleName) { showToast('Module introuvable'); return; }
+
+        var weeks = sortSemainesChrono(prevue.semaines || []).filter(function(sem) {
+            var base = baseModuleName(cleanModuleName(sem.module || sem.moduleBase || ''));
+            return base === moduleName;
+        });
+        if (weeks.length === 0) { showToast('Aucune semaine trouvée pour ce module'); return; }
+
+        var existing = document.getElementById('moduleWeeksPicker');
+        if (existing) existing.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = 'moduleWeeksPicker';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:400;display:flex;align-items:flex-end;';
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+
+        var box = document.createElement('div');
+        box.style.cssText = 'width:100%;max-height:72vh;overflow:auto;background:var(--surface-2);border-radius:18px 18px 0 0;padding:16px 14px 20px;';
+        box.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+            '<div style="font-weight:800;font-size:.95em;">📚 ' + moduleName + '</div>' +
+            '<button type="button" style="background:none;border:none;font-size:1.3em;color:var(--muted);cursor:pointer;">✕</button>' +
+            '</div>' +
+            '<div style="font-size:.75em;color:var(--muted);margin-bottom:10px;">Choisissez une semaine de ce module</div>';
+        box.querySelector('button').addEventListener('click', function() { overlay.remove(); });
+
+        var list = document.createElement('div');
+        list.style.cssText = 'display:grid;gap:8px;';
+        weeks.forEach(function(sem) {
+            var semDate = parseDate(sem && sem.date);
+            var iso = semDate ? formatDateISODate(semDate) : '';
+            var row = document.createElement('button');
+            row.type = 'button';
+            row.style.cssText = 'text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;cursor:pointer;';
+            row.innerHTML = '<div style="font-weight:700;font-size:.84em;">' + (sem.semaine || '') + ' · ' + (sem.date || '') + '</div>' +
+                '<div style="font-size:.75em;color:var(--muted);margin-top:2px;">' + (sem.seance || 'Séance non définie') + (iso ? ' · ' + iso : '') + '</div>';
+            row.addEventListener('click', function() {
+                overlay.remove();
+                showWeekDetail(prevue.classeId, sem, prevue.id);
+            });
+            list.appendChild(row);
+        });
+        box.appendChild(list);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+    };
 
     // ════════════════════════════════════════
     // VUE 2 : PAR MODULE
@@ -2144,6 +2315,7 @@
 
                 var isCurrent = w.key === currentMondayKey;
                 if (isCurrent) {
+                    td.classList.add('week-current');
                     td.style.outline = '2px solid var(--primary)';
                     td.style.outlineOffset = '0px';
                     td.style.zIndex = '3';
@@ -2174,6 +2346,7 @@
         table.appendChild(tbody);
         container.innerHTML = '';
         container.appendChild(table);
+        setTimeout(function() { centerYearTimelineOnCurrent(container); }, 0);
     }
 
     // ════════════════════════════════════════

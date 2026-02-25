@@ -916,6 +916,60 @@
         return null;
     }
 
+    function parseLogTimestampMs(value) {
+        if (!value) return 0;
+        if (typeof value === 'number') return value;
+        if (typeof value.toMillis === 'function') return value.toMillis();
+        if (typeof value.seconds === 'number') return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
+        if (typeof value._seconds === 'number') return value._seconds * 1000 + Math.floor((value._nanoseconds || 0) / 1e6);
+        return 0;
+    }
+
+    function formatTodoNextText(todoNext) {
+        if (!todoNext) return '';
+        if (typeof todoNext === 'string') return todoNext.trim();
+        if (typeof todoNext === 'object') {
+            var label = (todoNext.label || '').toString().trim();
+            var note = (todoNext.note || '').toString().trim();
+            var action = (todoNext.action || '').toString().trim();
+            if (label && note) return label + ' — ' + note;
+            if (label) return label;
+            if (note) return note;
+            if (action) return action.replace(/_/g, ' ');
+        }
+        return '';
+    }
+
+    function findLastTodoBeforeDate(classeId, dateISO) {
+        var target = parseWeekDate(dateISO);
+        if (!target) return null;
+        target.setHours(12, 0, 0, 0);
+
+        var bestLog = null;
+        var bestDate = null;
+        var bestTs = 0;
+
+        for (let i = 0; i < allLogs.length; i++) {
+            const log = allLogs[i];
+            if (!log || !classesMatch(log.classeDocId || log.classeId || '', classeId)) continue;
+            if (!log.todoNext) continue;
+
+            const logDate = parseWeekDate(log.date);
+            if (!logDate) continue;
+            logDate.setHours(12, 0, 0, 0);
+            if (logDate.getTime() >= target.getTime()) continue;
+
+            const logTs = parseLogTimestampMs(log.timestamp);
+            if (!bestLog || logDate.getTime() > bestDate.getTime() || (logDate.getTime() === bestDate.getTime() && logTs > bestTs)) {
+                bestLog = log;
+                bestDate = logDate;
+                bestTs = logTs;
+            }
+        }
+
+        return bestLog;
+    }
+
     function findPrevueForWeek(classeId, dayDate) {
         const targetDate = parseWeekDate(dayDate);
         if (!targetDate) return null;
@@ -1003,6 +1057,11 @@
             if (prevue.seance) html += detailRow('Séance', prevue.seance);
             if (prevue.phase) html += detailRow('Phase', prevue.phase);
             if (prevue.situation && prevue.situation !== 'Normal') html += detailRow('Situation', prevue.situation);
+            const todoCarry = findLastTodoBeforeDate(classeId, dateISO);
+            if (todoCarry) {
+                const todoText = formatTodoNextText(todoCarry.todoNext);
+                if (todoText) html += detailRow('À prévoir', `${todoText}${todoCarry.date ? ` (${todoCarry.date})` : ''}`);
+            }
         } else {
             html += '<p style="color:var(--muted);font-size:13px;padding:12px 0;">Aucune planification pour cette semaine. Utilisez le Dashboard pour planifier.</p>';
         }
