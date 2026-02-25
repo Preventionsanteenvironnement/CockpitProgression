@@ -279,6 +279,24 @@
         }
         .import-zone .icon { font-size: 32px; margin-bottom: 8px; }
         .import-zone p { color: var(--muted); font-size: 13px; }
+        .import-actions { display: grid; gap: 8px; margin-top: 10px; }
+        .btn-import-action {
+            padding: 10px 14px; border-radius: 10px; font-family: var(--font);
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+        }
+        .btn-import-action:hover { border-color: var(--primary); }
+        .btn-import-action.warn {
+            border-color: #f59e0b;
+            background: rgba(245,158,11,0.12);
+            color: #fbbf24;
+        }
+        .btn-import-action.danger {
+            border-color: #ef4444;
+            background: rgba(239,68,68,0.12);
+            color: #fca5a5;
+        }
+        .btn-import-action:disabled { opacity: 0.55; cursor: not-allowed; }
         .import-progress { margin-top: 12px; }
         .import-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -373,7 +391,7 @@
 
     <!-- NAV LINKS -->
     <div class="nav-links">
-        <a href="log.html" class="nav-link">✏️ Saisie rapide</a>
+        <a href="log.html?quick=1" class="nav-link">✏️ Saisie rapide</a>
         <a href="dashboard.html" class="nav-link">📈 Dashboard</a>
         <a href="init.html" class="nav-link">🚀 Init</a>
     </div>
@@ -415,6 +433,14 @@
                 <p>Glissez vos CSV ici ou cliquez pour sélectionner</p>
                 <input type="file" id="fileInput" accept=".csv,.txt" multiple style="display:none;">
             </div>
+            <div class="import-actions">
+                <button type="button" class="btn-import-action warn" id="btnResetManual">
+                    🧹 Réinitialiser les progressions (mode manuel)
+                </button>
+                <button type="button" class="btn-import-action danger" id="btnClearLogs">
+                    🗑️ Effacer l'historique de saisie (progression_logs)
+                </button>
+            </div>
             <div class="import-progress" id="importProgress"></div>
         </div>
         <div class="settings-section" id="stabPronote">
@@ -433,7 +459,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp }
+    import { getFirestore, doc, setDoc, getDoc, getDocs, deleteDoc, collection, onSnapshot, serverTimestamp }
         from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut }
         from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -1096,6 +1122,105 @@
             .toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     }
 
+    function parseWeekDate(value) {
+        if (!value) return null;
+        var str = String(value).trim();
+        var m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), 12, 0, 0, 0);
+        var d = new Date(str);
+        if (isNaN(d.getTime())) return null;
+        d.setHours(12, 0, 0, 0);
+        return d;
+    }
+
+    function formatDateFrLocal(date) {
+        var d = new Date(date);
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        return dd + '/' + mm + '/' + d.getFullYear();
+    }
+
+    function sortSemainesByDate(semaines) {
+        return (semaines || []).slice().sort(function(a, b) {
+            var da = parseWeekDate(a && a.date);
+            var db = parseWeekDate(b && b.date);
+            if (!da && !db) return 0;
+            if (!da) return 1;
+            if (!db) return -1;
+            return da - db;
+        });
+    }
+
+    function isSpecialSituation(situation) {
+        var s = (situation || '').toLowerCase();
+        if (!s || s === 'normal' || s === 'n/a') return false;
+        return s.includes('vacances') || s.includes('pfmp') || s.includes('féri') ||
+            s.includes('feri') || s.includes('ccf') || s.includes('bac') ||
+            s.includes('sortie') || s.includes('formation') || s.includes('absent');
+    }
+
+    function buildManualSemainesTemplate() {
+        var start = getLundi(new Date(ANNEE_SCOLAIRE.debut + 'T12:00:00'));
+        var end = new Date(ANNEE_SCOLAIRE.fin + 'T12:00:00');
+        var semaines = [];
+        var idx = 1;
+        for (var d = new Date(start); d <= end; d.setDate(d.getDate() + 7)) {
+            var lundi = new Date(d);
+            lundi.setHours(12, 0, 0, 0);
+            var vac = isVacances(lundi);
+            var semSituation = vac ? 'Vacances scolaires' : 'Normal';
+            semaines.push({
+                date: formatDateFrLocal(lundi),
+                semaine: 'S' + idx,
+                ab: getSemaineType(lundi),
+                situation: semSituation,
+                module: '',
+                moduleBase: '',
+                phase: 'cours',
+                transition: '',
+                suiteModule: '',
+                suiteTransition: '',
+                seance: '',
+                nbSeancesPrevues: 0,
+                objectifModule: '',
+                objectifSeance: '',
+                statut: '',
+                valide: false,
+                evalDiag: '',
+                evalForm: '',
+                evaluation: ''
+            });
+            idx++;
+        }
+        return semaines;
+    }
+
+    function normalizeSemaineForManual(sem, idx) {
+        var d = parseWeekDate(sem && sem.date);
+        if (!d) return null;
+        return {
+            date: formatDateFrLocal(d),
+            semaine: (sem && sem.semaine) ? sem.semaine : ('S' + (idx + 1)),
+            ab: (sem && sem.ab) ? sem.ab : getSemaineType(d),
+            situation: isSpecialSituation(sem && sem.situation) ? sem.situation : 'Normal',
+            module: '',
+            moduleBase: '',
+            phase: 'cours',
+            transition: '',
+            suiteModule: '',
+            suiteTransition: '',
+            seance: '',
+            nbSeancesPrevues: 0,
+            objectifModule: '',
+            objectifSeance: '',
+            statut: '',
+            valide: false,
+            evalDiag: '',
+            evalForm: '',
+            evaluation: ''
+        };
+    }
+
     function parseCSV(text, filename) {
         var sep = ';';
         var lines = text.split('\n');
@@ -1240,18 +1365,23 @@
             semaines.push(sem);
         }
 
+        semaines = sortSemainesByDate(semaines);
         return { classeId, csvFilename: filename, niveau, semaines };
     }
 
     // CSV import handlers
     var importZone = document.getElementById('importZone');
     var fileInput = document.getElementById('fileInput');
+    var btnResetManual = document.getElementById('btnResetManual');
+    var btnClearLogs = document.getElementById('btnClearLogs');
 
     importZone.addEventListener('click', () => fileInput.click());
     importZone.addEventListener('dragover', (e) => { e.preventDefault(); importZone.classList.add('dragover'); });
     importZone.addEventListener('dragleave', () => importZone.classList.remove('dragover'));
     importZone.addEventListener('drop', (e) => { e.preventDefault(); importZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
     fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+    btnResetManual.addEventListener('click', resetProgressionsToManual);
+    btnClearLogs.addEventListener('click', clearProgressionLogs);
 
     async function handleFiles(files) {
         var progressDiv = document.getElementById('importProgress');
@@ -1276,6 +1406,96 @@
             }
         }
         showToast('Import terminé !');
+    }
+
+    async function resetProgressionsToManual() {
+        if (!currentUser) { showToast('Connectez-vous d’abord'); return; }
+        if (!confirm("Réinitialiser toutes les progressions en mode manuel ?\n\n- Les semaines sont conservées (ou générées si absentes)\n- Modules/séances/statuts importés CSV sont vidés\n- Vous pourrez repartir classe par classe")) return;
+
+        var btn = document.getElementById('btnResetManual');
+        var progressDiv = document.getElementById('importProgress');
+        btn.disabled = true;
+        btn.textContent = '⏳ Réinitialisation...';
+        progressDiv.innerHTML = '';
+
+        try {
+            var seen = {};
+            var targetIds = [];
+            allPrevue.forEach(function(p) {
+                if (!seen[p.id]) {
+                    seen[p.id] = true;
+                    targetIds.push(p.id);
+                }
+            });
+            ALL_CLASSES.forEach(function(cls) {
+                if (!seen[cls]) {
+                    seen[cls] = true;
+                    targetIds.push(cls);
+                }
+            });
+
+            var updated = 0;
+            for (var i = 0; i < targetIds.length; i++) {
+                var docId = targetIds[i];
+                var prev = allPrevue.find(function(p) { return p.id === docId; }) || null;
+                var sourceSemaines = (prev && Array.isArray(prev.semaines) && prev.semaines.length > 0)
+                    ? sortSemainesByDate(prev.semaines)
+                    : buildManualSemainesTemplate();
+                var cleaned = sourceSemaines.map(normalizeSemaineForManual).filter(Boolean);
+                if (cleaned.length === 0) cleaned = buildManualSemainesTemplate();
+
+                var classeId = prev && prev.classeId ? prev.classeId : docId;
+                var niveau = (prev && prev.niveau) || CLASSES_CONFIG[classeId] || CLASSES_CONFIG[docId] || 'CAP';
+                await setDoc(doc(db, 'progression_prevue', docId), {
+                    classeId: classeId,
+                    niveau: niveau,
+                    csvFilename: '',
+                    semaines: cleaned,
+                    manualMode: true,
+                    manualResetAt: serverTimestamp(),
+                    manualResetBy: currentUser.uid
+                });
+                updated++;
+                addItem(progressDiv, classeId + ' (' + cleaned.length + ' sem.)', '✓ Réinitialisé', 'ok');
+            }
+            showToast('✅ Mode manuel activé (' + updated + ' classes)');
+        } catch (err) {
+            console.error('Manual reset error:', err);
+            addItem(progressDiv, 'Réinitialisation', 'Erreur: ' + err.message, 'err');
+            showToast('❌ Échec réinitialisation');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🧹 Réinitialiser les progressions (mode manuel)';
+        }
+    }
+
+    async function clearProgressionLogs() {
+        if (!currentUser) { showToast('Connectez-vous d’abord'); return; }
+        if (!confirm("Supprimer tout l’historique de saisie rapide ?\n\nCette action efface la collection progression_logs.")) return;
+
+        var btn = document.getElementById('btnClearLogs');
+        var progressDiv = document.getElementById('importProgress');
+        btn.disabled = true;
+        btn.textContent = '⏳ Suppression...';
+
+        try {
+            var snap = await getDocs(collection(db, 'progression_logs'));
+            var count = 0;
+            for (var i = 0; i < snap.docs.length; i++) {
+                var id = snap.docs[i].id;
+                await deleteDoc(doc(db, 'progression_logs', id));
+                count++;
+            }
+            addItem(progressDiv, 'progression_logs', '✓ ' + count + ' suppression(s)', 'ok');
+            showToast('🗑️ ' + count + ' saisie(s) supprimée(s)');
+        } catch (err) {
+            console.error('Clear logs error:', err);
+            addItem(progressDiv, 'progression_logs', 'Erreur: ' + err.message, 'err');
+            showToast('❌ Échec suppression logs');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "🗑️ Effacer l'historique de saisie (progression_logs)";
+        }
     }
 
     function addItem(container, name, status, type) {
@@ -1373,7 +1593,7 @@
     var BASE_URL = 'https://preventionsanteenvironnement.github.io/CockpitProgression/';
 
     function renderQrCode() {
-        var url = BASE_URL + 'log.html';
+        var url = BASE_URL + 'log.html?quick=1';
         var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&data=' + encodeURIComponent(url);
         document.getElementById('qrCard').innerHTML = `
             <h4>QR Universel</h4>
@@ -1384,7 +1604,7 @@
     }
 
     window.printQr = function() {
-        var url = BASE_URL + 'log.html';
+        var url = BASE_URL + 'log.html?quick=1';
         var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&data=' + encodeURIComponent(url);
         var w = window.open('', '_blank');
         w.document.write('<html><head><title>QR CockpitPSE</title><style>body{font-family:sans-serif;text-align:center;padding:40px;}h1{font-size:2em;}p{color:#666;font-size:0.9em;word-break:break-all;}</style></head>' +

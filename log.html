@@ -895,6 +895,13 @@
     const room = params.get('room') || '';
     const paramDate = params.get('date') || '';  // YYYY-MM-DD from index.html
     const paramClasse = params.get('classe') || '';  // class ID from index.html
+    const quickMode = params.get('quick') === '1';
+
+    // Par défaut, l'app démarre sur l'accueil (index.html).
+    // On reste sur saisie rapide uniquement si on a un contexte explicite.
+    if (!room && !paramDate && !paramClasse && !quickMode) {
+        window.location.replace('index.html');
+    }
 
     function getContextDateISO() {
         return paramDate || formatDateISO(new Date());

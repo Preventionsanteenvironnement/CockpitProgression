@@ -1179,7 +1179,7 @@
         html += '<button onclick="propagateWeekEdit(\'' + classeDocId + '\',\'' + (sem.date || '') + '\')" style="width:100%; padding:12px; border:2px solid var(--primary); border-radius:12px; background:var(--primary-light); color:var(--primary); font-size:.85em; font-weight:700; cursor:pointer; font-family:inherit; margin-bottom:8px;">📡 Propager sur les semaines suivantes</button>';
 
         // Link to log
-        var logLink = 'log.html';
+        var logLink = 'log.html?quick=1';
         if (sem.date) {
             var dateParts = (sem.date || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
             if (dateParts) {
@@ -1416,6 +1416,17 @@
         return isNaN(d.getTime()) ? null : d;
     }
 
+    function sortSemainesChrono(semaines) {
+        return (semaines || []).slice().sort(function(a, b) {
+            var da = parseDate(a && a.date);
+            var db = parseDate(b && b.date);
+            if (!da && !db) return 0;
+            if (!da) return 1;
+            if (!db) return -1;
+            return da - db;
+        });
+    }
+
     // Get current week monday date string for highlighting
     function getCurrentWeekMonday() {
         var now = new Date();
@@ -1525,7 +1536,7 @@
                 ' <span class="count">' + niveauLabel + '</span></div>';
 
             // Month headers
-            var semaines = prevue.semaines || [];
+            var semaines = sortSemainesChrono(prevue.semaines || []);
             var monthsHtml = buildMonthHeaders(semaines);
 
             // Week cells
@@ -1592,22 +1603,23 @@
                 buildStudentsBlock(prevue.classeId);
 
             // Click handler for timeline cells
-            (function(p) {
+            (function(p, orderedSemaines) {
                 card.addEventListener('click', function(e) {
                     var cell = e.target.closest('.timeline-cell');
                     if (!cell || !cell.dataset.semIdx) return;
                     var idx = parseInt(cell.dataset.semIdx);
-                    if (p.semaines && p.semaines[idx]) {
-                        showWeekDetail(p.classeId, p.semaines[idx], p.id);
+                    if (orderedSemaines && orderedSemaines[idx]) {
+                        showWeekDetail(p.classeId, orderedSemaines[idx], p.id);
                     }
                 });
-            })(prevue);
+            })(prevue, semaines);
 
             container.appendChild(card);
         });
     }
 
     function buildMonthHeaders(semaines) {
+        semaines = sortSemainesChrono(semaines || []);
         var months = [];
         var currentMonth = -1;
         var count = 0;
