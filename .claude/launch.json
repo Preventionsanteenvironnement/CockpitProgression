@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "cockpit",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8085", "--directory", "/Users/brahms/Documents/GitHub/CockpitProgression"],
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "8085"],
       "port": 8085
     }
   ]
