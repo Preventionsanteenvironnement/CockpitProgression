@@ -484,9 +484,16 @@
 
         /* ── STUDENTS GRID ── */
         .students-checklist { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:9px; max-height:200px; overflow-y:auto; }
-        .student-item { display:flex; align-items:center; gap:6px; padding:7px 9px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); cursor:pointer; font-size:.78em; font-weight:600; transition:all .12s; -webkit-tap-highlight-color:transparent; }
+        .student-item { display:flex; align-items:center; gap:6px; padding:7px 9px; border:2px solid var(--border); border-radius:8px; background:var(--surface-2); cursor:pointer; font-size:.78em; font-weight:600; transition:all .12s; -webkit-tap-highlight-color:transparent; user-select:none; }
         .student-item.absent { border-color:var(--danger); background:var(--danger-light); color:var(--danger); }
+        .student-item.sans-copie { border-color:var(--warning); background:var(--warning-light); color:#92400e; }
+        .student-item.absent.sans-copie { border-color:var(--danger); background:linear-gradient(135deg, var(--danger-light), var(--warning-light)); }
         .student-item.no-cours { border-color:var(--warning); background:var(--warning-light); color:#92400e; }
+        .student-item .student-badges { display:flex; gap:3px; margin-left:auto; font-size:.75em; }
+        .student-item .badge-abs { display:none; color:var(--danger); }
+        .student-item .badge-sc { display:none; color:var(--warning); }
+        .student-item.absent .badge-abs { display:inline; }
+        .student-item.sans-copie .badge-sc { display:inline; }
     </style>
 </head>
 <body>
@@ -708,9 +715,33 @@
         </div>
     </div>
 
-    <!-- CARD 4: ABSENCES + QUALITÉ -->
+    <!-- CARD 4: CLASSE & ÉLÈVES -->
     <div class="card">
-        <div class="card-title">👥 Classe</div>
+        <div class="card-title">👥 Classe — Liste des élèves</div>
+
+        <!-- STUDENT ROSTER - visible quand classe sélectionnée -->
+        <div id="studentRosterSection" style="display:none; margin-bottom:14px;">
+            <div style="font-size:.72em; color:var(--muted); margin-bottom:8px; font-weight:600;">
+                Cliquer = <span style="color:var(--danger);">Absent</span> · Double-cliquer = <span style="color:var(--warning);">Sans copie</span>
+            </div>
+            <div id="studentRosterGrid" class="students-checklist" style="max-height:300px;"></div>
+            <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                <div style="font-size:.72em; color:var(--muted); display:flex; align-items:center; gap:4px;">
+                    <span style="width:10px;height:10px;border-radius:3px;background:var(--danger-light);border:1px solid var(--danger);display:inline-block;"></span> Absent
+                </div>
+                <div style="font-size:.72em; color:var(--muted); display:flex; align-items:center; gap:4px;">
+                    <span style="width:10px;height:10px;border-radius:3px;background:var(--warning-light);border:1px solid var(--warning);display:inline-block;"></span> Sans copie
+                </div>
+                <span id="rosterAbsCount" style="font-size:.72em; font-weight:700; color:var(--danger); margin-left:auto;"></span>
+                <span id="rosterSansCopieCount" style="font-size:.72em; font-weight:700; color:var(--warning);"></span>
+            </div>
+        </div>
+        <div id="studentRosterEmpty" style="display:none; margin-bottom:14px;">
+            <div style="font-size:.78em; color:var(--muted); padding:12px; background:var(--bg); border-radius:10px; border:1px dashed var(--border); text-align:center;">
+                Aucune liste élève chargée.<br>
+                <span style="font-size:.9em;">Importez vos CSV élèves depuis le <a href="dashboard.html" style="color:var(--primary);font-weight:700;">Dashboard</a></span>
+            </div>
+        </div>
 
         <label class="field-label">Absences</label>
         <div class="stepper" id="absStepper">
@@ -722,8 +753,7 @@
             <div style="font-size:.72em; color:var(--muted); margin-bottom:6px; font-weight:600;">Cliquer pour marquer absent :</div>
             <div id="absChipsGrid" class="students-checklist"></div>
         </div>
-        <div id="absNoList" style="display:none; font-size:.78em; color:var(--muted); margin-bottom:10px; padding:8px 12px; background:var(--bg); border-radius:8px; border:1px dashed var(--border);">
-            Aucune liste élève — saisie manuelle uniquement
+        <div id="absNoList" style="display:none;">
         </div>
         <input type="text" id="absencesNoms" placeholder="Noms des absents (optionnel)" style="margin-bottom:10px;">
         <div id="elevesSansCours" style="display:none; margin-bottom:14px;">
@@ -784,7 +814,7 @@
             <button class="meteo-btn" onclick="selectMeteo('🌧','Difficile',this)"><span class="m-emoji">🌧</span><span class="m-label">Difficile</span></button>
             <button class="meteo-btn" onclick="selectMeteo('⛅','Mitigé',this)"><span class="m-emoji">⛅</span><span class="m-label">Mitigé</span></button>
             <button class="meteo-btn" onclick="selectMeteo('🌤','Bien',this)"><span class="m-emoji">🌤</span><span class="m-label">Bien</span></button>
-            <button class="meteo-btn" onclick="selectMeteo('☀','Excellent',this)"><span class="m-emoji">☀️</span><span class="m-label">Excellent</span></button>
+            <button class="meteo-btn" onclick="selectMeteo('☀️','Excellent',this)"><span class="m-emoji">☀️</span><span class="m-label">Excellent</span></button>
         </div>
 
         <label class="field-label" style="margin-top:4px;">🧩 Cognitif</label>
@@ -1718,7 +1748,14 @@
         // Rebuild checklist when module changes too
         selectModule.onchange = function() { buildChecklist(); };
 
-        // Load student chips for absence tracking
+        // Reset student tracking for new class
+        absentsEleves = [];
+        elevesSansCopie = [];
+        absences = 0;
+        document.getElementById('absCount').textContent = '0';
+        document.getElementById('absencesNoms').value = '';
+
+        // Load student roster for this class
         renderAbsenceChips(classeDocId, prevue ? prevue.classeId : classeDocId);
     }
 
@@ -2446,10 +2483,24 @@
 
     // ═══════ ABSENCE CHIPS — Liste élèves cliquables ═══════
     function renderAbsenceChips(classeDocId, classeLabel) {
+        // Also render the enhanced student roster
+        renderStudentRoster(classeDocId, classeLabel);
+
         var container = document.getElementById('absChipsContainer');
         var grid = document.getElementById('absChipsGrid');
         var noList = document.getElementById('absNoList');
         if (!container || !grid) return;
+
+        // Hide old chips — the new roster replaces them
+        container.style.display = 'none';
+        if (noList) noList.style.display = 'none';
+    }
+
+    function renderStudentRoster(classeDocId, classeLabel) {
+        var rosterSection = document.getElementById('studentRosterSection');
+        var rosterGrid = document.getElementById('studentRosterGrid');
+        var rosterEmpty = document.getElementById('studentRosterEmpty');
+        if (!rosterSection || !rosterGrid) return;
 
         // Load students from cache/localStorage
         var allStudents = Array.isArray(studentsCache) && studentsCache.length ? studentsCache : readStudentsFromLocal();
@@ -2462,30 +2513,31 @@
         });
 
         if (students.length === 0) {
-            container.style.display = 'none';
-            noList.style.display = 'block';
+            rosterSection.style.display = 'none';
+            if (rosterEmpty) rosterEmpty.style.display = 'block';
             return;
         }
 
-        noList.style.display = 'none';
-        // Sort by name
+        if (rosterEmpty) rosterEmpty.style.display = 'none';
         students.sort(function(a, b) { return (a.name || a.code || '').localeCompare(b.name || b.code || ''); });
 
-        container.style.display = 'block';
-        grid.innerHTML = '';
+        rosterSection.style.display = 'block';
+        rosterGrid.innerHTML = '';
 
         students.forEach(function(s) {
             var name = s.name || s.code || 'Élève';
             var item = document.createElement('div');
             item.className = 'student-item';
-            item.textContent = name;
+            item.innerHTML = '<span class="student-name">' + name + '</span>' +
+                '<span class="student-badges"><span class="badge-abs">ABS</span><span class="badge-sc">SC</span></span>';
             item.dataset.studentName = name;
 
-            // Check if already marked absent
-            var isAbsent = absentsEleves.indexOf(name) >= 0;
-            if (isAbsent) item.classList.add('absent');
+            // Restore state
+            if (absentsEleves.indexOf(name) >= 0) item.classList.add('absent');
+            if (elevesSansCopie.indexOf(name) >= 0) item.classList.add('sans-copie');
 
-            item.addEventListener('click', function() {
+            // Single click = toggle absent
+            item.addEventListener('click', function(e) {
                 var idx = absentsEleves.indexOf(name);
                 if (idx >= 0) {
                     absentsEleves.splice(idx, 1);
@@ -2493,17 +2545,49 @@
                 } else {
                     absentsEleves.push(name);
                     item.classList.add('absent');
+                    // Auto-mark sans copie when absent
+                    if (elevesSansCopie.indexOf(name) < 0) {
+                        elevesSansCopie.push(name);
+                        item.classList.add('sans-copie');
+                    }
                 }
-                // Sync count + text field
-                absences = absentsEleves.length;
-                document.getElementById('absCount').textContent = absences;
-                document.getElementById('absencesNoms').value = absentsEleves.join(', ');
-                // Update "élèves sans cours"
-                updateElevesSansCours();
+                syncRosterCounts();
             });
 
-            grid.appendChild(item);
+            // Double-click = toggle sans copie only
+            item.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                var idx = elevesSansCopie.indexOf(name);
+                if (idx >= 0) {
+                    elevesSansCopie.splice(idx, 1);
+                    item.classList.remove('sans-copie');
+                } else {
+                    elevesSansCopie.push(name);
+                    item.classList.add('sans-copie');
+                }
+                syncRosterCounts();
+            });
+
+            rosterGrid.appendChild(item);
         });
+
+        syncRosterCounts();
+    }
+
+    function syncRosterCounts() {
+        // Sync absence count + text field
+        absences = absentsEleves.length;
+        document.getElementById('absCount').textContent = absences;
+        document.getElementById('absencesNoms').value = absentsEleves.join(', ');
+
+        // Update roster count badges
+        var absLabel = document.getElementById('rosterAbsCount');
+        var scLabel = document.getElementById('rosterSansCopieCount');
+        if (absLabel) absLabel.textContent = absentsEleves.length ? (absentsEleves.length + ' absent(s)') : '';
+        if (scLabel) scLabel.textContent = elevesSansCopie.length ? (elevesSansCopie.length + ' sans copie') : '';
+
+        // Update "élèves sans cours"
+        updateElevesSansCours();
     }
 
     function updateElevesSansCours() {
@@ -2511,19 +2595,20 @@
         var grid = document.getElementById('elevesSansCoursGrid');
         if (!container || !grid) return;
 
-        // Only show if "cours distribué" is checked AND there are absents
-        var coursDistrib = checklist.cours_complet || checklist.cours_seance || checklist.docs_distribues;
-        if (!coursDistrib || absentsEleves.length === 0) {
+        // Show if there are students marked "sans copie"
+        if (elevesSansCopie.length === 0) {
             container.style.display = 'none';
             return;
         }
 
         container.style.display = 'block';
         grid.innerHTML = '';
-        absentsEleves.forEach(function(name) {
+        elevesSansCopie.forEach(function(name) {
+            var isAbsent = absentsEleves.indexOf(name) >= 0;
             var item = document.createElement('div');
             item.className = 'student-item no-cours';
-            item.innerHTML = '<span>' + name + '</span><span style="font-size:.7em;margin-left:auto;">absent ce jour</span>';
+            item.innerHTML = '<span>' + name + '</span><span style="font-size:.7em;margin-left:auto;">' +
+                (isAbsent ? 'absent + sans copie' : 'sans copie') + '</span>';
             grid.appendChild(item);
         });
     }
@@ -2619,6 +2704,7 @@
             })(),
             todos: selectedTodos.map(function(t) { return {action:t.action||'',label:t.label||'',note:document.getElementById('todoNote').value.trim()}; }),
             absentsEleves: absentsEleves.slice(),
+            elevesSansCopie: elevesSansCopie.slice(),
             absences: absences,
             absencesNoms: document.getElementById('absencesNoms').value.trim(),
             qualite: selectedQualite,
@@ -2957,6 +3043,7 @@
     let selectedMeteo = null;
     let selectedTodos = [];
     let absentsEleves = [];
+    let elevesSansCopie = [];
     let distribSeances = [];
     let absCoursEleves = [];
 

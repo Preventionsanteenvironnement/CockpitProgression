@@ -731,7 +731,7 @@ export const METEO_SCORES = {
     '🌧': 2, 'Difficile': 2,
     '⛅': 3, 'Mitigé': 3,
     '🌤': 4, 'Bien': 4,
-    '☀️': 5, 'Excellent': 5,
+    '☀️': 5, '☀': 5, 'Excellent': 5,
 };
 
 export function meteoToScore(meteo) {

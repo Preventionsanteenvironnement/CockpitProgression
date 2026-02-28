@@ -642,6 +642,7 @@
                     <option value="">-- Choisir une classe --</option>
                 </select>
                 <button type="button" class="btn-students" id="btnPlanifClearClass">🧽 Effacer modules de la classe</button>
+                <button type="button" class="btn-students" id="btnPlanifClearAll" style="background:var(--danger-light);color:var(--danger);border-color:var(--danger);">🗑️ Effacer modules TOUTES les classes</button>
                 <button type="button" class="btn-planif-primary" id="btnPlanifSave" disabled>💾 Enregistrer la classe</button>
                 <span class="students-help" id="planifStatus">Aucune modification en attente.</span>
             </div>
@@ -2922,6 +2923,58 @@
         }
     };
 
+    window.clearPlanifModulesAllClasses = async function() {
+        if (!allPrevue.length) { showToast('Aucune classe chargée'); return; }
+
+        var classeNames = allPrevue.map(function(p) { return p.classeId || p.id; }).join(', ');
+        var ok = confirm('Effacer les modules/séances de TOUTES les classes ?\n\nClasses concernées :\n' + classeNames + '\n\nPFMP, jours fériés et vacances seront conservés.\n\nAction irréversible.');
+        if (!ok) return;
+
+        var btn = document.getElementById('btnPlanifClearAll');
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ Suppression...'; }
+
+        try {
+            var updated = 0;
+            for (var i = 0; i < allPrevue.length; i++) {
+                var prevue = allPrevue[i];
+                if (!prevue.semaines) continue;
+                prevue.semaines.forEach(function(sem) {
+                    var sit = (sem.situation || 'Normal').toLowerCase();
+                    if (sit.indexOf('vacances') >= 0 || sit.indexOf('pfmp') >= 0 ||
+                        sit.indexOf('férié') >= 0 || sit.indexOf('ferie') >= 0) return;
+                    sem.module = '';
+                    sem.moduleBase = '';
+                    sem.seance = '';
+                    sem.phase = 'Cours';
+                    sem.transition = '';
+                    sem.suiteModule = '';
+                    sem.suiteTransition = '';
+                    sem.nbSeancesPrevues = 0;
+                    sem.objectifModule = '';
+                    sem.objectifSeance = '';
+                    sem.evalDiag = '';
+                    sem.evalForm = '';
+                    sem.evaluation = '';
+                });
+                await updateDoc(doc(db, 'progression_prevue', prevue.id), {
+                    semaines: prevue.semaines,
+                    manualMode: true,
+                    modulesClearedAt: serverTimestamp(),
+                    modulesClearedBy: auth.currentUser ? auth.currentUser.uid : ''
+                });
+                updated++;
+            }
+            setPlanifDirtyState(false);
+            renderPlanifView();
+            showToast('🧽 Modules effacés sur ' + updated + ' classe(s) — Vous pouvez maintenant saisir manuellement');
+        } catch (e) {
+            console.error('clearPlanifModulesAllClasses error:', e);
+            showToast('❌ Erreur suppression globale');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '🗑️ Effacer modules TOUTES les classes'; }
+        }
+    };
+
     function setupPlanifUI() {
         var sel = document.getElementById('planifClasseSelect');
         var btnSave = document.getElementById('btnPlanifSave');
@@ -2948,6 +3001,13 @@
         btnClear.addEventListener('click', function() {
             window.clearPlanifModulesForClass();
         });
+
+        var btnClearAll = document.getElementById('btnPlanifClearAll');
+        if (btnClearAll) {
+            btnClearAll.addEventListener('click', function() {
+                window.clearPlanifModulesAllClasses();
+            });
+        }
 
         wrap.addEventListener('change', function(e) {
             var target = e.target;
@@ -3895,8 +3955,8 @@
         var data = [];
         allLogs.forEach(function(log) {
             if (!log.date) return;
-            var meteoEmoji = log.meteo || '';
-            var score = meteoToScore(meteoEmoji);
+            var meteoVal = log.meteo || null;
+            var score = meteoToScore(meteoVal);
             if (score === 0 && !log.cps) return; // No meteo data at all
 
             var cps = log.cps || {};
