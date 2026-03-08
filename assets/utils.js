@@ -196,11 +196,30 @@ export const CLASS_GROUPS = {
     'BTMELEC': ['BTMELEC', 'TMELEC'],
     'B1MELEC': ['B1MELEC', '1MELEC'],
     'B2MELEC': ['B2MELEC', '2MELEC'],
+    // CAP PSR
+    'C1PSR': ['C1PSR', 'CAPPSR1', 'CAPPSR', 'PSR1', 'CAP PSR1', 'CAP PSR 1'],
+    'C2PSR': ['C2PSR', 'CAPPSR2', 'PSR2', 'CAP PSR2', 'CAP PSR 2'],
+    // CAP CAN
+    'C1CAN': ['C1CAN', 'CAPCAN1', 'CAN1', 'CAP CAN1', 'CAP CAN 1'],
+    'C2CAN': ['C2CAN', 'CAPCAN2', 'CAN2', 'CAP CAN2', 'CAP CAN 2'],
+    // CAP JP
+    'C1JP': ['C1JP', 'CAPJP1', 'JP1', 'CAP JP1', 'CAP JP 1'],
+    'C2JP': ['C2JP', 'CAPJP2', 'JP2', 'CAP JP2', 'CAP JP 2'],
+    // CAP HORT
+    'C1HORT': ['C1HORT', 'CAPHORT1', 'HORT1', 'CAP HORT1', 'CAP HORT 1'],
+    'C2HORT': ['C2HORT', 'CAPHORT2', 'HORT2', 'CAP HORT2', 'CAP HORT 2'],
+    // CAP VAN
+    'C1VAN': ['C1VAN', 'CAPVAN1', 'VAN1', 'CAP VAN1', 'CAP VAN 1', 'CPSE1'],
+    'C2VAN': ['C2VAN', 'CAPVAN2', 'VAN2', 'CAP VAN2', 'CAP VAN 2'],
 };
 
 // Alias groups étendus pour matching Pronote (compat avec l'ancien code)
 export const CLASS_ALIAS_GROUPS = {
-    CAP_VAN: ['CPSE1', 'CAPVAN', 'C1VAN', 'C2VAN', 'C1VANC2VAN', 'VAN'],
+    CAP_PSR: ['C1PSR', 'C2PSR', 'CAPPSR', 'CAPPSR1', 'CAPPSR2', 'PSR1', 'PSR2', 'PSR'],
+    CAP_CAN: ['C1CAN', 'C2CAN', 'CAPCAN', 'CAPCAN1', 'CAPCAN2', 'CAN1', 'CAN2', 'CAN'],
+    CAP_JP: ['C1JP', 'C2JP', 'CAPJP', 'CAPJP1', 'CAPJP2', 'JP1', 'JP2', 'JP'],
+    CAP_HORT: ['C1HORT', 'C2HORT', 'CAPHORT', 'CAPHORT1', 'CAPHORT2', 'HORT1', 'HORT2', 'HORT'],
+    CAP_VAN: ['CPSE1', 'CAPVAN', 'CAPVAN1', 'CAPVAN2', 'C1VAN', 'C2VAN', 'VAN1', 'VAN2', 'VAN'],
     PREMIERE_AGORA: ['BPSE2', '1AGORA', '1EREAGORA', 'PREMIEREAGORA', 'B1AGO', 'B1AGORA', 'B1AGO1', 'B1AGO2'],
     TERMINALE_AGORA: ['TAGORA', 'BTAGO', 'BTAGORA', 'BTAGO1', 'BTAGO2'],
     B2_AGORA: ['B2GATL1', 'B2GATL2', 'B2AGO', 'B2AGORA', '2GATL']

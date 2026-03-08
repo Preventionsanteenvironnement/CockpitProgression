@@ -1140,7 +1140,8 @@
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import {
         getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect,
-        getRedirectResult, GoogleAuthProvider, signOut
+        getRedirectResult, GoogleAuthProvider, signOut,
+        setPersistence, browserLocalPersistence
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     // ═══════ IMPORTS UTILS ═══════
@@ -1151,13 +1152,15 @@
         detectClassGroup as detectClassGroupUtil, getSemaineType, coursSePasse,
         getLundi, formatDateISO, formatDateCourt, isVacances, isFerie, isPFMP,
         getCoursForDay, cleanModuleName, SEANCES as SEANCES_UTILS,
-        STUDENTS_STORAGE_KEY, getModulesForClasse, getNiveauForClasse
+        STUDENTS_STORAGE_KEY, getModulesForClasse, getNiveauForClasse as getNiveauForClasseUtil
     } from './assets/utils.js';
 
     // ═══════ FIREBASE ═══════
     const app = initializeApp(FIREBASE_CONFIG);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    // Forcer la persistance locale pour ne pas redemander le login à chaque visite
+    setPersistence(auth, browserLocalPersistence).catch(e => console.warn('Persistance auth:', e));
     const googleProvider = new GoogleAuthProvider();
 
     // ═══════ STATE ═══════
@@ -1805,8 +1808,8 @@
 
     // ═══════ RESOLVE NIVEAU (with fallbacks) ═══════
     function resolveNiveau(prevue) {
-        // 1) Try CLASSES_CONFIG mapping
-        var niveau = CLASSES_CONFIG[prevue.classeId] || null;
+        // 1) Try CLASSES_CONFIG mapping (direct then fuzzy via classesMatch)
+        var niveau = getNiveauForClasseUtil(prevue.classeId);
         if (niveau && MODULES_PSE[niveau]) return niveau;
         // 2) Try prevue.niveau directly (stored from CSV import)
         if (prevue.niveau && MODULES_PSE[prevue.niveau]) return prevue.niveau;
@@ -3071,7 +3074,7 @@
         if (!moduleId) return '';
         var cleaned = cleanModuleName(moduleId);
         var extracted = extractModuleId(cleaned);
-        var niveau = getNiveauForClasse(classeLabel) || '';
+        var niveau = getNiveauForClasseUtil(classeLabel) || '';
         if (niveau === 'CAP' && /^[ABCD]\d+$/i.test(extracted)) {
             return 'M' + extracted.toUpperCase();
         }
