@@ -2102,14 +2102,27 @@
         var historyList = document.getElementById('historyList');
 
         try {
-            var logsSnap = await getDocs(collection(db, 'progression_logs'));
+            var logsSnap = await getDocs(query(
+                collection(db, 'progression_logs'),
+                where('classeDocId', '==', classeDocId)
+            ));
             var classLogs = [];
             logsSnap.forEach(function(d) {
-                var data = d.data();
-                if (data.classeId === classeLabel || data.classeDocId === classeDocId) {
-                    classLogs.push(data);
-                }
+                classLogs.push(d.data());
             });
+
+            // Also check by classeId label if different from classeDocId
+            if (classeLabel && classeLabel !== classeDocId) {
+                var logsSnap2 = await getDocs(query(
+                    collection(db, 'progression_logs'),
+                    where('classeId', '==', classeLabel)
+                ));
+                var existingDates = new Set(classLogs.map(function(l) { return l.date; }));
+                logsSnap2.forEach(function(d) {
+                    var data = d.data();
+                    if (!existingDates.has(data.date)) classLogs.push(data);
+                });
+            }
 
             // Store for Feature 6 (smart distribution)
             currentClassLogs = classLogs;
@@ -3125,8 +3138,8 @@
             })
             .map(function(student) {
                 return {
-                    code: normalizeStudentCode(student.code),
-                    name: (student.name || student.code || 'Élève').trim(),
+                    code: extractStudentCode(student),
+                    name: extractStudentName(student),
                     classe: student.classe || classeLabel
                 };
             })
@@ -3135,8 +3148,41 @@
             });
     }
 
+    function extractStudentCode(student) {
+        if (!student) return '';
+        return normalizeStudentCode(
+            student.code ||
+            student.userCode ||
+            student.usercode ||
+            student.codeEleve ||
+            student.code_eleve ||
+            student.identifiant ||
+            student.idEleve ||
+            student.id
+        );
+    }
+
+    function extractStudentName(student) {
+        if (!student) return 'Élève';
+        var fullName = student.name ||
+            student.fullname ||
+            student.nomPrenom ||
+            student.prenomNom ||
+            student.displayName ||
+            '';
+        if (fullName) return String(fullName).trim();
+
+        var prenom = student.prenom || student.firstName || '';
+        var nom = student.nom || student.lastName || '';
+        var merged = (prenom + ' ' + nom).trim();
+        if (merged) return merged;
+
+        var code = extractStudentCode(student);
+        return code || 'Élève';
+    }
+
     function normalizeStudentCode(code) {
-        return (code || '').toString().trim();
+        return (code || '').toString().trim().toUpperCase();
     }
 
     function escapeSuiviHtml(value) {
@@ -3188,6 +3234,13 @@
             renderSuiviStudents();
             updateSuiviSummary();
             return;
+        }
+
+        var studentsWithoutCode = students.filter(function(student) { return !student.code; }).length;
+        if (studentsWithoutCode === students.length) {
+            helper.textContent = 'Les élèves sont trouvés, mais leurs codes manquent dans le roster. Réimportez la liste avec une colonne Code / userCode pour activer le suivi.';
+        } else if (studentsWithoutCode > 0) {
+            helper.textContent += ' Certains élèves n’ont pas encore de code dans le roster et resteront bloqués tant que la liste n’est pas enrichie.';
         }
 
         empty.style.display = 'none';
@@ -3334,14 +3387,18 @@
     }
 
     function getSuiviCounts() {
+        var rosterTotal = suiviEleves.length;
         var total = suiviEleves.filter(function(student) { return !student.disabled; }).length;
         var done = suiviEleves.filter(function(student) { return student.done; }).length;
         var absents = suiviEleves.filter(function(student) { return student.savedAbsent; }).length;
+        var missingCodes = suiviEleves.filter(function(student) { return student.disabled; }).length;
         return {
+            rosterTotal: rosterTotal,
             total: total,
             done: done,
             absents: absents,
-            pending: Math.max(0, total - done - absents)
+            pending: Math.max(0, total - done - absents),
+            missingCodes: missingCodes
         };
     }
 
@@ -3365,12 +3422,18 @@
             return;
         }
 
-        if (!counts.total) {
+        if (!counts.rosterTotal) {
             summary.textContent = 'Aucun élève';
             return;
         }
 
+        if (!counts.total) {
+            summary.textContent = counts.rosterTotal + ' élève(s) · codes manquants';
+            return;
+        }
+
         summary.textContent = counts.done + '/' + counts.total + ' saisis' +
+            (counts.missingCodes ? (' · ' + counts.missingCodes + ' sans code') : '') +
             (counts.absents ? (' · ' + counts.absents + ' abs') : '') +
             (counts.pending ? (' · ' + counts.pending + ' restant(s)') : '') +
             (activeLabels.length ? (' · ' + activeLabels.length + ' critères') : '');
@@ -4129,10 +4192,12 @@
         // Load today's logs
         var todayLogs = [];
         try {
-            var logsSnap = await getDocs(collection(db, 'progression_logs'));
+            var logsSnap = await getDocs(query(
+                collection(db, 'progression_logs'),
+                where('date', '==', todayStr)
+            ));
             logsSnap.forEach(function(d) {
-                var data = d.data();
-                if (data.date === todayStr) todayLogs.push(data);
+                todayLogs.push(d.data());
             });
         } catch (e) { return; }
 
@@ -4316,15 +4381,15 @@
         var classeLabel = prevue.classeId;
         var logsSnap = null;
         try {
-            logsSnap = await getDocs(collection(db, 'progression_logs'));
+            logsSnap = await getDocs(query(
+                collection(db, 'progression_logs'),
+                where('classeDocId', '==', classeDocId)
+            ));
         } catch (e) { return; }
 
         var classLogs = [];
         logsSnap.forEach(function(d) {
-            var data = d.data();
-            if (data.classeId === classeLabel || data.classeDocId === classeDocId) {
-                classLogs.push(data);
-            }
+            classLogs.push(d.data());
         });
 
         if (classLogs.length === 0) return;
