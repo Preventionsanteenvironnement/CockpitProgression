@@ -1230,18 +1230,29 @@
         var local = readStudentsFromLocal();
         if (local.length > 0) {
             studentsCache = local;
-            return;
+            console.log('[Suivi] Élèves chargés depuis localStorage:', local.length);
         }
+        /* Toujours vérifier Firebase pour synchroniser */
         try {
             var snap = await getDoc(doc(db, STUDENTS_DOC_REF[0], STUDENTS_DOC_REF[1]));
-            if (!snap.exists()) return;
+            if (!snap.exists()) {
+                console.log('[Suivi] Aucun roster Firebase trouvé');
+                return;
+            }
             var data = snap.data() || {};
             var cloudStudents = Array.isArray(data.students) ? data.students : [];
-            if (!cloudStudents.length) return;
-            studentsCache = cloudStudents;
-            localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(cloudStudents));
+            if (!cloudStudents.length) {
+                console.log('[Suivi] Roster Firebase vide');
+                return;
+            }
+            /* Firebase est la source de vérité : si le cloud a plus de données, on l'utilise */
+            if (cloudStudents.length >= studentsCache.length) {
+                studentsCache = cloudStudents;
+                try { localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(cloudStudents)); } catch(_) {}
+                console.log('[Suivi] Élèves synchronisés depuis Firebase:', cloudStudents.length);
+            }
         } catch (err) {
-            console.warn('Students cloud fetch error:', err);
+            console.warn('[Suivi] Erreur sync Firebase élèves:', err);
         }
     }
 
@@ -1290,7 +1301,7 @@
         coursAJour: '📋 Cours à jour',
         autonomie: '🎯 Autonomie',
         initiative: '💡 Initiative',
-        securite: '⚠️ Sécurité',
+        securite: '⚠️ Rappel au cadre',
         planClasse: '🪑 Respect du plan de classe'
     };
     const SUIVI_OPTION_SETS = {
@@ -2867,6 +2878,8 @@
             return classesMatchUtil(s.classe, classeDocId) || classesMatchUtil(s.classe, classeLabel);
         });
 
+        console.log('[Roster] Élèves pour ' + classeLabel + ': ' + students.length + '/' + allStudents.length);
+
         if (students.length === 0) {
             rosterSection.style.display = 'none';
             if (rosterEmpty) rosterEmpty.style.display = 'block';
@@ -3127,11 +3140,26 @@
     function getSuiviStudentsForClass(classeDocId, classeLabel) {
         var allStudents = Array.isArray(studentsCache) && studentsCache.length ? studentsCache : readStudentsFromLocal();
         if (!studentsCache.length && allStudents.length) studentsCache = allStudents;
-        return allStudents
+
+        console.log('[Suivi] Recherche élèves pour classeDocId=' + classeDocId + ', classeLabel=' + classeLabel + ', total roster=' + allStudents.length);
+
+        if (allStudents.length > 0 && allStudents.length <= 5) {
+            console.log('[Suivi] Échantillon roster:', JSON.stringify(allStudents.slice(0, 5).map(function(s) { return { code: s.code, classe: s.classe, name: (s.name || '').substring(0, 15) }; })));
+        } else if (allStudents.length > 5) {
+            var classesSet = {};
+            allStudents.forEach(function(s) { if (s.classe) classesSet[s.classe] = (classesSet[s.classe] || 0) + 1; });
+            console.log('[Suivi] Classes dans le roster:', JSON.stringify(classesSet));
+        }
+
+        var filtered = allStudents
             .filter(function(student) {
                 if (!student || !student.classe) return false;
                 return classesMatchUtil(student.classe, classeDocId) || classesMatchUtil(student.classe, classeLabel);
-            })
+            });
+
+        console.log('[Suivi] Élèves matchés pour ' + classeLabel + ': ' + filtered.length);
+
+        return filtered
             .map(function(student) {
                 return {
                     code: extractStudentCode(student),
