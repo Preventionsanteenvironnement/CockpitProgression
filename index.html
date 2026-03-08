@@ -548,6 +548,12 @@
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
     // ═══ LOAD DATA ═══
+    let _renderWeekTimer = null;
+    function debouncedRenderWeek() {
+        clearTimeout(_renderWeekTimer);
+        _renderWeekTimer = setTimeout(() => renderWeek(), 50);
+    }
+
     function loadAllData() {
         if (unsubPrevue) { unsubPrevue(); }
         if (unsubLogs) { unsubLogs(); }
@@ -556,13 +562,14 @@
             allPrevue = [];
             snap.forEach(d => allPrevue.push({ id: d.id, ...d.data() }));
             allPrevue.sort((a, b) => a.classeId.localeCompare(b.classeId));
-            renderWeek();
+            debouncedRenderWeek();
         }, err => console.error('prevue error:', err));
 
         unsubLogs = onSnapshot(collection(db, 'progression_logs'), (snap) => {
             allLogs = [];
             snap.forEach(d => allLogs.push({ id: d.id, ...d.data() }));
-            renderWeek();
+            buildLogIndex();
+            debouncedRenderWeek();
         }, err => console.error('logs error:', err));
 
         loadPronoteEdt();
@@ -682,22 +689,6 @@
             }
             if (absDay) {
                 col.appendChild(createSpecialBlock('🚫', 'Absence', absDay.label, 'cb-ferie'));
-                grid.appendChild(col);
-                continue;
-            }
-
-            // Wednesday check — no PSE courses
-            const dayOfWeek = dayDate.getDay();
-            if (dayOfWeek === 3) { // Mercredi
-                const empty = document.createElement('div');
-                empty.className = 'course-block cb-vide no-click';
-                empty.style.textAlign = 'center';
-                empty.style.minHeight = '60px';
-                empty.style.display = 'flex';
-                empty.style.alignItems = 'center';
-                empty.style.justifyContent = 'center';
-                empty.innerHTML = '<span style="font-size:13px;">—</span>';
-                col.appendChild(empty);
                 grid.appendChild(col);
                 continue;
             }
@@ -905,13 +896,22 @@
     }
 
     // ═══ FIND DATA HELPERS ═══
+    let _logsByDate = new Map();
+    function buildLogIndex() {
+        _logsByDate = new Map();
+        for (const log of allLogs) {
+            const d = log.date || '';
+            if (!_logsByDate.has(d)) _logsByDate.set(d, []);
+            _logsByDate.get(d).push(log);
+        }
+    }
+
     function findLog(dateISO, classeId) {
-        // docId pattern: YYYY-MM-DD_CLASSEID
-        for (let i = 0; i < allLogs.length; i++) {
-            const log = allLogs[i];
-            const logDate = log.date || '';
+        const logsForDate = _logsByDate.get(dateISO);
+        if (!logsForDate) return null;
+        for (const log of logsForDate) {
             const logClasse = log.classeDocId || log.classeId || '';
-            if (logDate === dateISO && classesMatch(logClasse, classeId)) return log;
+            if (classesMatch(logClasse, classeId)) return log;
         }
         return null;
     }

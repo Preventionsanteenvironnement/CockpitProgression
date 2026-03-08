@@ -571,7 +571,7 @@ export function isReporte(sem) {
     return sem.statut === 'Reporté' || sem.statut === 'Reporte';
 }
 export function isNonRealise(sem) {
-    return sem.statut === 'Non réalisé' || sem.statut === 'Non realise' || sem.statut === 'Non réalisé';
+    return sem.statut === 'Non réalisé' || sem.statut === 'Non realise';
 }
 
 /**
@@ -602,7 +602,8 @@ export function situationClass(sem) {
     if (sit.includes('sortie')) return 'c-sortie';
     if (sit.includes('annul')) return 'c-annule';
     if (sit.includes('feri') || sit.includes('féri')) return 'c-ferie';
-    if (sit.includes('absence') || sit.includes('formation')) return 'c-absence';
+    if (sit.includes('absence')) return 'c-absence';
+    if (sit.includes('formation')) return 'c-formation';
     if (isRealise(sem)) return 'c-realise';
     if (isReporte(sem)) return 'c-reporte';
     if (isNonRealise(sem)) return 'c-non-realise';
@@ -622,7 +623,8 @@ export function situationColor(sem) {
     if (sit.includes('sortie')) return '#06b6d4';
     if (sit.includes('annul')) return '#dc2626';
     if (sit.includes('feri') || sit.includes('féri')) return '#a1a1aa';
-    if (sit.includes('absence') || sit.includes('formation')) return '#78716c';
+    if (sit.includes('absence')) return '#78716c';
+    if (sit.includes('formation')) return '#3b82f6';
     if (isRealise(sem)) return '#22c55e';
     if (isReporte(sem)) return '#f59e0b';
     if (isNonRealise(sem)) return '#dc2626';

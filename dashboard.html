@@ -1412,7 +1412,7 @@
         var currentSeance = (sem.seance || '').toUpperCase();
         seancesList.forEach(function(s) {
             var isActive = currentSeance.includes(s);
-            html += '<button class="edit-seance-chip" data-seance="' + s + '" onclick="toggleWeekSeanceChip(this)" style="padding:7px 14px; border:2px solid ' + (isActive ? 'var(--primary)' : 'var(--border)') + '; border-radius:20px; background:' + (isActive ? 'var(--primary)' : 'var(--surface-2)') + '; color:' + (isActive ? 'white' : 'var(--muted)') + '; font-size:.78em; font-weight:700; cursor:pointer; font-family:inherit;">' + s + '</button>';
+            html += '<button class="edit-seance-chip" data-seance="' + s + '" data-active="' + isActive + '" onclick="toggleWeekSeanceChip(this)" style="padding:7px 14px; border:2px solid ' + (isActive ? 'var(--primary)' : 'var(--border)') + '; border-radius:20px; background:' + (isActive ? 'var(--primary)' : 'var(--surface-2)') + '; color:' + (isActive ? 'white' : 'var(--muted)') + '; font-size:.78em; font-weight:700; cursor:pointer; font-family:inherit;">' + s + '</button>';
         });
         html += '</div>';
 
@@ -1423,7 +1423,7 @@
         var currentPhase = (sem.phase || 'Cours');
         phases.forEach(function(p) {
             var isActive = currentPhase.toLowerCase() === p.toLowerCase();
-            html += '<button class="edit-phase-chip" data-phase="' + p + '" onclick="toggleWeekPhaseChip(this)" style="padding:7px 14px; border:2px solid ' + (isActive ? '#10b981' : 'var(--border)') + '; border-radius:20px; background:' + (isActive ? '#10b981' : 'var(--surface-2)') + '; color:' + (isActive ? 'white' : 'var(--muted)') + '; font-size:.78em; font-weight:700; cursor:pointer; font-family:inherit;">' + p + '</button>';
+            html += '<button class="edit-phase-chip" data-phase="' + p + '" data-active="' + isActive + '" onclick="toggleWeekPhaseChip(this)" style="padding:7px 14px; border:2px solid ' + (isActive ? '#10b981' : 'var(--border)') + '; border-radius:20px; background:' + (isActive ? '#10b981' : 'var(--surface-2)') + '; color:' + (isActive ? 'white' : 'var(--muted)') + '; font-size:.78em; font-weight:700; cursor:pointer; font-family:inherit;">' + p + '</button>';
         });
         html += '</div>';
 
@@ -1466,12 +1466,14 @@
 
     // Timeline editing helpers
     window.toggleWeekSeanceChip = function(btn) {
-        var isActive = btn.style.background === 'var(--primary)';
+        var isActive = btn.dataset.active === 'true';
         if (isActive) {
+            btn.dataset.active = 'false';
             btn.style.borderColor = 'var(--border)';
             btn.style.background = 'var(--surface-2)';
             btn.style.color = 'var(--muted)';
         } else {
+            btn.dataset.active = 'true';
             btn.style.borderColor = 'var(--primary)';
             btn.style.background = 'var(--primary)';
             btn.style.color = 'white';
@@ -1481,10 +1483,12 @@
     window.toggleWeekPhaseChip = function(btn) {
         // Single select — deactivate all then activate clicked
         document.querySelectorAll('#editWeekPhase .edit-phase-chip').forEach(function(b) {
+            b.dataset.active = 'false';
             b.style.borderColor = 'var(--border)';
             b.style.background = 'var(--surface-2)';
             b.style.color = 'var(--muted)';
         });
+        btn.dataset.active = 'true';
         btn.style.borderColor = '#10b981';
         btn.style.background = '#10b981';
         btn.style.color = 'white';
@@ -1519,14 +1523,14 @@
         // Collect selected seances
         var selectedSeances = [];
         document.querySelectorAll('#editWeekSeances .edit-seance-chip').forEach(function(btn) {
-            if (btn.style.color === 'white') selectedSeances.push(btn.dataset.seance);
+            if (btn.dataset.active === 'true') selectedSeances.push(btn.dataset.seance);
         });
         var seance = selectedSeances.join('+');
 
         // Get phase
         var phase = 'Cours';
         document.querySelectorAll('#editWeekPhase .edit-phase-chip').forEach(function(btn) {
-            if (btn.style.color === 'white') phase = btn.dataset.phase;
+            if (btn.dataset.active === 'true') phase = btn.dataset.phase;
         });
 
         // Find the matching semaine
@@ -1564,11 +1568,11 @@
         var situation = getEditedWeekSituation();
         var selectedSeances = [];
         document.querySelectorAll('#editWeekSeances .edit-seance-chip').forEach(function(btn) {
-            if (btn.style.color === 'white') selectedSeances.push(btn.dataset.seance);
+            if (btn.dataset.active === 'true') selectedSeances.push(btn.dataset.seance);
         });
         var phase = 'Cours';
         document.querySelectorAll('#editWeekPhase .edit-phase-chip').forEach(function(btn) {
-            if (btn.style.color === 'white') phase = btn.dataset.phase;
+            if (btn.dataset.active === 'true') phase = btn.dataset.phase;
         });
 
         if (!module) { showToast('Sélectionnez un module pour propager'); return; }
@@ -1650,6 +1654,7 @@
     }
 
     // ═══════ FILTERS ═══════
+    var _filtersListenersBound = false;
     function populateFilters() {
         // Classe filter
         var selClasse = document.getElementById('filterClasse');
@@ -1660,7 +1665,6 @@
             opt.textContent = p.classeId + ' (' + p.niveau + ')';
             selClasse.appendChild(opt);
         });
-        selClasse.addEventListener('change', renderClasseView);
 
         // Module filter — collect all unique modules across all classes
         var allModules = {};
@@ -1681,10 +1685,21 @@
             opt.textContent = m;
             selModule.appendChild(opt);
         });
-        selModule.addEventListener('change', renderModuleView);
+
+        // Bind listeners only once to avoid accumulation
+        if (!_filtersListenersBound) {
+            selClasse.addEventListener('change', renderClasseView);
+            selModule.addEventListener('change', renderModuleView);
+            _filtersListenersBound = true;
+        }
     }
 
     // ═══════ HELPER : clean module name ═══════
+    // NOTE: Local versions differ from utils.js imports (aliased as *Util):
+    // - isRealise: also checks sem.valide (dashboard-specific)
+    // - situationClass/Color: dashboard uses different default colors
+    // - parseDate: identical logic but kept local for isolation
+    // TODO: Unify with utils.js by extending the shared functions
     function cleanModuleName(str) {
         if (!str) return '';
         return str.replace(/\n/g,' ').replace(/\s+/g,' ').trim().substring(0,60);
@@ -1779,7 +1794,7 @@
         return sem.statut === 'Reporté' || sem.statut === 'Reporte';
     }
     function isNonRealise(sem) {
-        return sem.statut === 'Non réalisé' || sem.statut === 'Non realise' || sem.statut === 'Non réalisé';
+        return sem.statut === 'Non réalisé' || sem.statut === 'Non realise';
     }
 
     // ═══════ PHASE → LABEL DANS CELLULE ═══════
@@ -1807,7 +1822,8 @@
         if (sit.includes('sortie')) return 'c-sortie';
         if (sit.includes('annul')) return 'c-annule';
         if (sit.includes('feri') || sit.includes('féri')) return 'c-ferie';
-        if (sit.includes('absence') || sit.includes('formation')) return 'c-absence';
+        if (sit.includes('absence')) return 'c-absence';
+        if (sit.includes('formation')) return 'c-formation';
 
         // Statut-based colors (CSV + logs)
         if (isRealise(sem)) return 'c-realise';
@@ -1828,7 +1844,8 @@
         if (sit.includes('sortie')) return '#06b6d4';
         if (sit.includes('annul')) return '#dc2626';
         if (sit.includes('feri') || sit.includes('féri')) return '#a1a1aa';
-        if (sit.includes('absence') || sit.includes('formation')) return '#78716c';
+        if (sit.includes('absence')) return '#78716c';
+        if (sit.includes('formation')) return '#3b82f6';
         if (isRealise(sem)) return '#22c55e';
         if (isReporte(sem)) return '#f59e0b';
         if (isNonRealise(sem)) return '#dc2626';
