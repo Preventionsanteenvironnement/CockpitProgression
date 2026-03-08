@@ -917,7 +917,7 @@
             </summary>
             <div class="suivi-body">
                 <div id="suiviHelper" class="suivi-helper">
-                    Choisissez les critères de la séance puis cliquez sur un élève pour saisir son suivi.
+                    1. Choisissez les critères de la séance. 2. Cliquez sur un élève. 3. Enregistrez sa fiche. Le bouton du bas enregistre ensuite le bilan de séance.
                 </div>
                 <div id="suiviCriteriaGrid" class="suivi-mini-grid"></div>
                 <div id="suiviEmpty" class="suivi-empty" style="display:none;"></div>
@@ -1058,7 +1058,7 @@
 
 <!-- SAVE BAR -->
 <div class="save-bar" id="saveBar" style="display:none;">
-    <button class="btn-save" id="btnSave">💾 ENREGISTRER</button>
+    <button class="btn-save" id="btnSave">💾 ENREGISTRER LA SÉANCE</button>
 </div>
 
 <!-- TOAST -->
@@ -2204,6 +2204,16 @@
                 historyList.appendChild(card);
             });
 
+            if (last.suiviConfig && last.suiviConfig.criteres) {
+                Object.keys(SUIVI_CRITERES_DEFAULTS).forEach(function(key) {
+                    if (last.suiviConfig.criteres[key] !== undefined) {
+                        suiviConfig.criteres[key] = !!last.suiviConfig.criteres[key];
+                    }
+                });
+                buildSuiviCriteriaGrid();
+                updateSuiviSummary();
+            }
+
             // ── AUTO-SELECT MODULE (only if not already set by progression_prevue) ──
             if (last.moduleId) {
                 var selectMod = document.getElementById('selectModule');
@@ -2983,7 +2993,7 @@
                 if (helper) {
                     var labels = getActiveSuiviCriteriaLabels();
                     helper.textContent = labels.length
-                        ? ('Critères actifs : ' + labels.join(' · ') + '. Cliquez sur un élève pour saisir ou corriger.')
+                        ? ('Critères actifs : ' + labels.join(' · ') + '. Cliquez sur un élève puis utilisez Enregistrer dans sa fiche.')
                         : 'Activez au moins un critère de suivi puis cliquez sur un élève.';
                 }
                 if (currentSuiviEleveCode && currentSuiviSaisie) {
@@ -3160,11 +3170,12 @@
         }
 
         details.style.display = 'block';
+        details.open = true;
         var activeLabels = getActiveSuiviCriteriaLabels();
         helper.textContent = context.ready
             ? (
                 activeLabels.length
-                    ? ('Critères actifs : ' + activeLabels.join(' · ') + '. Cliquez sur un élève pour saisir ou corriger.')
+                    ? ('Critères actifs : ' + activeLabels.join(' · ') + '. Cliquez sur un élève puis utilisez Enregistrer dans sa fiche.')
                     : 'Activez au moins un critère de suivi puis cliquez sur un élève.'
             )
             : context.reason;
@@ -3322,6 +3333,18 @@
         });
     }
 
+    function getSuiviCounts() {
+        var total = suiviEleves.filter(function(student) { return !student.disabled; }).length;
+        var done = suiviEleves.filter(function(student) { return student.done; }).length;
+        var absents = suiviEleves.filter(function(student) { return student.savedAbsent; }).length;
+        return {
+            total: total,
+            done: done,
+            absents: absents,
+            pending: Math.max(0, total - done - absents)
+        };
+    }
+
     function updateSuiviSummary() {
         var summary = document.getElementById('suiviSummaryText');
         if (!summary) return;
@@ -3333,9 +3356,7 @@
         }
 
         var activeLabels = getActiveSuiviCriteriaLabels();
-        var total = suiviEleves.filter(function(student) { return !student.disabled; }).length;
-        var done = suiviEleves.filter(function(student) { return student.done; }).length;
-        var savedAbsents = suiviEleves.filter(function(student) { return student.savedAbsent; }).length;
+        var counts = getSuiviCounts();
 
         if (!context.ready) {
             summary.textContent = activeLabels.length
@@ -3344,13 +3365,14 @@
             return;
         }
 
-        if (!total) {
+        if (!counts.total) {
             summary.textContent = 'Aucun élève';
             return;
         }
 
-        summary.textContent = done + '/' + total + ' saisis' +
-            (savedAbsents ? (' · ' + savedAbsents + ' abs') : '') +
+        summary.textContent = counts.done + '/' + counts.total + ' saisis' +
+            (counts.absents ? (' · ' + counts.absents + ' abs') : '') +
+            (counts.pending ? (' · ' + counts.pending + ' restant(s)') : '') +
             (activeLabels.length ? (' · ' + activeLabels.length + ' critères') : '');
     }
 
@@ -3748,7 +3770,7 @@
             });
             await updateSuiviStatsAbsence(student.code, oldDoc);
             syncSuiviPresenceToRoster(student.name, true);
-            showToast('🚫 ' + student.name + ' absent');
+            showToast('🚫 ' + student.name + ' absent · séance à enregistrer ensuite');
         } else {
             var manualAdjust = hasValidSuiviManualAdjust();
             var payload = {
@@ -3790,7 +3812,7 @@
             await setDoc(docRef, payload);
             await updateSuiviStats(student.code, noteFinale, payload, oldDoc);
             syncSuiviPresenceToRoster(student.name, false);
-            showToast('✅ ' + student.name + ' - ' + noteFinale + '/20');
+            showToast('✅ ' + student.name + ' - ' + noteFinale + '/20 · séance à enregistrer ensuite');
         }
 
         closeSuiviModal();
@@ -4004,6 +4026,10 @@
                 return allS;
             })(),
             todos: selectedTodos.map(function(t) { return {action:t.action||'',label:t.label||'',note:document.getElementById('todoNote').value.trim()}; }),
+            suiviConfig: {
+                criteres: Object.assign({}, suiviConfig.criteres),
+                counts: getSuiviCounts()
+            },
             absentsEleves: absentsEleves.slice(),
             elevesSansCopie: elevesSansCopie.slice(),
             absences: absences,
@@ -4025,6 +4051,22 @@
             },
             userId: currentUser.uid
         };
+
+        var suiviCounts = getSuiviCounts();
+        if (suiviCounts.total && suiviCounts.pending > 0) {
+            var confirmPending = confirm(
+                'Le suivi élèves n\'est pas terminé.\n\n' +
+                'Élèves saisis : ' + suiviCounts.done + '\n' +
+                'Absents enregistrés : ' + suiviCounts.absents + '\n' +
+                'Restants : ' + suiviCounts.pending + '\n\n' +
+                'Voulez-vous quand même enregistrer la séance ?'
+            );
+            if (!confirmPending) {
+                btnSave.disabled = false;
+                btnSave.textContent = '💾 ENREGISTRER LA SÉANCE';
+                return;
+            }
+        }
 
         try {
             // UPSERT: même docId par jour + classe = pas de doublon
@@ -4058,7 +4100,7 @@
             showToast('❌ Erreur : ' + err.message);
             setTimeout(function() {
                 btnSave.disabled = false;
-                btnSave.textContent = '💾 ENREGISTRER';
+                btnSave.textContent = '💾 ENREGISTRER LA SÉANCE';
                 btnSave.style.background = '';
             }, 3000);
         }
