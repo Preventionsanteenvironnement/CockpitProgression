@@ -643,13 +643,7 @@
         .suivi-course.active {
             border-color: var(--primary); background: var(--primary-light); color: #818cf8;
         }
-        .suivi-toggle {
-            display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-            border-radius: 10px; border: 2px dashed var(--border); margin-bottom: 10px;
-            font-size: 0.78em; font-weight: 700; color: var(--muted);
-        }
-        .suivi-adjust-fields { display: none; gap: 8px; margin-bottom: 12px; }
-        .suivi-adjust-fields.active { display: grid; grid-template-columns: 110px 1fr; }
+        /* suivi-toggle et suivi-adjust-fields déplacés dans suivi-note-adjust */
         .suivi-actions {
             display: flex; gap: 8px; flex-wrap: wrap; position: sticky; bottom: 0;
             padding-top: 10px; background: linear-gradient(180deg, rgba(30,41,59,0), rgba(30,41,59,0.98) 35%);
@@ -661,6 +655,67 @@
         .suivi-action-btn.primary { background: linear-gradient(135deg, #10b981, #059669); color: white; }
         .suivi-action-btn.secondary { background: var(--surface-2); color: var(--text); border: 2px solid var(--border); }
         .suivi-action-btn.warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+
+        /* ── OBJECTIF ELEVE ── */
+        .suivi-objectif-box {
+            background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.08));
+            border: 2px solid rgba(245,158,11,0.4);
+            border-radius: 12px; padding: 14px; margin-bottom: 14px;
+        }
+        .suivi-objectif-box h4 {
+            font-size: 0.82em; font-weight: 800; color: #f59e0b; margin-bottom: 10px;
+        }
+        .suivi-objectif-texte {
+            background: var(--surface-2); padding: 10px 12px;
+            border-radius: 8px; font-weight: 700; margin-bottom: 10px;
+            font-size: 0.85em; line-height: 1.4;
+        }
+        .suivi-objectif-validation {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .suivi-objectif-radio {
+            display: flex; align-items: center; gap: 5px;
+            padding: 7px 11px; border-radius: 8px; cursor: pointer;
+            font-size: 0.78em; font-weight: 700; border: 2px solid var(--border);
+            background: var(--surface-2); color: var(--muted); font-family: inherit;
+            transition: all 0.14s; -webkit-tap-highlight-color: transparent;
+        }
+        .suivi-objectif-radio.selected-atteint { border-color: var(--success); background: var(--success-light); color: var(--success); }
+        .suivi-objectif-radio.selected-non { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+        .suivi-objectif-radio.selected-encours { border-color: var(--warning); background: var(--warning-light); color: #92400e; }
+        .suivi-objectif-aucun {
+            text-align: center; padding: 10px; color: var(--muted);
+            font-style: italic; font-size: 0.82em;
+        }
+
+        /* ── TAGS APPRECIATION ── */
+        .suivi-comment-tags {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+        }
+        .suivi-comment-tag {
+            padding: 5px 10px; border-radius: 15px; font-size: 0.72em;
+            font-weight: 700; cursor: pointer; border: none; font-family: inherit;
+            transition: transform 0.1s; -webkit-tap-highlight-color: transparent;
+        }
+        .suivi-comment-tag:active { transform: scale(0.95); }
+        .suivi-comment-tag.positif { background: var(--success-light); color: var(--success); }
+        .suivi-comment-tag.encouragement { background: var(--primary-light); color: #818cf8; }
+        .suivi-comment-tag.alerte { background: var(--danger-light); color: var(--danger); }
+
+        /* ── AJUSTEMENT DANS NOTE BOX ── */
+        .suivi-note-adjust {
+            margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .suivi-note-adjust label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.78em; font-weight: 700; color: var(--muted); cursor: pointer;
+        }
+        .suivi-note-adjust-fields {
+            display: none; gap: 8px; margin-top: 8px;
+        }
+        .suivi-note-adjust-fields.active {
+            display: grid; grid-template-columns: 110px 1fr;
+        }
     </style>
 </head>
 <body>
@@ -1228,15 +1283,15 @@
         planClasse: false
     };
     const SUIVI_CRITERES_LABELS = {
-        travail: 'Travail',
-        oral: 'Oral',
-        attention: 'Attention',
-        porteVue: 'Porte-vue',
-        coursAJour: 'Cours à jour',
-        autonomie: 'Autonomie',
-        initiative: 'Initiative',
-        securite: 'Respect du cadre',
-        planClasse: 'Respect du plan de classe'
+        travail: '📝 Travail',
+        oral: '🗣️ Oral',
+        attention: '🧠 Attention',
+        porteVue: '📁 Porte-vue',
+        coursAJour: '📋 Cours à jour',
+        autonomie: '🎯 Autonomie',
+        initiative: '💡 Initiative',
+        securite: '⚠️ Sécurité',
+        planClasse: '🪑 Respect du plan de classe'
     };
     const SUIVI_OPTION_SETS = {
         travail: [
@@ -3397,6 +3452,26 @@
         modal.setAttribute('aria-hidden', 'false');
         renderSuiviStudents();
         renderSuiviModal(student);
+
+        loadSuiviObjectif(student.code).then(function() {
+            if (currentSuiviEleveCode === eleveCode) {
+                renderSuiviModal(student);
+            }
+        }).catch(function(err) {
+            console.warn('Objectif load error:', err);
+        });
+    }
+
+    function loadSuiviObjectif(code) {
+        if (!code || !db) return Promise.resolve();
+        return getDoc(doc(db, 'resultats', code, 'objectifs', 'current')).then(function(snap) {
+            if (!currentSuiviSaisie) return;
+            if (snap.exists()) {
+                currentSuiviSaisie.objectifData = snap.data();
+            } else {
+                currentSuiviSaisie.objectifData = null;
+            }
+        });
     }
 
     function closeSuiviModal() {
@@ -3427,7 +3502,9 @@
             commentaire: typeof data.commentaire === 'string' ? data.commentaire : '',
             ajustementManuel: !!data.ajustementManuel,
             noteFinaleManuelle: typeof data.noteSur20 === 'number' ? String(data.noteSur20) : '',
-            justificationAjustement: typeof data.justificationAjustement === 'string' ? data.justificationAjustement : ''
+            justificationAjustement: typeof data.justificationAjustement === 'string' ? data.justificationAjustement : '',
+            objectifData: null,
+            objectifValidation: data.objectifValide && data.objectifValide.statut ? data.objectifValide.statut : null
         };
     }
 
@@ -3460,43 +3537,83 @@
         title.textContent = student.name;
         subtitle.textContent = context.classeLabel + ' · ' + context.date + ' · ' + context.pseModule;
 
+        /* ── 1. NOTE BOX (avec ajustement dedans) ── */
+        var noteBoxHtml =
+            '<div class="suivi-note-box">' +
+                '<div class="suivi-note-label">Note calculée</div>' +
+                '<div class="suivi-note-value" id="suiviNoteValue">--/20</div>' +
+                '<div class="suivi-note-meta" id="suiviNoteMeta"></div>' +
+                '<div class="suivi-note-adjust">' +
+                    '<label><input type="checkbox" id="suiviAdjustToggle"' + (currentSuiviSaisie.ajustementManuel ? ' checked' : '') + '> ✏️ Ajuster la note manuellement</label>' +
+                    '<div id="suiviAdjustFields" class="suivi-note-adjust-fields' + (currentSuiviSaisie.ajustementManuel ? ' active' : '') + '">' +
+                        '<input type="number" id="suiviManualNote" min="0" max="20" step="0.5" value="' + escapeSuiviHtml(currentSuiviSaisie.noteFinaleManuelle) + '" placeholder="Note /20">' +
+                        '<input type="text" id="suiviAdjustReason" value="' + escapeSuiviHtml(currentSuiviSaisie.justificationAjustement) + '" placeholder="Justification (optionnel)">' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+        /* ── 2. OBJECTIF ELEVE ── */
+        var objectifHtml = '';
+        var objData = currentSuiviSaisie.objectifData;
+        var objVal = currentSuiviSaisie.objectifValidation;
+        objectifHtml += '<div class="suivi-objectif-box"><h4>🎯 Objectif de l\'élève</h4>';
+        if (objData && objData.texte) {
+            objectifHtml += '<div class="suivi-objectif-texte">' + escapeSuiviHtml(objData.texte) + '</div>';
+            objectifHtml += '<div class="suivi-objectif-validation">';
+            objectifHtml += '<button type="button" class="suivi-objectif-radio' + (objVal === 'atteint' ? ' selected-atteint' : '') + '" data-obj-val="atteint">✅ Atteint</button>';
+            objectifHtml += '<button type="button" class="suivi-objectif-radio' + (objVal === 'non_atteint' ? ' selected-non' : '') + '" data-obj-val="non_atteint">❌ Non atteint</button>';
+            objectifHtml += '<button type="button" class="suivi-objectif-radio' + (objVal === 'en_cours' ? ' selected-encours' : '') + '" data-obj-val="en_cours">⏳ En cours</button>';
+            objectifHtml += '</div>';
+        } else {
+            objectifHtml += '<div class="suivi-objectif-aucun">Pas d\'objectif fixé pour cet élève</div>';
+        }
+        objectifHtml += '</div>';
+
+        /* ── 3. CRITERES ACTIFS ── */
         var sectionsHtml = '';
         activeCriteria.forEach(function(key) {
             sectionsHtml += renderSuiviOptionSection(key, SUIVI_CRITERES_LABELS[key], currentSuiviSaisie[key]);
         });
 
-        sectionsHtml += renderSuiviOptionSection('bavardage', 'Bavardage', currentSuiviSaisie.bavardage);
-        sectionsHtml += renderSuiviOptionSection('telephone', 'Téléphone', currentSuiviSaisie.telephone);
+        /* ── 4 & 5. BAVARDAGE + TELEPHONE ── */
+        sectionsHtml += renderSuiviOptionSection('bavardage', '💬 Bavardage <span style="color:var(--danger);font-weight:400;font-size:0.8em">(plafonne la note)</span>', currentSuiviSaisie.bavardage);
+        sectionsHtml += renderSuiviOptionSection('telephone', '📱 Téléphone <span style="color:var(--warning);font-weight:400;font-size:0.8em">(malus)</span>', currentSuiviSaisie.telephone);
 
+        /* ── 6. COURS DISTRIBUES ── */
         var coursHtml = SUIVI_COURS_OPTIONS.map(function(option) {
             var active = currentSuiviSaisie.coursDistrib.indexOf(option.value) >= 0 ? ' active' : '';
             return '<button type="button" class="suivi-course' + active + '" data-course-value="' + option.value + '">' +
                 escapeSuiviHtml(option.label) + '</button>';
         }).join('');
 
+        /* ── 7. APPRECIATION (tags + commentaire) ── */
+        var appreciationHtml =
+            '<div class="suivi-section-title">💬 Appréciation</div>' +
+            '<div class="suivi-comment-tags">' +
+                '<button type="button" class="suivi-comment-tag positif">Excellent travail</button>' +
+                '<button type="button" class="suivi-comment-tag positif">Bonne participation</button>' +
+                '<button type="button" class="suivi-comment-tag positif">Travail sérieux</button>' +
+                '<button type="button" class="suivi-comment-tag encouragement">À poursuivre</button>' +
+                '<button type="button" class="suivi-comment-tag encouragement">Peut mieux faire</button>' +
+                '<button type="button" class="suivi-comment-tag encouragement">Efforts à maintenir</button>' +
+                '<button type="button" class="suivi-comment-tag alerte">Manque de travail</button>' +
+                '<button type="button" class="suivi-comment-tag alerte">Bavardages excessifs</button>' +
+                '<button type="button" class="suivi-comment-tag alerte">Matériel incomplet</button>' +
+            '</div>' +
+            '<textarea id="suiviCommentaire" placeholder="Observation sur l\'élève...">' + escapeSuiviHtml(currentSuiviSaisie.commentaire) + '</textarea>';
+
+        /* ── ASSEMBLAGE FINAL ── */
         body.innerHTML =
-            '<div class="suivi-note-box">' +
-                '<div class="suivi-note-label">Note automatique</div>' +
-                '<div class="suivi-note-value" id="suiviNoteValue">--/20</div>' +
-                '<div class="suivi-note-meta" id="suiviNoteMeta"></div>' +
-            '</div>' +
+            noteBoxHtml +
+            objectifHtml +
             sectionsHtml +
-            '<div class="suivi-section-title">Cours distribué</div>' +
+            '<div class="suivi-section-title">📄 Cours distribués</div>' +
             '<div class="suivi-courses">' + coursHtml + '</div>' +
-            '<label class="suivi-toggle">' +
-                '<input type="checkbox" id="suiviAdjustToggle"' + (currentSuiviSaisie.ajustementManuel ? ' checked' : '') + '>' +
-                '<span>Ajuster manuellement la note finale</span>' +
-            '</label>' +
-            '<div id="suiviAdjustFields" class="suivi-adjust-fields' + (currentSuiviSaisie.ajustementManuel ? ' active' : '') + '">' +
-                '<input type="number" id="suiviManualNote" min="0" max="20" step="0.5" value="' + escapeSuiviHtml(currentSuiviSaisie.noteFinaleManuelle) + '" placeholder="Note /20">' +
-                '<input type="text" id="suiviAdjustReason" value="' + escapeSuiviHtml(currentSuiviSaisie.justificationAjustement) + '" placeholder="Justification (optionnel)">' +
-            '</div>' +
-            '<label class="field-label">Commentaire</label>' +
-            '<textarea id="suiviCommentaire" placeholder="Observation sur l\'élève...">' + escapeSuiviHtml(currentSuiviSaisie.commentaire) + '</textarea>' +
+            appreciationHtml +
             '<div class="suivi-actions">' +
-                '<button type="button" id="suiviSaveBtn" class="suivi-action-btn primary">Enregistrer</button>' +
-                '<button type="button" id="suiviAbsentBtn" class="suivi-action-btn warning">Marquer absent</button>' +
-                '<button type="button" id="suiviCancelBtn" class="suivi-action-btn secondary">Fermer</button>' +
+                '<button type="button" id="suiviSaveBtn" class="suivi-action-btn primary">✅ Valider</button>' +
+                '<button type="button" id="suiviAbsentBtn" class="suivi-action-btn warning">🚫 Absent</button>' +
+                '<button type="button" id="suiviCancelBtn" class="suivi-action-btn secondary">Annuler</button>' +
             '</div>';
 
         bindSuiviModalEvents(student);
@@ -3512,10 +3629,11 @@
                 '<span>' + escapeSuiviHtml(option.label) + '</span>' +
             '</button>';
         }).join('');
-        return '<div class="suivi-section-title">' + escapeSuiviHtml(label) + '</div><div class="suivi-options">' + buttons + '</div>';
+        return '<div class="suivi-section-title">' + label + '</div><div class="suivi-options">' + buttons + '</div>';
     }
 
     function bindSuiviModalEvents(student) {
+        /* Critères */
         document.querySelectorAll('#suiviModalBody .suivi-option').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 syncSuiviFreeFields();
@@ -3526,6 +3644,7 @@
             });
         });
 
+        /* Cours distribués */
         document.querySelectorAll('#suiviModalBody .suivi-course').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 syncSuiviFreeFields();
@@ -3535,6 +3654,28 @@
             });
         });
 
+        /* Objectif radios */
+        document.querySelectorAll('#suiviModalBody .suivi-objectif-radio').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                syncSuiviFreeFields();
+                currentSuiviSaisie.objectifValidation = btn.dataset.objVal;
+                renderSuiviModal(student);
+            });
+        });
+
+        /* Tags appréciation */
+        document.querySelectorAll('#suiviModalBody .suivi-comment-tag').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var textarea = document.getElementById('suiviCommentaire');
+                if (textarea) {
+                    var text = btn.textContent.trim();
+                    textarea.value = textarea.value ? (textarea.value + '. ' + text) : text;
+                    currentSuiviSaisie.commentaire = textarea.value;
+                }
+            });
+        });
+
+        /* Ajustement note */
         var toggle = document.getElementById('suiviAdjustToggle');
         var fields = document.getElementById('suiviAdjustFields');
         var manualNote = document.getElementById('suiviManualNote');
@@ -3544,7 +3685,7 @@
         if (toggle) {
             toggle.addEventListener('change', function() {
                 currentSuiviSaisie.ajustementManuel = toggle.checked;
-                fields.classList.toggle('active', toggle.checked);
+                if (fields) fields.classList.toggle('active', toggle.checked);
                 updateSuiviModalNotePreview();
             });
         }
@@ -3565,6 +3706,7 @@
             });
         }
 
+        /* Boutons d'action */
         document.getElementById('suiviSaveBtn').addEventListener('click', function() {
             saveSuiviCurrent(false).catch(function(err) {
                 console.error('Suivi save error:', err);
@@ -3662,6 +3804,17 @@
         var telephone = saisieData.telephone || 'ok';
         var malus = SUIVI_MALUS_TELEPHONE[telephone] || 0;
         var noteFinale = Math.max(0, notePlafonnee - malus);
+
+        var bonusObjectif = 0;
+        if (saisieData.objectifValidation === 'atteint') {
+            var bavOk = (bavardage === 'aucun' || bavardage === 'ne');
+            var telOk = (telephone === 'ok' || telephone === 'ne');
+            if (bavOk && telOk) {
+                bonusObjectif = 0.5;
+                noteFinale = Math.min(20, noteFinale + 0.5);
+            }
+        }
+
         noteFinale = Math.round(noteFinale * 2) / 2;
 
         return {
@@ -3670,7 +3823,7 @@
             noteBase: noteBase,
             plafond: plafond,
             malus: malus,
-            bonusObjectif: 0,
+            bonusObjectif: bonusObjectif,
             noteSur20: noteFinale
         };
     }
@@ -3693,13 +3846,38 @@
 
         var result = calculateSuiviNote(currentSuiviSaisie, suiviConfig.criteres);
         var finalNote = getSuiviFinalNote(result);
-        noteValue.textContent = finalNote + '/20';
-        noteValue.style.color = result.malus > 0 || result.plafond < 20 ? '#f59e0b' : '#22c55e';
-        noteMeta.innerHTML =
-            '<span>' + result.points + '/' + result.maxPoints + ' pts</span>' +
+        var bavardage = currentSuiviSaisie.bavardage || 'aucun';
+
+        /* Couleur dynamique identique à CockpitPSE */
+        var displayText = finalNote + '/20';
+        if (bavardage === 'retenu') {
+            noteValue.style.color = '#dc2626';
+            displayText += ' 🚨';
+        } else if (bavardage === 'rappel3') {
+            noteValue.style.color = '#dc2626';
+            displayText += ' ⚠️';
+        } else if (bavardage === 'rappel2' || bavardage === 'rappel1' || result.malus > 0) {
+            noteValue.style.color = '#f59e0b';
+        } else if (result.bonusObjectif > 0) {
+            noteValue.style.color = '#16a34a';
+            displayText += ' 🎯';
+        } else if (finalNote >= 12) {
+            noteValue.style.color = '#16a34a';
+        } else if (finalNote >= 8) {
+            noteValue.style.color = '#f59e0b';
+        } else {
+            noteValue.style.color = '#dc2626';
+        }
+        noteValue.textContent = displayText;
+
+        var metaParts = '<span>' + result.points + '/' + result.maxPoints + ' pts</span>' +
             '<span>Base ' + result.noteBase + '/20</span>' +
             '<span>Plafond ' + result.plafond + '</span>' +
             '<span>Malus ' + result.malus + '</span>';
+        if (result.bonusObjectif > 0) {
+            metaParts += '<span>Bonus 🎯 +' + result.bonusObjectif + '</span>';
+        }
+        noteMeta.innerHTML = metaParts;
     }
 
     function hasSuiviActiveValue(saisieData) {
@@ -3804,11 +3982,14 @@
                 noteCalculee: result.noteSur20,
                 plafond: result.plafond,
                 malus: result.malus,
-                bonusObjectif: 0,
+                bonusObjectif: result.bonusObjectif,
                 noteSur20: noteFinale,
                 ajustementManuel: manualAdjust,
                 justificationAjustement: manualAdjust && currentSuiviSaisie.justificationAjustement ? currentSuiviSaisie.justificationAjustement.trim() : null,
-                objectifValide: null,
+                objectifValide: (currentSuiviSaisie.objectifData && currentSuiviSaisie.objectifValidation) ? {
+                    texte: currentSuiviSaisie.objectifData.texte,
+                    statut: currentSuiviSaisie.objectifValidation
+                } : null,
                 absent: false,
                 createdAt: serverTimestamp(),
                 createdBy: currentUser && currentUser.email ? currentUser.email : 'anonyme'
@@ -3816,6 +3997,22 @@
             await setDoc(docRef, payload);
             await updateSuiviStats(student.code, noteFinale, payload, oldDoc);
             syncSuiviPresenceToRoster(student.name, false);
+
+            /* Archiver l'objectif si atteint ou non atteint */
+            if (payload.objectifValide && (payload.objectifValide.statut === 'atteint' || payload.objectifValide.statut === 'non_atteint')) {
+                try {
+                    var archiveId = context.date + '_' + context.pseModule;
+                    await setDoc(doc(db, 'resultats', student.code, 'objectifs', archiveId), {
+                        texte: payload.objectifValide.texte,
+                        statut: payload.objectifValide.statut,
+                        dateValidation: serverTimestamp(),
+                        validePar: currentUser && currentUser.email ? currentUser.email : 'anonyme'
+                    });
+                } catch (archErr) {
+                    console.warn('Erreur archivage objectif:', archErr);
+                }
+            }
+
             showToast('✅ ' + student.name + ' - ' + noteFinale + '/20 · séance à enregistrer ensuite');
         }
 
