@@ -494,6 +494,173 @@
         .student-item .badge-sc { display:none; color:var(--warning); }
         .student-item.absent .badge-abs { display:inline; }
         .student-item.sans-copie .badge-sc { display:inline; }
+
+        /* ── SUIVI ELEVES ── */
+        .suivi-details {
+            margin-bottom: 14px; border: 1px solid var(--border);
+            border-radius: 12px; background: var(--bg); overflow: hidden;
+        }
+        .suivi-details summary {
+            list-style: none; cursor: pointer; padding: 12px 14px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.84em; font-weight: 800;
+        }
+        .suivi-details summary::-webkit-details-marker { display: none; }
+        .suivi-summary {
+            margin-left: auto; font-size: 0.75em; font-weight: 700; color: var(--muted);
+        }
+        .suivi-body {
+            padding: 0 12px 12px; border-top: 1px solid var(--border);
+        }
+        .suivi-helper {
+            font-size: 0.76em; line-height: 1.45; color: var(--muted);
+            margin: 10px 0 12px;
+        }
+        .suivi-mini-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+            margin-bottom: 12px;
+        }
+        .suivi-chip {
+            padding: 9px 10px; border: 2px solid var(--border); border-radius: 10px;
+            background: var(--surface-2); color: var(--muted); cursor: pointer;
+            font-size: 0.76em; font-weight: 700; font-family: inherit; transition: all 0.15s;
+        }
+        .suivi-chip.active {
+            border-color: var(--primary); background: var(--primary-light); color: #818cf8;
+        }
+        .suivi-empty {
+            padding: 14px; border: 1px dashed var(--border); border-radius: 10px;
+            background: rgba(15,23,42,0.35); color: var(--muted); text-align: center;
+            font-size: 0.8em; line-height: 1.45;
+        }
+        .suivi-students { max-height: 260px; }
+        .suivi-student {
+            align-items: flex-start; justify-content: space-between; min-height: 54px;
+        }
+        .suivi-student.current {
+            border-color: var(--primary); background: var(--primary-light);
+        }
+        .suivi-student.done {
+            border-color: var(--success); background: rgba(16,185,129,0.08);
+        }
+        .suivi-student.saved-absent {
+            border-color: var(--warning); background: var(--warning-light); color: #92400e;
+        }
+        .suivi-student.disabled {
+            opacity: 0.45; cursor: not-allowed;
+        }
+        .suivi-meta {
+            min-width: 0; display: flex; flex-direction: column; gap: 3px;
+        }
+        .suivi-name {
+            font-weight: 800; color: var(--text); overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+        .suivi-student.saved-absent .suivi-name { color: #92400e; }
+        .suivi-code {
+            font-size: 0.7em; color: var(--muted); line-height: 1.3;
+        }
+        .suivi-badge {
+            flex-shrink: 0; margin-left: 8px; padding: 5px 9px; border-radius: 999px;
+            font-size: 0.72em; font-weight: 800;
+        }
+        .suivi-badge.pending { background: var(--surface-2); color: var(--muted); }
+        .suivi-badge.done { background: var(--success-light); color: var(--success); }
+        .suivi-badge.absent { background: var(--warning-light); color: #92400e; }
+        .suivi-modal {
+            position: fixed; inset: 0; display: none; align-items: flex-end; justify-content: center;
+            background: rgba(15,23,42,0.84); z-index: 2500; padding: 12px;
+        }
+        .suivi-modal.active { display: flex; }
+        .suivi-sheet {
+            width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+            background: var(--card); border-radius: 18px 18px 0 0; border: 1px solid var(--border);
+            padding: 18px;
+        }
+        .suivi-sheet-header {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px;
+        }
+        .suivi-sheet-title {
+            font-size: 1em; font-weight: 800; margin-bottom: 2px;
+        }
+        .suivi-sheet-subtitle {
+            font-size: 0.78em; color: var(--muted); line-height: 1.4;
+        }
+        .suivi-close {
+            width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--border);
+            background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 1em;
+            font-family: inherit; flex-shrink: 0;
+        }
+        .suivi-note-box {
+            padding: 14px; border-radius: 14px; margin-bottom: 14px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(16,185,129,0.08));
+            border: 1px solid rgba(99,102,241,0.25);
+        }
+        .suivi-note-label {
+            font-size: 0.72em; font-weight: 800; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .suivi-note-value {
+            font-size: 2em; font-weight: 900; margin-top: 6px;
+        }
+        .suivi-note-meta {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;
+            font-size: 0.75em; color: var(--muted);
+        }
+        .suivi-section-title {
+            font-size: 0.82em; font-weight: 800; margin-bottom: 8px;
+        }
+        .suivi-options {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;
+        }
+        .suivi-option {
+            padding: 10px 8px; border: 2px solid var(--border); border-radius: 11px;
+            background: var(--surface-2); color: var(--muted); cursor: pointer;
+            text-align: center; font-size: 0.75em; font-weight: 700; font-family: inherit;
+            transition: all 0.14s; -webkit-tap-highlight-color: transparent;
+        }
+        .suivi-option .emoji { display: block; font-size: 1.1em; margin-bottom: 3px; }
+        .suivi-option.active.good {
+            border-color: var(--success); background: var(--success-light); color: var(--success);
+        }
+        .suivi-option.active.warning {
+            border-color: var(--warning); background: var(--warning-light); color: #92400e;
+        }
+        .suivi-option.active.danger {
+            border-color: var(--danger); background: var(--danger-light); color: var(--danger);
+        }
+        .suivi-option.active.neutral {
+            border-color: var(--primary); background: var(--primary-light); color: #818cf8;
+        }
+        .suivi-courses {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px;
+        }
+        .suivi-course {
+            padding: 8px 6px; border: 2px solid var(--border); border-radius: 10px;
+            background: var(--surface-2); color: var(--muted); cursor: pointer;
+            font-size: 0.74em; font-weight: 700; text-align: center; font-family: inherit;
+        }
+        .suivi-course.active {
+            border-color: var(--primary); background: var(--primary-light); color: #818cf8;
+        }
+        .suivi-toggle {
+            display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+            border-radius: 10px; border: 2px dashed var(--border); margin-bottom: 10px;
+            font-size: 0.78em; font-weight: 700; color: var(--muted);
+        }
+        .suivi-adjust-fields { display: none; gap: 8px; margin-bottom: 12px; }
+        .suivi-adjust-fields.active { display: grid; grid-template-columns: 110px 1fr; }
+        .suivi-actions {
+            display: flex; gap: 8px; flex-wrap: wrap; position: sticky; bottom: 0;
+            padding-top: 10px; background: linear-gradient(180deg, rgba(30,41,59,0), rgba(30,41,59,0.98) 35%);
+        }
+        .suivi-action-btn {
+            flex: 1; min-width: 130px; padding: 12px; border: none; border-radius: 12px;
+            font-size: 0.82em; font-weight: 800; cursor: pointer; font-family: inherit;
+        }
+        .suivi-action-btn.primary { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .suivi-action-btn.secondary { background: var(--surface-2); color: var(--text); border: 2px solid var(--border); }
+        .suivi-action-btn.warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
     </style>
 </head>
 <body>
@@ -743,6 +910,21 @@
             </div>
         </div>
 
+        <details id="suiviDetails" class="suivi-details" style="display:none;">
+            <summary>
+                <span>🧩 Suivi élèves</span>
+                <span id="suiviSummaryText" class="suivi-summary">En attente</span>
+            </summary>
+            <div class="suivi-body">
+                <div id="suiviHelper" class="suivi-helper">
+                    Choisissez les critères de la séance puis cliquez sur un élève pour saisir son suivi.
+                </div>
+                <div id="suiviCriteriaGrid" class="suivi-mini-grid"></div>
+                <div id="suiviEmpty" class="suivi-empty" style="display:none;"></div>
+                <div id="suiviStudentsGrid" class="students-checklist suivi-students"></div>
+            </div>
+        </details>
+
         <label class="field-label">Absences</label>
         <div class="stepper" id="absStepper">
             <button class="stepper-btn" onclick="changeAbs(-1)">−</button>
@@ -881,6 +1063,19 @@
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<div id="suiviModal" class="suivi-modal" aria-hidden="true">
+    <div class="suivi-sheet">
+        <div class="suivi-sheet-header">
+            <div>
+                <div id="suiviModalTitle" class="suivi-sheet-title">Suivi élève</div>
+                <div id="suiviModalSubtitle" class="suivi-sheet-subtitle"></div>
+            </div>
+            <button type="button" id="suiviModalClose" class="suivi-close">✕</button>
+        </div>
+        <div id="suiviModalBody"></div>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -1031,6 +1226,133 @@
         { key: 'eval_rendue', label: 'Éval rendue', icon: '📤' }
     ];
 
+    const PSE_CLASS_MAP = {
+        'B1AGORA': 'B1AGO',
+        'BTAGORA': 'BTAGO',
+        'B2AGORA': 'B2GATL'
+    };
+    const SUIVI_CRITERES_DEFAULTS = {
+        travail: true,
+        oral: true,
+        attention: true,
+        porteVue: false,
+        coursAJour: false,
+        autonomie: false,
+        initiative: false,
+        securite: false,
+        planClasse: false
+    };
+    const SUIVI_CRITERES_LABELS = {
+        travail: 'Travail',
+        oral: 'Oral',
+        attention: 'Attention',
+        porteVue: 'Porte-vue',
+        coursAJour: 'Cours à jour',
+        autonomie: 'Autonomie',
+        initiative: 'Initiative',
+        securite: 'Respect du cadre',
+        planClasse: 'Respect du plan de classe'
+    };
+    const SUIVI_OPTION_SETS = {
+        travail: [
+            { value: 'tresbien', label: 'Très bien', emoji: '🌟', tone: 'good' },
+            { value: 'fait', label: 'Fait', emoji: '✅', tone: 'good' },
+            { value: 'partiel', label: 'Partiel', emoji: '➖', tone: 'warning' },
+            { value: 'insuffisant', label: 'Insuffisant', emoji: '⚠️', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        oral: [
+            { value: '0', label: '0', emoji: '0', tone: 'neutral' },
+            { value: '1', label: '1', emoji: '1', tone: 'warning' },
+            { value: '2', label: '2', emoji: '2', tone: 'warning' },
+            { value: '3', label: '3', emoji: '3', tone: 'good' },
+            { value: '4', label: '4', emoji: '4', tone: 'good' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        attention: [
+            { value: 'bonne', label: 'Bonne', emoji: '🎯', tone: 'good' },
+            { value: 'moyenne', label: 'Moyenne', emoji: '😐', tone: 'warning' },
+            { value: 'insuffisante', label: 'Insuff.', emoji: '⚠️', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        porteVue: [
+            { value: 'ok', label: 'Présent', emoji: '📘', tone: 'good' },
+            { value: 'oubli', label: 'Oublié', emoji: '📕', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        coursAJour: [
+            { value: 'a_jour', label: 'À jour', emoji: '🗂', tone: 'good' },
+            { value: 'incomplet', label: 'Incomplet', emoji: '📂', tone: 'warning' },
+            { value: 'pas_a_jour', label: 'Pas à jour', emoji: '⚠️', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        autonomie: [
+            { value: 'bonne', label: 'Bonne', emoji: '🚀', tone: 'good' },
+            { value: 'moyenne', label: 'Moyenne', emoji: '🟡', tone: 'warning' },
+            { value: 'insuffisante', label: 'Insuff.', emoji: '🔴', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        initiative: [
+            { value: 'oui', label: 'Oui', emoji: '💡', tone: 'good' },
+            { value: 'parfois', label: 'Parfois', emoji: '🌓', tone: 'warning' },
+            { value: 'non', label: 'Non', emoji: '⛔', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        securite: [
+            { value: 'oui', label: 'Oui', emoji: '🟢', tone: 'good' },
+            { value: 'partiel', label: 'Partiel', emoji: '🟡', tone: 'warning' },
+            { value: 'non', label: 'Non', emoji: '🔴', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        planClasse: [
+            { value: 'oui', label: 'Respecté', emoji: '🪑', tone: 'good' },
+            { value: 'partiel', label: 'Partiel', emoji: '↔️', tone: 'warning' },
+            { value: 'non', label: 'Non', emoji: '🚫', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        bavardage: [
+            { value: 'aucun', label: 'Aucun', emoji: '🤫', tone: 'good' },
+            { value: 'rappel1', label: 'R1', emoji: '🗣', tone: 'warning' },
+            { value: 'rappel2', label: 'R2', emoji: '🗣', tone: 'warning' },
+            { value: 'rappel3', label: 'R3', emoji: '⚠️', tone: 'danger' },
+            { value: 'retenu', label: 'Retenue', emoji: '🚨', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ],
+        telephone: [
+            { value: 'ok', label: 'RAS', emoji: '📵', tone: 'good' },
+            { value: 'rappel1', label: 'R1', emoji: '📱', tone: 'warning' },
+            { value: 'rappel2', label: 'R2', emoji: '📱', tone: 'warning' },
+            { value: 'rappel3', label: 'R3', emoji: '⚠️', tone: 'danger' },
+            { value: 'confisque', label: 'Confisqué', emoji: '⛔', tone: 'danger' },
+            { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
+        ]
+    };
+    const SUIVI_COURS_OPTIONS = [
+        { value: 'seance1', label: 'S1' },
+        { value: 'seance2', label: 'S2' },
+        { value: 'seance3', label: 'S3' },
+        { value: 'seance4', label: 'S4' },
+        { value: 'complet', label: 'Complet' },
+        { value: 'correction', label: 'Correction' },
+        { value: 'evaluation', label: 'Évaluation' }
+    ];
+    const SUIVI_PLAFOND_BAVARDAGE = {
+        'aucun': 20,
+        'rappel1': 14,
+        'rappel2': 10,
+        'rappel3': 6,
+        'retenu': 4,
+        'ne': 20
+    };
+    const SUIVI_MALUS_TELEPHONE = {
+        'ok': 0,
+        'rappel1': 1,
+        'rappel2': 2,
+        'rappel3': 3,
+        'confisque': 5,
+        'ne': 0
+    };
+
     // CPS state
     let cps = { cognitif: '', emotionnel: '', social: '' };
     let isValide = false;
@@ -1067,6 +1389,11 @@
     let moduleSuivantEnabled = false;
     let selectedModuleSuivant = '';
     let selectedPhaseSuivant = 'cours';
+    let suiviConfig = { criteres: Object.assign({}, SUIVI_CRITERES_DEFAULTS) };
+    let suiviEleves = [];
+    let currentSuiviEleveCode = '';
+    let currentSuiviSaisie = null;
+    let suiviRefreshTimer = null;
 
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
@@ -1189,15 +1516,19 @@
         buildTodoGrid();
         // Init phase & module suivant & planification
         buildPhaseSelector('phaseGrid', true);
+        ensureSuiviUi();
+        buildSuiviCriteriaGrid();
         initModuleSuivantToggle();
         initPlanifToggle();
         initModuleAutreToggle();
 
         // Bind classe change
         select.addEventListener('change', onClasseChange);
+        document.getElementById('selectModule').addEventListener('change', scheduleSuiviRefresh);
 
         // Bind save
         document.getElementById('btnSave').addEventListener('click', saveLog);
+        scheduleSuiviRefresh();
     }
 
     // ═══════ CLASS MATCHING (Pronote aliases -> Cockpit classes) ═══════
@@ -1551,6 +1882,7 @@
                 document.getElementById('planifDate').value = '';
                 document.querySelectorAll('#planifSection .situation-btn').forEach(function(b) { b.classList.remove('selected'); });
             }
+            scheduleSuiviRefresh();
         });
     }
 
@@ -1746,7 +2078,10 @@
         await checkModuleDelay(classeDocId);
 
         // Rebuild checklist when module changes too
-        selectModule.onchange = function() { buildChecklist(); };
+        selectModule.onchange = function() {
+            buildChecklist();
+            scheduleSuiviRefresh();
+        };
 
         // Reset student tracking for new class
         absentsEleves = [];
@@ -1757,6 +2092,7 @@
 
         // Load student roster for this class
         renderAbsenceChips(classeDocId, prevue ? prevue.classeId : classeDocId);
+        await refreshSuiviSection();
     }
 
     // ═══════ LAST LOG + HISTORIQUE ═══════
@@ -2588,6 +2924,8 @@
 
         // Update "élèves sans cours"
         updateElevesSansCours();
+        renderSuiviStudents();
+        updateSuiviSummary();
     }
 
     function updateElevesSansCours() {
@@ -2611,6 +2949,969 @@
                 (isAbsent ? 'absent + sans copie' : 'sans copie') + '</span>';
             grid.appendChild(item);
         });
+    }
+
+    function ensureSuiviUi() {
+        var modal = document.getElementById('suiviModal');
+        var closeBtn = document.getElementById('suiviModalClose');
+        if (!modal || modal.dataset.bound === '1') return;
+        modal.dataset.bound = '1';
+
+        closeBtn.addEventListener('click', closeSuiviModal);
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) closeSuiviModal();
+        });
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.classList.contains('active')) closeSuiviModal();
+        });
+    }
+
+    function buildSuiviCriteriaGrid() {
+        var grid = document.getElementById('suiviCriteriaGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        Object.keys(SUIVI_CRITERES_LABELS).forEach(function(key) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'suivi-chip' + (suiviConfig.criteres[key] ? ' active' : '');
+            btn.textContent = SUIVI_CRITERES_LABELS[key];
+            btn.addEventListener('click', function() {
+                suiviConfig.criteres[key] = !suiviConfig.criteres[key];
+                btn.classList.toggle('active', suiviConfig.criteres[key]);
+                updateSuiviSummary();
+                var helper = document.getElementById('suiviHelper');
+                if (helper) {
+                    var labels = getActiveSuiviCriteriaLabels();
+                    helper.textContent = labels.length
+                        ? ('Critères actifs : ' + labels.join(' · ') + '. Cliquez sur un élève pour saisir ou corriger.')
+                        : 'Activez au moins un critère de suivi puis cliquez sur un élève.';
+                }
+                if (currentSuiviEleveCode && currentSuiviSaisie) {
+                    syncSuiviFreeFields();
+                    var current = suiviEleves.find(function(e) { return e.code === currentSuiviEleveCode; });
+                    if (current) renderSuiviModal(current);
+                }
+            });
+            grid.appendChild(btn);
+        });
+    }
+
+    function scheduleSuiviRefresh() {
+        if (suiviRefreshTimer) clearTimeout(suiviRefreshTimer);
+        suiviRefreshTimer = setTimeout(function() {
+            refreshSuiviSection().catch(function(err) {
+                console.error('Suivi refresh error:', err);
+            });
+        }, 180);
+    }
+
+    function getSelectedSuiviModuleId() {
+        var moduleAutreInp = document.getElementById('moduleAutreInput');
+        if (moduleAutreEnabled && moduleAutreInp && moduleAutreInp.value.trim()) {
+            return cleanModuleName(moduleAutreInp.value.trim());
+        }
+        var selectModule = document.getElementById('selectModule');
+        return selectModule ? (selectModule.value || '') : '';
+    }
+
+    function getSelectedSuiviModuleLabel(moduleId) {
+        if (!moduleId) return '';
+        if (moduleAutreEnabled) return moduleId;
+        var selectModule = document.getElementById('selectModule');
+        if (!selectModule) return moduleId;
+        var option = selectModule.options[selectModule.selectedIndex];
+        if (!option) return moduleId;
+        var text = (option.textContent || '').trim();
+        if (text.indexOf(' - ') >= 0) return text.split(' - ').slice(1).join(' - ').trim();
+        return text || moduleId;
+    }
+
+    function mapProgressionClassToPse(classeLabel) {
+        var key = normalizeClassKey(classeLabel);
+        var entries = Object.keys(PSE_CLASS_MAP);
+        for (var i = 0; i < entries.length; i++) {
+            if (normalizeClassKey(entries[i]) === key) return PSE_CLASS_MAP[entries[i]];
+        }
+        return classeLabel;
+    }
+
+    function mapProgressionModuleToPse(classeLabel, moduleId) {
+        if (!moduleId) return '';
+        var cleaned = cleanModuleName(moduleId);
+        var extracted = extractModuleId(cleaned);
+        var niveau = getNiveauForClasse(classeLabel) || '';
+        if (niveau === 'CAP' && /^[ABCD]\d+$/i.test(extracted)) {
+            return 'M' + extracted.toUpperCase();
+        }
+        if (/^[A-Z]+\d+(?:\.\d+)?$/i.test(extracted) && extracted.toUpperCase() === cleaned.toUpperCase()) {
+            return extracted.toUpperCase();
+        }
+        return cleaned;
+    }
+
+    function makeSuiviDocId(date, moduleId) {
+        var segment = String(moduleId || '')
+            .trim()
+            .replace(/[\/#?[\]]+/g, '-')
+            .replace(/\s+/g, '_');
+        return date + '_' + segment;
+    }
+
+    function getSuiviContext() {
+        var classeDocId = document.getElementById('selectClasse').value;
+        if (!classeDocId) {
+            return { visible: false, ready: false, reason: 'Sélectionnez une classe pour activer le suivi.' };
+        }
+
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        var classeLabel = prevue ? prevue.classeId : classeDocId;
+
+        if (planifEnabled) {
+            return {
+                visible: true,
+                ready: false,
+                classeDocId: classeDocId,
+                classeLabel: classeLabel,
+                reason: 'Le suivi élèves est désactivé en mode planification future.'
+            };
+        }
+
+        var rawModule = getSelectedSuiviModuleId();
+        if (!rawModule) {
+            return {
+                visible: true,
+                ready: false,
+                classeDocId: classeDocId,
+                classeLabel: classeLabel,
+                reason: 'Sélectionnez le module de la séance pour ouvrir le suivi élèves.'
+            };
+        }
+
+        var pseClasse = mapProgressionClassToPse(classeLabel);
+        var pseModule = mapProgressionModuleToPse(classeLabel, rawModule);
+        var date = getContextDateISO();
+
+        return {
+            visible: true,
+            ready: true,
+            classeDocId: classeDocId,
+            classeLabel: classeLabel,
+            pseClasse: pseClasse,
+            rawModule: rawModule,
+            pseModule: pseModule,
+            moduleTitre: getSelectedSuiviModuleLabel(rawModule),
+            date: date,
+            docId: makeSuiviDocId(date, pseModule)
+        };
+    }
+
+    function getSuiviStudentsForClass(classeDocId, classeLabel) {
+        var allStudents = Array.isArray(studentsCache) && studentsCache.length ? studentsCache : readStudentsFromLocal();
+        if (!studentsCache.length && allStudents.length) studentsCache = allStudents;
+        return allStudents
+            .filter(function(student) {
+                if (!student || !student.classe) return false;
+                return classesMatchUtil(student.classe, classeDocId) || classesMatchUtil(student.classe, classeLabel);
+            })
+            .map(function(student) {
+                return {
+                    code: normalizeStudentCode(student.code),
+                    name: (student.name || student.code || 'Élève').trim(),
+                    classe: student.classe || classeLabel
+                };
+            })
+            .sort(function(a, b) {
+                return (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' });
+            });
+    }
+
+    function normalizeStudentCode(code) {
+        return (code || '').toString().trim();
+    }
+
+    function escapeSuiviHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    async function refreshSuiviSection() {
+        var details = document.getElementById('suiviDetails');
+        var helper = document.getElementById('suiviHelper');
+        var empty = document.getElementById('suiviEmpty');
+        var grid = document.getElementById('suiviStudentsGrid');
+        if (!details || !helper || !empty || !grid) return;
+
+        var context = getSuiviContext();
+        if (!context.visible) {
+            details.style.display = 'none';
+            suiviEleves = [];
+            renderSuiviStudents();
+            updateSuiviSummary();
+            if (document.getElementById('suiviModal').classList.contains('active')) closeSuiviModal();
+            return;
+        }
+
+        if (document.getElementById('suiviModal').classList.contains('active')) {
+            closeSuiviModal();
+        }
+
+        details.style.display = 'block';
+        var activeLabels = getActiveSuiviCriteriaLabels();
+        helper.textContent = context.ready
+            ? (
+                activeLabels.length
+                    ? ('Critères actifs : ' + activeLabels.join(' · ') + '. Cliquez sur un élève pour saisir ou corriger.')
+                    : 'Activez au moins un critère de suivi puis cliquez sur un élève.'
+            )
+            : context.reason;
+
+        var students = getSuiviStudentsForClass(context.classeDocId, context.classeLabel);
+        if (!students.length) {
+            suiviEleves = [];
+            empty.style.display = 'block';
+            empty.textContent = 'Aucune liste élèves disponible pour cette classe.';
+            renderSuiviStudents();
+            updateSuiviSummary();
+            return;
+        }
+
+        empty.style.display = 'none';
+        if (!context.ready) {
+            suiviEleves = students.map(function(student) {
+                return {
+                    code: student.code,
+                    name: student.name,
+                    classe: student.classe,
+                    disabled: !student.code,
+                    done: false,
+                    savedAbsent: false,
+                    note: null,
+                    record: null
+                };
+            });
+            renderSuiviStudents();
+            updateSuiviSummary();
+            if (document.getElementById('suiviModal').classList.contains('active')) closeSuiviModal();
+            return;
+        }
+
+        var refreshToken = Date.now();
+        refreshSuiviSection.lastToken = refreshToken;
+
+        grid.innerHTML = '<div class="suivi-empty" style="grid-column:1 / -1;">Chargement du suivi existant...</div>';
+
+        var rows = await Promise.all(students.map(async function(student) {
+            if (!student.code) {
+                return {
+                    code: '',
+                    name: student.name,
+                    classe: student.classe,
+                    disabled: true,
+                    done: false,
+                    savedAbsent: false,
+                    note: null,
+                    record: null
+                };
+            }
+
+            try {
+                var snap = await getDoc(doc(db, 'resultats', student.code, 'suivi', context.docId));
+                var record = snap.exists() ? snap.data() : null;
+                return {
+                    code: student.code,
+                    name: student.name,
+                    classe: student.classe,
+                    disabled: false,
+                    done: !!(record && !record.absent),
+                    savedAbsent: !!(record && record.absent),
+                    note: record && typeof record.noteSur20 === 'number' ? record.noteSur20 : null,
+                    record: record
+                };
+            } catch (err) {
+                console.warn('Suivi read failed for', student.code, err);
+                return {
+                    code: student.code,
+                    name: student.name,
+                    classe: student.classe,
+                    disabled: false,
+                    done: false,
+                    savedAbsent: false,
+                    note: null,
+                    record: null
+                };
+            }
+        }));
+
+        if (refreshSuiviSection.lastToken !== refreshToken) return;
+
+        suiviEleves = rows;
+        if (currentSuiviEleveCode && !suiviEleves.some(function(e) { return e.code === currentSuiviEleveCode; })) {
+            closeSuiviModal();
+        }
+        renderSuiviStudents();
+        updateSuiviSummary();
+    }
+
+    function renderSuiviStudents() {
+        var grid = document.getElementById('suiviStudentsGrid');
+        var empty = document.getElementById('suiviEmpty');
+        if (!grid || !empty) return;
+
+        if (!suiviEleves.length) {
+            grid.innerHTML = '';
+            empty.style.display = empty.textContent ? 'block' : 'none';
+            return;
+        }
+
+        var context = getSuiviContext();
+        grid.innerHTML = '';
+
+        suiviEleves.forEach(function(student) {
+            var button = document.createElement('button');
+            var pendingAbsence = absentsEleves.indexOf(student.name) >= 0 && !student.savedAbsent;
+            var badgeClass = 'pending';
+            var badgeText = 'À saisir';
+
+            if (student.savedAbsent) {
+                badgeClass = 'absent';
+                badgeText = 'Absent';
+            } else if (student.done) {
+                badgeClass = 'done';
+                badgeText = typeof student.note === 'number' ? (student.note + '/20') : 'Saisi';
+            } else if (pendingAbsence) {
+                badgeClass = 'pending';
+                badgeText = 'Absent ?';
+            } else if (student.disabled) {
+                badgeClass = 'pending';
+                badgeText = 'Sans code';
+            } else if (!context.ready) {
+                badgeClass = 'pending';
+                badgeText = 'Contexte';
+            }
+
+            button.type = 'button';
+            button.className = 'suivi-student' +
+                (student.code && student.code === currentSuiviEleveCode ? ' current' : '') +
+                (student.done ? ' done' : '') +
+                (student.savedAbsent ? ' saved-absent' : '') +
+                ((student.disabled || !context.ready) ? ' disabled' : '');
+            button.innerHTML =
+                '<span class="suivi-meta">' +
+                    '<span class="suivi-name">' + escapeSuiviHtml(student.name) + '</span>' +
+                    '<span class="suivi-code">' + escapeSuiviHtml(student.code || 'Code manquant') + '</span>' +
+                '</span>' +
+                '<span class="suivi-badge ' + badgeClass + '">' + escapeSuiviHtml(badgeText) + '</span>';
+
+            button.addEventListener('click', function() {
+                if (!context.ready) {
+                    showToast(context.reason || 'Complétez d’abord le contexte de la séance.');
+                    return;
+                }
+                if (!student.code) {
+                    showToast('Code élève manquant dans le roster.');
+                    return;
+                }
+                openSuiviModal(student.code);
+            });
+
+            grid.appendChild(button);
+        });
+    }
+
+    function updateSuiviSummary() {
+        var summary = document.getElementById('suiviSummaryText');
+        if (!summary) return;
+
+        var context = getSuiviContext();
+        if (!context.visible) {
+            summary.textContent = 'En attente';
+            return;
+        }
+
+        var activeLabels = getActiveSuiviCriteriaLabels();
+        var total = suiviEleves.filter(function(student) { return !student.disabled; }).length;
+        var done = suiviEleves.filter(function(student) { return student.done; }).length;
+        var savedAbsents = suiviEleves.filter(function(student) { return student.savedAbsent; }).length;
+
+        if (!context.ready) {
+            summary.textContent = activeLabels.length
+                ? (activeLabels.length + ' critère(s) · contexte incomplet')
+                : 'Contexte incomplet';
+            return;
+        }
+
+        if (!total) {
+            summary.textContent = 'Aucun élève';
+            return;
+        }
+
+        summary.textContent = done + '/' + total + ' saisis' +
+            (savedAbsents ? (' · ' + savedAbsents + ' abs') : '') +
+            (activeLabels.length ? (' · ' + activeLabels.length + ' critères') : '');
+    }
+
+    function getActiveSuiviCriteriaLabels() {
+        return Object.keys(suiviConfig.criteres)
+            .filter(function(key) { return !!suiviConfig.criteres[key]; })
+            .map(function(key) { return SUIVI_CRITERES_LABELS[key]; });
+    }
+
+    function openSuiviModal(eleveCode) {
+        var student = suiviEleves.find(function(item) { return item.code === eleveCode; });
+        var modal = document.getElementById('suiviModal');
+        if (!student || !modal) return;
+
+        currentSuiviEleveCode = eleveCode;
+        currentSuiviSaisie = buildSuiviInitialState(student);
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        renderSuiviStudents();
+        renderSuiviModal(student);
+    }
+
+    function closeSuiviModal() {
+        var modal = document.getElementById('suiviModal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        currentSuiviEleveCode = '';
+        currentSuiviSaisie = null;
+        renderSuiviStudents();
+    }
+
+    function buildSuiviInitialState(student) {
+        var data = student && student.record ? student.record : {};
+        return {
+            travail: normalizeSuiviField(data.travail),
+            oral: normalizeSuiviOralField(data.oral),
+            attention: normalizeSuiviField(data.attention),
+            porteVue: normalizeSuiviField(data.porteVue),
+            coursAJour: normalizeSuiviField(data.coursAJour),
+            autonomie: normalizeSuiviField(data.autonomie),
+            initiative: normalizeSuiviField(data.initiative),
+            securite: normalizeSuiviField(data.securite),
+            planClasse: normalizeSuiviField(data.planClasse),
+            bavardage: normalizeSuiviField(data.bavardage),
+            telephone: normalizeSuiviField(data.telephone),
+            coursDistrib: normalizeSuiviCourseValues(data.coursDistrib),
+            commentaire: typeof data.commentaire === 'string' ? data.commentaire : '',
+            ajustementManuel: !!data.ajustementManuel,
+            noteFinaleManuelle: typeof data.noteSur20 === 'number' ? String(data.noteSur20) : '',
+            justificationAjustement: typeof data.justificationAjustement === 'string' ? data.justificationAjustement : ''
+        };
+    }
+
+    function normalizeSuiviField(value) {
+        return value === undefined || value === null || value === '' ? null : value;
+    }
+
+    function normalizeSuiviOralField(value) {
+        if (value === undefined || value === null || value === '') return null;
+        if (value === 'ne') return 'ne';
+        var parsed = parseInt(value, 10);
+        return Number.isNaN(parsed) ? null : parsed;
+    }
+
+    function normalizeSuiviCourseValues(value) {
+        if (!value) return [];
+        if (Array.isArray(value)) return value.slice();
+        return [value];
+    }
+
+    function renderSuiviModal(student) {
+        var title = document.getElementById('suiviModalTitle');
+        var subtitle = document.getElementById('suiviModalSubtitle');
+        var body = document.getElementById('suiviModalBody');
+        if (!title || !subtitle || !body || !currentSuiviSaisie) return;
+
+        var context = getSuiviContext();
+        var activeCriteria = Object.keys(suiviConfig.criteres).filter(function(key) { return !!suiviConfig.criteres[key]; });
+
+        title.textContent = student.name;
+        subtitle.textContent = context.classeLabel + ' · ' + context.date + ' · ' + context.pseModule;
+
+        var sectionsHtml = '';
+        activeCriteria.forEach(function(key) {
+            sectionsHtml += renderSuiviOptionSection(key, SUIVI_CRITERES_LABELS[key], currentSuiviSaisie[key]);
+        });
+
+        sectionsHtml += renderSuiviOptionSection('bavardage', 'Bavardage', currentSuiviSaisie.bavardage);
+        sectionsHtml += renderSuiviOptionSection('telephone', 'Téléphone', currentSuiviSaisie.telephone);
+
+        var coursHtml = SUIVI_COURS_OPTIONS.map(function(option) {
+            var active = currentSuiviSaisie.coursDistrib.indexOf(option.value) >= 0 ? ' active' : '';
+            return '<button type="button" class="suivi-course' + active + '" data-course-value="' + option.value + '">' +
+                escapeSuiviHtml(option.label) + '</button>';
+        }).join('');
+
+        body.innerHTML =
+            '<div class="suivi-note-box">' +
+                '<div class="suivi-note-label">Note automatique</div>' +
+                '<div class="suivi-note-value" id="suiviNoteValue">--/20</div>' +
+                '<div class="suivi-note-meta" id="suiviNoteMeta"></div>' +
+            '</div>' +
+            sectionsHtml +
+            '<div class="suivi-section-title">Cours distribué</div>' +
+            '<div class="suivi-courses">' + coursHtml + '</div>' +
+            '<label class="suivi-toggle">' +
+                '<input type="checkbox" id="suiviAdjustToggle"' + (currentSuiviSaisie.ajustementManuel ? ' checked' : '') + '>' +
+                '<span>Ajuster manuellement la note finale</span>' +
+            '</label>' +
+            '<div id="suiviAdjustFields" class="suivi-adjust-fields' + (currentSuiviSaisie.ajustementManuel ? ' active' : '') + '">' +
+                '<input type="number" id="suiviManualNote" min="0" max="20" step="0.5" value="' + escapeSuiviHtml(currentSuiviSaisie.noteFinaleManuelle) + '" placeholder="Note /20">' +
+                '<input type="text" id="suiviAdjustReason" value="' + escapeSuiviHtml(currentSuiviSaisie.justificationAjustement) + '" placeholder="Justification (optionnel)">' +
+            '</div>' +
+            '<label class="field-label">Commentaire</label>' +
+            '<textarea id="suiviCommentaire" placeholder="Observation sur l\'élève...">' + escapeSuiviHtml(currentSuiviSaisie.commentaire) + '</textarea>' +
+            '<div class="suivi-actions">' +
+                '<button type="button" id="suiviSaveBtn" class="suivi-action-btn primary">Enregistrer</button>' +
+                '<button type="button" id="suiviAbsentBtn" class="suivi-action-btn warning">Marquer absent</button>' +
+                '<button type="button" id="suiviCancelBtn" class="suivi-action-btn secondary">Fermer</button>' +
+            '</div>';
+
+        bindSuiviModalEvents(student);
+        updateSuiviModalNotePreview();
+    }
+
+    function renderSuiviOptionSection(critere, label, selectedValue) {
+        var options = SUIVI_OPTION_SETS[critere] || [];
+        var buttons = options.map(function(option) {
+            var isActive = String(selectedValue) === String(option.value);
+            return '<button type="button" class="suivi-option' + (isActive ? (' active ' + option.tone) : '') + '" data-critere="' + critere + '" data-value="' + option.value + '">' +
+                '<span class="emoji">' + escapeSuiviHtml(option.emoji) + '</span>' +
+                '<span>' + escapeSuiviHtml(option.label) + '</span>' +
+            '</button>';
+        }).join('');
+        return '<div class="suivi-section-title">' + escapeSuiviHtml(label) + '</div><div class="suivi-options">' + buttons + '</div>';
+    }
+
+    function bindSuiviModalEvents(student) {
+        document.querySelectorAll('#suiviModalBody .suivi-option').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                syncSuiviFreeFields();
+                var critere = btn.dataset.critere;
+                var value = btn.dataset.value;
+                currentSuiviSaisie[critere] = (critere === 'oral' && value !== 'ne') ? parseInt(value, 10) : value;
+                renderSuiviModal(student);
+            });
+        });
+
+        document.querySelectorAll('#suiviModalBody .suivi-course').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                syncSuiviFreeFields();
+                var value = btn.dataset.courseValue;
+                toggleSuiviCourse(value);
+                renderSuiviModal(student);
+            });
+        });
+
+        var toggle = document.getElementById('suiviAdjustToggle');
+        var fields = document.getElementById('suiviAdjustFields');
+        var manualNote = document.getElementById('suiviManualNote');
+        var reason = document.getElementById('suiviAdjustReason');
+        var comment = document.getElementById('suiviCommentaire');
+
+        if (toggle) {
+            toggle.addEventListener('change', function() {
+                currentSuiviSaisie.ajustementManuel = toggle.checked;
+                fields.classList.toggle('active', toggle.checked);
+                updateSuiviModalNotePreview();
+            });
+        }
+        if (manualNote) {
+            manualNote.addEventListener('input', function() {
+                currentSuiviSaisie.noteFinaleManuelle = manualNote.value;
+                updateSuiviModalNotePreview();
+            });
+        }
+        if (reason) {
+            reason.addEventListener('input', function() {
+                currentSuiviSaisie.justificationAjustement = reason.value;
+            });
+        }
+        if (comment) {
+            comment.addEventListener('input', function() {
+                currentSuiviSaisie.commentaire = comment.value;
+            });
+        }
+
+        document.getElementById('suiviSaveBtn').addEventListener('click', function() {
+            saveSuiviCurrent(false).catch(function(err) {
+                console.error('Suivi save error:', err);
+                showToast('Erreur suivi : ' + err.message);
+            });
+        });
+        document.getElementById('suiviAbsentBtn').addEventListener('click', function() {
+            saveSuiviCurrent(true).catch(function(err) {
+                console.error('Suivi absence error:', err);
+                showToast('Erreur suivi : ' + err.message);
+            });
+        });
+        document.getElementById('suiviCancelBtn').addEventListener('click', closeSuiviModal);
+    }
+
+    function syncSuiviFreeFields() {
+        if (!currentSuiviSaisie) return;
+        var comment = document.getElementById('suiviCommentaire');
+        var toggle = document.getElementById('suiviAdjustToggle');
+        var manualNote = document.getElementById('suiviManualNote');
+        var reason = document.getElementById('suiviAdjustReason');
+        if (comment) currentSuiviSaisie.commentaire = comment.value;
+        if (toggle) currentSuiviSaisie.ajustementManuel = toggle.checked;
+        if (manualNote) currentSuiviSaisie.noteFinaleManuelle = manualNote.value;
+        if (reason) currentSuiviSaisie.justificationAjustement = reason.value;
+    }
+
+    function toggleSuiviCourse(value) {
+        var idx = currentSuiviSaisie.coursDistrib.indexOf(value);
+        if (idx >= 0) currentSuiviSaisie.coursDistrib.splice(idx, 1);
+        else currentSuiviSaisie.coursDistrib.push(value);
+    }
+
+    function calculateSuiviNote(saisieData, criteres) {
+        var points = 0;
+        var maxPoints = 0;
+
+        if (criteres.travail && saisieData.travail && saisieData.travail !== 'ne') {
+            maxPoints += 4;
+            if (saisieData.travail === 'tresbien') points += 4;
+            else if (saisieData.travail === 'fait') points += 3;
+            else if (saisieData.travail === 'partiel') points += 1.5;
+        }
+
+        if (criteres.oral && saisieData.oral !== null && saisieData.oral !== undefined && saisieData.oral !== 'ne') {
+            maxPoints += 4;
+            points += parseInt(saisieData.oral, 10) || 0;
+        }
+
+        if (criteres.attention && saisieData.attention && saisieData.attention !== 'ne') {
+            maxPoints += 3;
+            if (saisieData.attention === 'bonne') points += 3;
+            else if (saisieData.attention === 'moyenne') points += 1.5;
+        }
+
+        if (criteres.porteVue && saisieData.porteVue && saisieData.porteVue !== 'ne') {
+            maxPoints += 1;
+            if (saisieData.porteVue === 'ok') points += 1;
+        }
+
+        if (criteres.coursAJour && saisieData.coursAJour && saisieData.coursAJour !== 'ne') {
+            maxPoints += 2;
+            if (saisieData.coursAJour === 'a_jour') points += 2;
+            else if (saisieData.coursAJour === 'incomplet') points += 1;
+        }
+
+        if (criteres.autonomie && saisieData.autonomie && saisieData.autonomie !== 'ne') {
+            maxPoints += 2;
+            if (saisieData.autonomie === 'bonne') points += 2;
+            else if (saisieData.autonomie === 'moyenne') points += 1;
+        }
+
+        if (criteres.initiative && saisieData.initiative && saisieData.initiative !== 'ne') {
+            maxPoints += 2;
+            if (saisieData.initiative === 'oui') points += 2;
+            else if (saisieData.initiative === 'parfois') points += 1;
+        }
+
+        if (criteres.securite && saisieData.securite && saisieData.securite !== 'ne') {
+            maxPoints += 2;
+            if (saisieData.securite === 'oui') points += 2;
+            else if (saisieData.securite === 'partiel') points += 1;
+        }
+
+        if (criteres.planClasse && saisieData.planClasse && saisieData.planClasse !== 'ne') {
+            maxPoints += 1;
+            if (saisieData.planClasse === 'oui') points += 1;
+            else if (saisieData.planClasse === 'partiel') points += 0.5;
+        }
+
+        var noteBase = maxPoints > 0 ? Math.round((points / maxPoints) * 20 * 10) / 10 : 0;
+        var bavardage = saisieData.bavardage || 'aucun';
+        var plafond = SUIVI_PLAFOND_BAVARDAGE[bavardage] || 20;
+        var notePlafonnee = Math.min(noteBase, plafond);
+        var telephone = saisieData.telephone || 'ok';
+        var malus = SUIVI_MALUS_TELEPHONE[telephone] || 0;
+        var noteFinale = Math.max(0, notePlafonnee - malus);
+        noteFinale = Math.round(noteFinale * 2) / 2;
+
+        return {
+            points: points,
+            maxPoints: maxPoints,
+            noteBase: noteBase,
+            plafond: plafond,
+            malus: malus,
+            bonusObjectif: 0,
+            noteSur20: noteFinale
+        };
+    }
+
+    function updateSuiviModalNotePreview() {
+        if (!currentSuiviSaisie) return;
+        syncSuiviFreeFields();
+
+        var noteValue = document.getElementById('suiviNoteValue');
+        var noteMeta = document.getElementById('suiviNoteMeta');
+        if (!noteValue || !noteMeta) return;
+
+        var hasValue = hasSuiviActiveValue(currentSuiviSaisie);
+        if (!hasValue) {
+            noteValue.textContent = '--/20';
+            noteValue.style.color = '#22c55e';
+            noteMeta.innerHTML = 'Complétez au moins un critère actif pour calculer la note.';
+            return;
+        }
+
+        var result = calculateSuiviNote(currentSuiviSaisie, suiviConfig.criteres);
+        var finalNote = getSuiviFinalNote(result);
+        noteValue.textContent = finalNote + '/20';
+        noteValue.style.color = result.malus > 0 || result.plafond < 20 ? '#f59e0b' : '#22c55e';
+        noteMeta.innerHTML =
+            '<span>' + result.points + '/' + result.maxPoints + ' pts</span>' +
+            '<span>Base ' + result.noteBase + '/20</span>' +
+            '<span>Plafond ' + result.plafond + '</span>' +
+            '<span>Malus ' + result.malus + '</span>';
+    }
+
+    function hasSuiviActiveValue(saisieData) {
+        return Object.keys(suiviConfig.criteres).some(function(key) {
+            return suiviConfig.criteres[key] && saisieData[key] !== null && saisieData[key] !== undefined && saisieData[key] !== '';
+        });
+    }
+
+    function getSuiviFinalNote(result) {
+        if (!currentSuiviSaisie || !currentSuiviSaisie.ajustementManuel) return result.noteSur20;
+        var manual = parseFloat(currentSuiviSaisie.noteFinaleManuelle);
+        if (Number.isNaN(manual) || manual < 0 || manual > 20) return result.noteSur20;
+        return Math.round(manual * 2) / 2;
+    }
+
+    function hasValidSuiviManualAdjust() {
+        if (!currentSuiviSaisie || !currentSuiviSaisie.ajustementManuel) return false;
+        var manual = parseFloat(currentSuiviSaisie.noteFinaleManuelle);
+        return !Number.isNaN(manual) && manual >= 0 && manual <= 20;
+    }
+
+    async function saveSuiviCurrent(asAbsent) {
+        if (!currentSuiviEleveCode || !currentSuiviSaisie) return;
+        var student = suiviEleves.find(function(item) { return item.code === currentSuiviEleveCode; });
+        var context = getSuiviContext();
+        if (!student || !context.ready) {
+            showToast(context.reason || 'Contexte de suivi incomplet.');
+            return;
+        }
+
+        syncSuiviFreeFields();
+
+        if (!asAbsent && !hasSuiviActiveValue(currentSuiviSaisie)) {
+            showToast('Remplissez au moins un critère actif.');
+            return;
+        }
+
+        var result = calculateSuiviNote(currentSuiviSaisie, suiviConfig.criteres);
+        var noteFinale = getSuiviFinalNote(result);
+        var docRef = doc(db, 'resultats', student.code, 'suivi', context.docId);
+        var existingSnap = await getDoc(docRef);
+        var oldDoc = existingSnap.exists() ? existingSnap.data() : null;
+
+        if (oldDoc) {
+            var existingLabel = oldDoc.absent ? 'Absent' : ((typeof oldDoc.noteSur20 === 'number' ? oldDoc.noteSur20 : '?') + '/20');
+            var newLabel = asAbsent ? 'Absent' : (noteFinale + '/20');
+            var ok = confirm(
+                '⚠️ Un suivi existe déjà pour ' + student.name + '.\n\n' +
+                'Date : ' + context.date + '\n' +
+                'Module : ' + context.pseModule + '\n' +
+                'Existant : ' + existingLabel + '\n' +
+                'Nouveau : ' + newLabel + '\n\n' +
+                'Remplacer cet enregistrement ?'
+            );
+            if (!ok) return;
+        }
+
+        if (asAbsent) {
+            await setDoc(docRef, {
+                date: context.date,
+                heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                classe: context.pseClasse,
+                module: context.pseModule,
+                moduleTitre: context.moduleTitre,
+                competences: [],
+                absent: true,
+                noteSur20: null,
+                coursDistrib: currentSuiviSaisie.coursDistrib.slice(),
+                coursRecu: false,
+                createdAt: serverTimestamp(),
+                createdBy: currentUser && currentUser.email ? currentUser.email : 'anonyme'
+            });
+            await updateSuiviStatsAbsence(student.code, oldDoc);
+            syncSuiviPresenceToRoster(student.name, true);
+            showToast('🚫 ' + student.name + ' absent');
+        } else {
+            var manualAdjust = hasValidSuiviManualAdjust();
+            var payload = {
+                date: context.date,
+                heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                classe: context.pseClasse,
+                module: context.pseModule,
+                moduleTitre: context.moduleTitre,
+                competences: [],
+                travail: currentSuiviSaisie.travail,
+                oral: currentSuiviSaisie.oral,
+                attention: currentSuiviSaisie.attention,
+                porteVue: currentSuiviSaisie.porteVue,
+                coursAJour: currentSuiviSaisie.coursAJour,
+                autonomie: currentSuiviSaisie.autonomie,
+                initiative: currentSuiviSaisie.initiative,
+                securite: currentSuiviSaisie.securite,
+                planClasse: currentSuiviSaisie.planClasse,
+                bavardage: currentSuiviSaisie.bavardage || 'aucun',
+                telephone: currentSuiviSaisie.telephone || 'ok',
+                commentaire: currentSuiviSaisie.commentaire ? currentSuiviSaisie.commentaire.trim() : null,
+                coursDistrib: currentSuiviSaisie.coursDistrib.slice(),
+                criteresActifs: Object.assign({}, suiviConfig.criteres),
+                points: result.points,
+                maxPoints: result.maxPoints,
+                noteBase: result.noteBase,
+                noteCalculee: result.noteSur20,
+                plafond: result.plafond,
+                malus: result.malus,
+                bonusObjectif: 0,
+                noteSur20: noteFinale,
+                ajustementManuel: manualAdjust,
+                justificationAjustement: manualAdjust && currentSuiviSaisie.justificationAjustement ? currentSuiviSaisie.justificationAjustement.trim() : null,
+                objectifValide: null,
+                absent: false,
+                createdAt: serverTimestamp(),
+                createdBy: currentUser && currentUser.email ? currentUser.email : 'anonyme'
+            };
+            await setDoc(docRef, payload);
+            await updateSuiviStats(student.code, noteFinale, payload, oldDoc);
+            syncSuiviPresenceToRoster(student.name, false);
+            showToast('✅ ' + student.name + ' - ' + noteFinale + '/20');
+        }
+
+        closeSuiviModal();
+        await refreshSuiviSection();
+    }
+
+    function syncSuiviPresenceToRoster(studentName, isAbsent) {
+        var absIdx = absentsEleves.indexOf(studentName);
+        if (isAbsent && absIdx < 0) absentsEleves.push(studentName);
+        if (!isAbsent && absIdx >= 0) absentsEleves.splice(absIdx, 1);
+
+        if (isAbsent && elevesSansCopie.indexOf(studentName) < 0) {
+            elevesSansCopie.push(studentName);
+        }
+
+        var item = null;
+        document.querySelectorAll('.student-item[data-student-name]').forEach(function(node) {
+            if (node.dataset.studentName === studentName) item = node;
+        });
+        if (item) {
+            item.classList.toggle('absent', isAbsent);
+            if (isAbsent) item.classList.add('sans-copie');
+        }
+        syncRosterCounts();
+    }
+
+    function emptySuiviStats() {
+        return {
+            totalNotes: 0,
+            nombreSeances: 0,
+            nbAbsences: 0,
+            moyenne: 0,
+            travail: {},
+            oral: {},
+            attention: {},
+            porteVue: {},
+            coursAJour: {},
+            autonomie: {},
+            initiative: {},
+            securite: {},
+            planClasse: {},
+            lastUpdate: null
+        };
+    }
+
+    function rollbackSuiviOldDoc(stats, oldDoc) {
+        if (!oldDoc) return;
+
+        if (oldDoc.absent) {
+            stats.nbAbsences = Math.max(0, (stats.nbAbsences || 0) - 1);
+            return;
+        }
+
+        var oldNote = typeof oldDoc.noteSur20 === 'number' ? oldDoc.noteSur20 : 0;
+        stats.nombreSeances = Math.max(0, (stats.nombreSeances || 0) - 1);
+        stats.totalNotes = Math.max(0, (stats.totalNotes || 0) - oldNote);
+
+        ['travail', 'oral', 'attention', 'porteVue', 'coursAJour', 'autonomie', 'initiative', 'securite', 'planClasse'].forEach(function(key) {
+            var oldVal = oldDoc[key];
+            if (oldVal === null || oldVal === undefined || oldVal === '') return;
+            if (!stats[key]) stats[key] = {};
+            var mapKey = String(oldVal);
+            stats[key][mapKey] = Math.max(0, (stats[key][mapKey] || 0) - 1);
+        });
+    }
+
+    async function updateSuiviStats(eleveCode, note, payload, oldDoc) {
+        try {
+            var ref = doc(db, 'resultats', eleveCode, 'stats', 'suivi');
+            var snap = await getDoc(ref);
+            var stats = snap.exists() ? snap.data() : emptySuiviStats();
+
+            if (stats.nbSeances !== undefined && stats.nombreSeances === undefined) {
+                stats.nombreSeances = stats.nbSeances;
+            }
+            delete stats.nbSeances;
+
+            rollbackSuiviOldDoc(stats, oldDoc);
+
+            stats.nombreSeances = (stats.nombreSeances || 0) + 1;
+            stats.totalNotes = (stats.totalNotes || 0) + note;
+            stats.moyenne = stats.nombreSeances > 0
+                ? Math.round((stats.totalNotes / stats.nombreSeances) * 10) / 10
+                : 0;
+
+            ['travail', 'oral', 'attention', 'porteVue', 'coursAJour', 'autonomie', 'initiative', 'securite', 'planClasse'].forEach(function(key) {
+                var val = payload[key];
+                if (val === null || val === undefined || val === '') return;
+                if (!stats[key]) stats[key] = {};
+                var mapKey = String(val);
+                stats[key][mapKey] = (stats[key][mapKey] || 0) + 1;
+            });
+
+            stats.lastUpdate = serverTimestamp();
+            await setDoc(ref, stats);
+        } catch (err) {
+            console.error('Suivi stats error:', err);
+        }
+    }
+
+    async function updateSuiviStatsAbsence(eleveCode, oldDoc) {
+        try {
+            var ref = doc(db, 'resultats', eleveCode, 'stats', 'suivi');
+            var snap = await getDoc(ref);
+            var stats = snap.exists() ? snap.data() : emptySuiviStats();
+
+            if (stats.nbSeances !== undefined && stats.nombreSeances === undefined) {
+                stats.nombreSeances = stats.nbSeances;
+            }
+            delete stats.nbSeances;
+
+            rollbackSuiviOldDoc(stats, oldDoc);
+            stats.nbAbsences = (stats.nbAbsences || 0) + 1;
+            stats.moyenne = stats.nombreSeances > 0
+                ? Math.round((stats.totalNotes / stats.nombreSeances) * 10) / 10
+                : 0;
+            stats.lastUpdate = serverTimestamp();
+            await setDoc(ref, stats);
+        } catch (err) {
+            console.error('Suivi absence stats error:', err);
+        }
     }
 
     window.toggleValide = function() {
@@ -3105,7 +4406,10 @@
             inp.style.display = moduleAutreEnabled ? 'block' : 'none';
             sel.style.opacity = moduleAutreEnabled ? '0.4' : '1';
             if (moduleAutreEnabled) inp.focus();
+            else inp.value = '';
+            scheduleSuiviRefresh();
         });
+        document.getElementById('moduleAutreInput').addEventListener('input', scheduleSuiviRefresh);
     }
 
     // ── HISTORIQUE TOP ──
