@@ -156,6 +156,8 @@
 
         /* Block colors */
         .cb-realise   { background: #10b981; color: #fff; }
+        .cb-en-cours  { background: #06b6d4; color: #fff; }
+        .cb-a-terminer{ background: #f97316; color: #fff; }
         .cb-reporte   { background: #f59e0b; color: #fff; }
         .cb-non-real  { background: #dc2626; color: #fff; }
         .cb-annule    { background: #6b7280; color: #fff; }
@@ -781,7 +783,9 @@
             const statut = (log.statut || '').toLowerCase();
             let cssClass = 'cb-realise';
             let icon = '✅';
-            if (statut.includes('report')) { cssClass = 'cb-reporte'; icon = '🔄'; }
+            if (statut.includes('en cours')) { cssClass = 'cb-en-cours'; icon = '⏳'; }
+            else if (statut.includes('termin')) { cssClass = 'cb-a-terminer'; icon = '⏭️'; }
+            else if (statut.includes('report')) { cssClass = 'cb-reporte'; icon = '🔄'; }
             else if (statut.includes('non') || statut.includes('annul')) { cssClass = 'cb-annule'; icon = '🚫'; }
 
             const moduleText = log.moduleId ? cleanModuleName(log.moduleId) : '';

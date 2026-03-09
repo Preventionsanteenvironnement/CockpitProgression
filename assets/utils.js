@@ -586,7 +586,14 @@ export function getCurrentWeekMonday() {
 // STATUT / SITUATION — Helpers pour timeline et couleurs
 // ═══════════════════════════════════════════════════════════
 
+export function isEnCours(sem) {
+    return sem.statut === 'En cours';
+}
+export function isATerminer(sem) {
+    return sem.statut === 'À terminer' || sem.statut === 'A terminer';
+}
 export function isRealise(sem) {
+    if (isEnCours(sem) || isATerminer(sem)) return false;
     return sem.valide || sem.statut === 'Realise' || sem.statut === 'Réalisé';
 }
 export function isPrevu(sem) {
@@ -629,6 +636,8 @@ export function situationClass(sem) {
     if (sit.includes('feri') || sit.includes('féri')) return 'c-ferie';
     if (sit.includes('absence')) return 'c-absence';
     if (sit.includes('formation')) return 'c-formation';
+    if (isEnCours(sem)) return 'c-en-cours';
+    if (isATerminer(sem)) return 'c-a-terminer';
     if (isRealise(sem)) return 'c-realise';
     if (isReporte(sem)) return 'c-reporte';
     if (isNonRealise(sem)) return 'c-non-realise';
@@ -650,6 +659,8 @@ export function situationColor(sem) {
     if (sit.includes('feri') || sit.includes('féri')) return '#a1a1aa';
     if (sit.includes('absence')) return '#78716c';
     if (sit.includes('formation')) return '#3b82f6';
+    if (isEnCours(sem)) return '#06b6d4';
+    if (isATerminer(sem)) return '#f97316';
     if (isRealise(sem)) return '#22c55e';
     if (isReporte(sem)) return '#f59e0b';
     if (isNonRealise(sem)) return '#dc2626';
