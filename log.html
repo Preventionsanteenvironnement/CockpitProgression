@@ -2177,6 +2177,11 @@
         // ── AUTO-SELECT MODULE from progression_prevue (current week) ──
         var contextDate = getContextDateISO();
         var weekInfo = findWeekByDate(classeDocId, contextDate) || findCurrentWeekPrevue(classeDocId, contextDate);
+
+        // ── Récupérer le nb de séances prévues pour ce module ──
+        currentNbSeancesPrevues = (weekInfo && weekInfo.week.nbSeancesPrevues) ? parseInt(weekInfo.week.nbSeancesPrevues) || 0 : 0;
+        buildSeancePicker(); // Reconstruire le picker avec l'info du nb séances
+
         if (weekInfo && weekInfo.week.module) {
             var expectedId = extractModuleId(weekInfo.week.module);
             var matched = false;
@@ -2437,10 +2442,41 @@
     function buildSeancePicker() {
         var grid = document.getElementById('seanceGrid');
         grid.innerHTML = '';
+
+        // Calculer les séances déjà faites pour ce module (depuis l'historique)
+        var seancesFaites = countSeancesDone();
+        var nbPrevues = currentNbSeancesPrevues;
+
+        // Mettre à jour le label avec le compteur
+        var label = document.querySelector('label[for="seanceGrid"], label.field-label');
+        var seanceLabels = document.querySelectorAll('.field-label');
+        for (var k = 0; k < seanceLabels.length; k++) {
+            if (seanceLabels[k].textContent.indexOf('Séance') >= 0) {
+                if (nbPrevues > 0) {
+                    seanceLabels[k].innerHTML = 'Séance(s) — <span style="color:#a5b4fc;font-weight:800;">' + seancesFaites + ' / ' + nbPrevues + ' séance' + (nbPrevues > 1 ? 's' : '') + ' prévue' + (nbPrevues > 1 ? 's' : '') + '</span>';
+                } else {
+                    seanceLabels[k].textContent = 'Séance(s) — plusieurs choix possibles';
+                }
+                break;
+            }
+        }
+
         SEANCES.forEach(function(s) {
             var btn = document.createElement('button');
             btn.className = 'chip';
             btn.textContent = s;
+
+            // Griser les séances au-delà du nombre prévu
+            if (nbPrevues > 0) {
+                var seanceNum = parseInt(s.replace(/[^0-9]/g, '')) || 0;
+                // Trouver le premier chiffre de la séance (ex: "Séance 3-4" → 3)
+                var match = s.match(/(\d+)/);
+                if (match) seanceNum = parseInt(match[1]);
+                if (seanceNum > nbPrevues && s.indexOf('Évaluation') < 0 && s.indexOf('Correction') < 0 && s.indexOf('Corr.') < 0) {
+                    btn.style.opacity = '0.35';
+                }
+            }
+
             btn.addEventListener('click', function() {
                 var idx = selectedSeances.indexOf(s);
                 if (idx >= 0) { selectedSeances.splice(idx,1); btn.classList.remove('selected'); }
@@ -2468,6 +2504,21 @@
         if (seanceAutreInp) {
             seanceAutreInp.addEventListener('input', function() { seanceAutreText = this.value; updateStatutInfo(); });
         }
+    }
+
+    // Compte les séances déjà faites pour le module sélectionné (depuis l'historique)
+    function countSeancesDone() {
+        var currentModule = document.getElementById('selectModule').value;
+        if (!currentModule || !currentClassLogs) return 0;
+        var currentId = extractModuleId(currentModule);
+        var count = 0;
+        currentClassLogs.forEach(function(log) {
+            if (extractModuleId(log.moduleId) !== currentId) return;
+            if (log.statut === 'Réalisé' || log.statut === 'En cours' || log.statut === 'À terminer') {
+                count++;
+            }
+        });
+        return count;
     }
 
     function updateStatutInfo() {
@@ -4783,6 +4834,7 @@
     let phaseAutreText = '';
     let selectedSeances = [];
     let seanceAutreText = '';
+    let currentNbSeancesPrevues = 0; // Nombre de séances prévues pour le module (depuis progression_prevue)
     let moduleAutreEnabled = false;
     let qualityData = {};
     let cpsMots = { cognitif: [], emotionnel: [], social: [] };
