@@ -1233,10 +1233,87 @@
         }
     }
 
+    function normalizeRosterStudent(record) {
+        var code = ((record && (record.code || record.userCode || record.usercode || record.codeEleve || record.code_eleve || record.identifiant || record.idEleve || record.id)) || '').toString().trim().toUpperCase();
+        var classe = ((record && record.classe) || '').trim();
+        var name = ((record && (record.name || record.fullname || record.nomPrenom || record.prenomNom || record.displayName)) || '').trim();
+        if (!name) {
+            var prenom = ((record && (record.prenom || record.firstName)) || '').trim();
+            var nom = ((record && (record.nom || record.lastName)) || '').trim();
+            name = (prenom + ' ' + nom).trim();
+        }
+        return {
+            code: code || '',
+            classe: classe,
+            name: name,
+            source: (record && record.source) || '',
+            rowKey: (record && record.rowKey) || ''
+        };
+    }
+
+    function rosterCodeKey(record) {
+        return record && record.code ? ('C:' + record.code) : '';
+    }
+
+    function rosterNameClasseKey(record) {
+        var nameKey = normalizeClassKey(record && record.name);
+        var classeKey = normalizeClassKey(record && record.classe);
+        if (!nameKey || !classeKey) return '';
+        return 'N:' + nameKey + '|K:' + classeKey;
+    }
+
+    function mergeRosterRecord(existing, incoming, preferIncoming) {
+        var merged = normalizeRosterStudent(existing);
+        var next = normalizeRosterStudent(incoming);
+
+        if ((preferIncoming || !merged.code) && next.code) merged.code = next.code;
+        if ((preferIncoming || !merged.name) && next.name) merged.name = next.name;
+        if ((preferIncoming || !merged.classe) && next.classe) merged.classe = next.classe;
+        if ((preferIncoming || !merged.source) && next.source) merged.source = next.source;
+        if ((preferIncoming || !merged.rowKey) && next.rowKey) merged.rowKey = next.rowKey;
+
+        return merged;
+    }
+
+    function mergeRosterLists(baseRecords, incomingRecords) {
+        var merged = [];
+        var indexByCode = {};
+        var indexByNameClasse = {};
+
+        [].concat(baseRecords || [], incomingRecords || []).forEach(function(record) {
+            var normalized = normalizeRosterStudent(record);
+            if (!normalized.code && !normalized.name) return;
+
+            var codeKey = rosterCodeKey(normalized);
+            var nameClasseKey = rosterNameClasseKey(normalized);
+            var idx = -1;
+
+            if (codeKey && indexByCode[codeKey] !== undefined) {
+                idx = indexByCode[codeKey];
+            } else if (nameClasseKey && indexByNameClasse[nameClasseKey] !== undefined) {
+                idx = indexByNameClasse[nameClasseKey];
+            }
+
+            if (idx < 0) {
+                idx = merged.push(normalized) - 1;
+            } else {
+                merged[idx] = mergeRosterRecord(merged[idx], normalized, true);
+            }
+
+            var saved = merged[idx];
+            var savedCodeKey = rosterCodeKey(saved);
+            var savedNameClasseKey = rosterNameClasseKey(saved);
+            if (savedCodeKey) indexByCode[savedCodeKey] = idx;
+            if (savedNameClasseKey) indexByNameClasse[savedNameClasseKey] = idx;
+        });
+
+        return merged;
+    }
+
     async function hydrateStudentsCache() {
         var local = readStudentsFromLocal();
         if (local.length > 0) {
-            studentsCache = local;
+            studentsCache = mergeRosterLists([], local);
             console.log('[Suivi] Élèves chargés depuis localStorage:', local.length);
         }
         /* Toujours vérifier Firebase pour synchroniser */
@@ -1252,12 +1329,9 @@
                 console.log('[Suivi] Roster Firebase vide');
                 return;
             }
-            /* Firebase est la source de vérité : si le cloud a plus de données, on l'utilise */
-            if (cloudStudents.length >= studentsCache.length) {
-                studentsCache = cloudStudents;
-                try { localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(cloudStudents)); } catch(_) {}
-                console.log('[Suivi] Élèves synchronisés depuis Firebase:', cloudStudents.length);
-            }
+            studentsCache = mergeRosterLists(studentsCache, cloudStudents);
+            try { localStorage.setItem(STUDENTS_STORAGE_KEY, JSON.stringify(studentsCache)); } catch(_) {}
+            console.log('[Suivi] Élèves synchronisés depuis Firebase:', studentsCache.length);
         } catch (err) {
             console.warn('[Suivi] Erreur sync Firebase élèves:', err);
         }

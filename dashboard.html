@@ -1050,34 +1050,101 @@
         return records;
     }
 
-    function mergeStudents(newRecords) {
-        var map = {};
-        function keyOf(r) {
-            var codeKey = normalizeKey(r.code || '');
-            if (codeKey) return 'C:' + codeKey;
-            var rowKey = normalizeKey(r.rowKey || '');
-            if (rowKey) return 'R:' + rowKey;
-            return 'N:' + normalizeKey(r.name || '') + '|K:' + normalizeKey(r.classe || '');
-        }
-        localStudents.forEach(function(r) { map[keyOf(r)] = Object.assign({}, r); });
-        newRecords.forEach(function(r) {
-            var key = keyOf(r);
-            if (!map[key]) {
-                map[key] = Object.assign({}, r);
-                return;
+    function normalizeStudentRecord(record) {
+        var code = normalizeKey(record && record.code);
+        var classe = ((record && record.classe) || '').trim();
+        var name = ((record && record.name) || '').trim();
+        return {
+            code: code || '',
+            classe: classe,
+            name: name,
+            source: (record && record.source) || '',
+            rowKey: (record && record.rowKey) || ''
+        };
+    }
+
+    function studentCodeKey(record) {
+        var code = normalizeKey(record && record.code);
+        return code ? ('C:' + code) : '';
+    }
+
+    function studentNameClasseKey(record) {
+        var nameKey = normalizeKey(record && record.name);
+        var classeKey = normalizeKey(record && record.classe);
+        if (!nameKey || !classeKey) return '';
+        return 'N:' + nameKey + '|K:' + classeKey;
+    }
+
+    function mergeStudentRecord(existing, incoming, preferIncoming) {
+        var merged = normalizeStudentRecord(existing);
+        var next = normalizeStudentRecord(incoming);
+
+        if ((preferIncoming || !merged.code) && next.code) merged.code = next.code;
+        if ((preferIncoming || !merged.name) && next.name) merged.name = next.name;
+        if ((preferIncoming || !merged.classe) && next.classe) merged.classe = next.classe;
+        if ((preferIncoming || !merged.source) && next.source) merged.source = next.source;
+        if ((preferIncoming || !merged.rowKey) && next.rowKey) merged.rowKey = next.rowKey;
+
+        return merged;
+    }
+
+    function dedupeStudentRecords(records) {
+        var merged = [];
+        var indexByCode = {};
+        var indexByNameClasse = {};
+        var conflicts = [];
+
+        records.forEach(function(record) {
+            var normalized = normalizeStudentRecord(record);
+            if (!normalized.code && !normalized.name) return;
+
+            var codeKey = studentCodeKey(normalized);
+            var nameClasseKey = studentNameClasseKey(normalized);
+            var idx = -1;
+
+            if (codeKey && indexByCode[codeKey] !== undefined) {
+                idx = indexByCode[codeKey];
+            } else if (nameClasseKey && indexByNameClasse[nameClasseKey] !== undefined) {
+                idx = indexByNameClasse[nameClasseKey];
             }
-            var cur = map[key];
-            if (!cur.name && r.name) cur.name = r.name;
-            if (!cur.classe && r.classe) cur.classe = r.classe;
-            if (!cur.code && r.code) cur.code = r.code;
-            cur.source = r.source || cur.source;
+
+            if (idx < 0) {
+                idx = merged.push(normalized) - 1;
+            } else {
+                var current = merged[idx];
+                if (current.code && normalized.code && current.code === normalized.code) {
+                    var currentClasse = normalizeKey(current.classe);
+                    var nextClasse = normalizeKey(normalized.classe);
+                    if (currentClasse && nextClasse && currentClasse !== nextClasse) {
+                        conflicts.push(current.code + ' : ' + current.classe + ' -> ' + normalized.classe);
+                    }
+                }
+                merged[idx] = mergeStudentRecord(current, normalized, true);
+            }
+
+            var saved = merged[idx];
+            var savedCodeKey = studentCodeKey(saved);
+            var savedNameClasseKey = studentNameClasseKey(saved);
+            if (savedCodeKey) indexByCode[savedCodeKey] = idx;
+            if (savedNameClasseKey) indexByNameClasse[savedNameClasseKey] = idx;
         });
-        localStudents = Object.keys(map).map(function(k) { return map[k]; });
-        localStudents.sort(function(a, b) {
+
+        merged.sort(function(a, b) {
             var ac = (a.classe || '').localeCompare(b.classe || '');
             if (ac !== 0) return ac;
             return (a.name || a.code || '').localeCompare(b.name || b.code || '');
         });
+
+        return {
+            students: merged,
+            conflicts: Array.from(new Set(conflicts))
+        };
+    }
+
+    function mergeStudents(newRecords) {
+        var result = dedupeStudentRecords([].concat(localStudents || [], newRecords || []));
+        localStudents = result.students;
+        return result;
     }
 
     function getStudentsForClass(classeId) {
@@ -1129,12 +1196,15 @@
             var records = parseStudentsCsv(text, file.name);
             imported = imported.concat(records);
         }
-        mergeStudents(imported);
+        var result = mergeStudents(imported);
         saveLocalStudents();
         await saveStudentsToCloud();
         updateStudentsStatus();
         refreshViews();
-        showToast('✅ Élèves importés: ' + imported.length + ' ligne(s)');
+        if (result.conflicts.length) {
+            alert('⚠️ Codes élèves en double détectés pendant l’import.\n\nLe dernier enregistrement a été conservé pour ces codes :\n' + result.conflicts.join('\n'));
+        }
+        showToast('✅ Élèves importés: ' + imported.length + ' ligne(s) · ' + localStudents.length + ' élèves uniques');
     }
 
     function setupStudentsImportUI() {
