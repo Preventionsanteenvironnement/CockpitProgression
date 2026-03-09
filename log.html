@@ -532,6 +532,23 @@
             display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
             margin-bottom: 12px;
         }
+        .suivi-bulk-bar {
+            display: grid; gap: 8px; margin-bottom: 12px;
+            padding: 10px; border: 1px dashed var(--border); border-radius: 10px;
+            background: rgba(99,102,241,0.06);
+        }
+        .suivi-bulk-btn {
+            border: 2px solid rgba(129,140,248,0.35); border-radius: 10px;
+            background: rgba(99,102,241,0.14); color: #c7d2fe; cursor: pointer;
+            font-size: 0.82em; font-weight: 800; font-family: inherit; padding: 11px 12px;
+            transition: all 0.15s;
+        }
+        .suivi-bulk-btn:hover {
+            border-color: #818cf8; background: rgba(99,102,241,0.2);
+        }
+        .suivi-bulk-note {
+            font-size: 0.74em; color: var(--muted); line-height: 1.45;
+        }
         .suivi-chip {
             padding: 9px 10px; border: 2px solid var(--border); border-radius: 10px;
             background: var(--surface-2); color: var(--muted); cursor: pointer;
@@ -968,7 +985,7 @@
         <!-- STUDENT ROSTER - visible quand classe sélectionnée -->
         <div id="studentRosterSection" style="display:none; margin-bottom:14px;">
             <div style="font-size:.72em; color:var(--muted); margin-bottom:8px; font-weight:600;">
-                Cliquer = <span style="color:var(--danger);">Absent</span> · Double-cliquer = <span style="color:var(--warning);">Sans copie</span>
+                Cliquer = <span style="color:var(--danger);">Absent</span> · Recliquer = <span style="color:var(--muted);">Normal</span> · Double-cliquer = <span style="color:var(--warning);">Sans copie</span>
             </div>
             <div id="studentRosterGrid" class="students-checklist" style="max-height:300px;"></div>
             <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
@@ -999,6 +1016,10 @@
                     1. Choisissez les critères de la séance. 2. Cliquez sur un élève. 3. Enregistrez sa fiche. Le bouton du bas enregistre ensuite le bilan de séance.
                 </div>
                 <div id="suiviCriteriaGrid" class="suivi-mini-grid"></div>
+                <div class="suivi-bulk-bar">
+                    <button type="button" id="suiviBulkNoteBtn" class="suivi-bulk-btn">⚡ Noter rapidement les élèves restants</button>
+                    <div class="suivi-bulk-note">Applique une même note manuelle aux élèves restants non absents. La fiche individuelle reste disponible ensuite pour affiner.</div>
+                </div>
                 <div id="suiviEmpty" class="suivi-empty" style="display:none;"></div>
                 <div id="suiviStudentsGrid" class="students-checklist suivi-students"></div>
             </div>
@@ -3133,6 +3154,11 @@
                 if (idx >= 0) {
                     absentsEleves.splice(idx, 1);
                     item.classList.remove('absent');
+                    var scIdx = elevesSansCopie.indexOf(name);
+                    if (scIdx >= 0) {
+                        elevesSansCopie.splice(scIdx, 1);
+                        item.classList.remove('sans-copie');
+                    }
                 } else {
                     absentsEleves.push(name);
                     item.classList.add('absent');
@@ -3209,10 +3235,19 @@
     function ensureSuiviUi() {
         var modal = document.getElementById('suiviModal');
         var closeBtn = document.getElementById('suiviModalClose');
+        var bulkBtn = document.getElementById('suiviBulkNoteBtn');
         if (!modal || modal.dataset.bound === '1') return;
         modal.dataset.bound = '1';
 
         closeBtn.addEventListener('click', closeSuiviModal);
+        if (bulkBtn) {
+            bulkBtn.addEventListener('click', function() {
+                applyBulkSuiviNote().catch(function(err) {
+                    console.error('Bulk suivi error:', err);
+                    showToast('Erreur lot : ' + err.message);
+                });
+            });
+        }
         modal.addEventListener('click', function(event) {
             if (event.target === modal) closeSuiviModal();
         });
@@ -3684,6 +3719,121 @@
             (counts.absents ? (' · ' + counts.absents + ' abs') : '') +
             (counts.pending ? (' · ' + counts.pending + ' restant(s)') : '') +
             (activeLabels.length ? (' · ' + activeLabels.length + ' critères') : '');
+    }
+
+    function getBulkSuiviTargets() {
+        return suiviEleves.filter(function(student) {
+            return !student.disabled &&
+                !student.done &&
+                !student.savedAbsent &&
+                absentsEleves.indexOf(student.name) < 0;
+        });
+    }
+
+    async function applyBulkSuiviNote() {
+        var context = getSuiviContext();
+        if (!context.ready) {
+            showToast(context.reason || 'Contexte de suivi incomplet.');
+            return;
+        }
+
+        var targets = getBulkSuiviTargets();
+        if (!targets.length) {
+            showToast('Aucun élève restant à noter.');
+            return;
+        }
+
+        var rawNote = window.prompt(
+            'Note rapide à appliquer aux ' + targets.length + ' élève(s) restants (0 à 20, pas de 0,5 possible) :',
+            '14'
+        );
+        if (rawNote === null) return;
+
+        var note = parseFloat(String(rawNote).replace(',', '.'));
+        if (Number.isNaN(note) || note < 0 || note > 20) {
+            showToast('Note invalide.');
+            return;
+        }
+        note = Math.round(note * 2) / 2;
+
+        var comment = window.prompt(
+            'Commentaire commun optionnel pour cette saisie rapide :',
+            ''
+        );
+        if (comment === null) return;
+        comment = comment.trim();
+
+        var ok = window.confirm(
+            'Appliquer ' + note + '/20 à ' + targets.length + ' élève(s) restants ?\n\n' +
+            'Les élèves déjà saisis ou marqués absents ne seront pas modifiés.'
+        );
+        if (!ok) return;
+
+        var bulkBtn = document.getElementById('suiviBulkNoteBtn');
+        if (bulkBtn) {
+            bulkBtn.disabled = true;
+            bulkBtn.textContent = '⏳ Saisie en lot...';
+        }
+
+        try {
+            for (var i = 0; i < targets.length; i++) {
+                var student = targets[i];
+                var docRef = doc(db, 'resultats', student.code, 'suivi', context.docId);
+                var existingSnap = await getDoc(docRef);
+                var oldDoc = existingSnap.exists() ? existingSnap.data() : null;
+                var payload = buildBulkSuiviPayload(context, student, note, comment);
+                await setDoc(docRef, payload);
+                await updateSuiviStats(student.code, note, payload, oldDoc);
+                syncSuiviPresenceToRoster(student.name, false);
+            }
+
+            showToast('⚡ ' + targets.length + ' élève(s) notés à ' + note + '/20 · séance à enregistrer ensuite');
+            await refreshSuiviSection();
+        } finally {
+            if (bulkBtn) {
+                bulkBtn.disabled = false;
+                bulkBtn.textContent = '⚡ Noter rapidement les élèves restants';
+            }
+        }
+    }
+
+    function buildBulkSuiviPayload(context, student, note, comment) {
+        return {
+            date: context.date,
+            heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+            classe: context.pseClasse,
+            module: context.pseModule,
+            moduleTitre: context.moduleTitre,
+            competences: [],
+            travail: null,
+            oral: null,
+            attention: null,
+            porteVue: null,
+            coursAJour: null,
+            autonomie: null,
+            initiative: null,
+            securite: null,
+            planClasse: null,
+            bavardage: 'aucun',
+            telephone: 'ok',
+            commentaire: comment || null,
+            coursDistrib: [],
+            criteresActifs: Object.assign({}, suiviConfig.criteres),
+            points: 0,
+            maxPoints: 0,
+            noteBase: note,
+            noteCalculee: note,
+            plafond: 20,
+            malus: 0,
+            bonusObjectif: 0,
+            noteSur20: note,
+            ajustementManuel: true,
+            justificationAjustement: 'Saisie rapide en lot',
+            objectifValide: null,
+            absent: false,
+            createdAt: serverTimestamp(),
+            createdBy: currentUser && currentUser.email ? currentUser.email : 'anonyme'
+        };
     }
 
     function getActiveSuiviCriteriaLabels() {
@@ -4278,6 +4428,9 @@
 
         if (isAbsent && elevesSansCopie.indexOf(studentName) < 0) {
             elevesSansCopie.push(studentName);
+        } else if (!isAbsent) {
+            var scIdx = elevesSansCopie.indexOf(studentName);
+            if (scIdx >= 0) elevesSansCopie.splice(scIdx, 1);
         }
 
         var item = null;
@@ -4286,7 +4439,7 @@
         });
         if (item) {
             item.classList.toggle('absent', isAbsent);
-            if (isAbsent) item.classList.add('sans-copie');
+            item.classList.toggle('sans-copie', isAbsent);
         }
         syncRosterCounts();
     }
