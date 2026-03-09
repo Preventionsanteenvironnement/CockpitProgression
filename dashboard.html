@@ -966,7 +966,8 @@
             var data = snap.data() || {};
             var cloudStudents = Array.isArray(data.students) ? data.students : [];
             if (!cloudStudents.length) return false;
-            localStudents = cloudStudents;
+            var result = dedupeStudentRecords([].concat(localStudents || [], cloudStudents));
+            localStudents = result.students;
             saveLocalStudents();
             updateStudentsStatus();
             return true;
