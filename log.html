@@ -535,7 +535,11 @@
         }
         .suivi-students { max-height: 260px; }
         .suivi-student {
-            align-items: flex-start; justify-content: space-between; min-height: 54px;
+            display: flex; align-items: flex-start; justify-content: space-between; min-height: 54px;
+            padding: 8px 10px; border: 2px solid var(--border); border-radius: 10px;
+            background: var(--surface-2); color: var(--text); cursor: pointer;
+            font-size: 0.82em; font-weight: 600; font-family: inherit;
+            transition: all 0.15s; -webkit-tap-highlight-color: transparent;
         }
         .suivi-student.current {
             border-color: var(--primary); background: var(--primary-light);
@@ -564,7 +568,7 @@
             flex-shrink: 0; margin-left: 8px; padding: 5px 9px; border-radius: 999px;
             font-size: 0.72em; font-weight: 800;
         }
-        .suivi-badge.pending { background: var(--surface-2); color: var(--muted); }
+        .suivi-badge.pending { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid var(--border); }
         .suivi-badge.done { background: var(--success-light); color: var(--success); }
         .suivi-badge.absent { background: var(--warning-light); color: #92400e; }
         .suivi-modal {
@@ -4699,6 +4703,11 @@
             return;
         }
         topCard.style.display = 'block';
+        // Cacher les anciens blocs redondants (lastLogInfo + sessionHistory)
+        var oldLastLog = document.getElementById('lastLogInfo');
+        var oldHistory = document.getElementById('sessionHistory');
+        if (oldLastLog) oldLastLog.style.display = 'none';
+        if (oldHistory) oldHistory.style.display = 'none';
         document.getElementById('historyClasseLabel').textContent = classeLabel;
         var last = currentClassLogs[0];
         var seancesL = Array.isArray(last.seances) ? last.seances.join(' + ') : (last.seance || '');
