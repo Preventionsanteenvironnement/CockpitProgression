@@ -57,14 +57,22 @@
         /* ── HEADER ── */
         .page-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 18px;
+            margin-bottom: 12px;
         }
         .page-header h1 { font-size: 1.2em; font-weight: 800; }
         .room-badge {
             padding: 6px 14px; border-radius: 20px; font-size: 0.8em;
             font-weight: 700; background: var(--primary-light); color: var(--primary-dark);
         }
-        .date-display { font-size: 0.8em; color: var(--muted); margin-bottom: 15px; }
+        .date-display {
+            text-align: center; font-size: 1.35em; font-weight: 800;
+            color: var(--text); margin: 0 0 18px; line-height: 1.2;
+        }
+        .date-display .sem-badge {
+            display: inline-block; margin-left: 8px; padding: 3px 10px;
+            border-radius: 999px; font-size: 0.52em; font-weight: 800;
+            vertical-align: middle;
+        }
         .back-link {
             font-size: 0.85em; color: var(--muted); text-decoration: none;
             display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px;
@@ -761,7 +769,9 @@
                 <button class="chip" onclick="selectPlanifType('Réunion', this)">Réunion</button>
                 <button class="chip" onclick="selectPlanifType('Événement', this)">Événement</button>
                 <button class="chip" onclick="selectPlanifType('Rattrapage', this)">Rattrapage</button>
+                <button class="chip autre" onclick="selectPlanifType('Autre', this)">Autre</button>
             </div>
+            <input type="text" id="planifAutreInput" class="chip-autre-input" placeholder="Préciser l'événement..." style="display:none;">
         </div>
     </div>
 
@@ -1382,7 +1392,7 @@
         coursAJour: '📋 Cours à jour',
         autonomie: '🎯 Autonomie',
         initiative: '💡 Initiative',
-        securite: '⚠️ Rappel au cadre',
+        securite: '🤝 Respect du cadre',
         planClasse: '🪑 Respect du plan de classe'
     };
     const SUIVI_OPTION_SETS = {
@@ -1394,11 +1404,11 @@
             { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
         ],
         oral: [
-            { value: '0', label: '0', emoji: '0', tone: 'neutral' },
-            { value: '1', label: '1', emoji: '1', tone: 'warning' },
-            { value: '2', label: '2', emoji: '2', tone: 'warning' },
-            { value: '3', label: '3', emoji: '3', tone: 'good' },
-            { value: '4', label: '4', emoji: '4', tone: 'good' },
+            { value: '0', label: 'Aucune', emoji: '0', tone: 'neutral' },
+            { value: '1', label: 'Faible', emoji: '1', tone: 'warning' },
+            { value: '2', label: 'Correcte', emoji: '2', tone: 'warning' },
+            { value: '3', label: 'Bonne', emoji: '3', tone: 'good' },
+            { value: '4', label: 'Excellente', emoji: '4', tone: 'good' },
             { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
         ],
         attention: [
@@ -1492,6 +1502,7 @@
     // Planification future
     let planifEnabled = false;
     let planifType = '';
+    let planifAutreText = '';
     let selectedEvalForm = '';
     let selectedEvalSomm = '';
 
@@ -1561,7 +1572,7 @@
         // Show semaine A/B badge
         var semType = getSemaineType(now);
         document.getElementById('dateJour').innerHTML = displayDate +
-            ' <span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;' +
+            ' <span class="sem-badge" style="' +
             (semType === 'SA' ? 'background:rgba(99,102,241,0.2);color:#818cf8;">' : 'background:rgba(16,185,129,0.2);color:#34d399;">') +
             semType + '</span>';
 
@@ -1959,7 +1970,13 @@
     // ═══════ PLANIFICATION FUTURE ═══════
     function initPlanifToggle() {
         var toggle = document.getElementById('planifToggle');
+        var autreInput = document.getElementById('planifAutreInput');
         if (!toggle) return;
+        if (autreInput) {
+            autreInput.addEventListener('input', function() {
+                planifAutreText = this.value.trim();
+            });
+        }
         toggle.addEventListener('click', function() {
             planifEnabled = !planifEnabled;
             toggle.classList.toggle('active', planifEnabled);
@@ -1967,18 +1984,48 @@
             document.getElementById('planifSection').style.display = planifEnabled ? 'block' : 'none';
             if (!planifEnabled) {
                 planifType = '';
+                planifAutreText = '';
                 document.getElementById('planifDate').value = '';
-                document.querySelectorAll('#planifSection .situation-btn').forEach(function(b) { b.classList.remove('selected'); });
+                document.querySelectorAll('#planifSection .chip').forEach(function(b) { b.classList.remove('selected'); });
+                if (autreInput) {
+                    autreInput.value = '';
+                    autreInput.style.display = 'none';
+                }
             }
             scheduleSuiviRefresh();
         });
     }
 
     window.selectPlanifType = function(type, btn) {
-        document.querySelectorAll('#planifSection .situation-btn').forEach(function(b) { b.classList.remove('selected'); });
-        if (planifType === type) { planifType = ''; }
-        else { planifType = type; btn.classList.add('selected'); }
+        var autreInput = document.getElementById('planifAutreInput');
+        document.querySelectorAll('#planifSection .chip').forEach(function(b) { b.classList.remove('selected'); });
+        if (planifType === type) {
+            planifType = '';
+            if (autreInput) {
+                planifAutreText = '';
+                autreInput.value = '';
+                autreInput.style.display = 'none';
+            }
+            return;
+        }
+        planifType = type;
+        btn.classList.add('selected');
+        if (autreInput) {
+            if (type === 'Autre') {
+                autreInput.style.display = 'block';
+                autreInput.focus();
+            } else {
+                planifAutreText = '';
+                autreInput.value = '';
+                autreInput.style.display = 'none';
+            }
+        }
     };
+
+    function getSelectedPlanifType() {
+        if (planifType === 'Autre') return planifAutreText || 'Autre';
+        return planifType || '';
+    }
 
     function findWeekByDate(classeDocId, dateStr) {
         if (!classeDocId || !dateStr) return null;
@@ -4291,7 +4338,7 @@
 
         var data = {
             timestamp: serverTimestamp(),
-            planification: planifEnabled ? { type: planifType, dateCible: planifDate } : null,
+            planification: planifEnabled ? { type: getSelectedPlanifType(), dateCible: planifDate } : null,
             date: today,
             room: room,
             classeDocId: classeDocId,
