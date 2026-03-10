@@ -540,6 +540,30 @@
             font-size: .8em;
             line-height: 1.4;
         }
+        .repere-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .repere-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(129,140,248,0.35);
+            background: rgba(99,102,241,0.12);
+            color: var(--text);
+            text-decoration: none;
+            font-size: .76em;
+            font-weight: 800;
+            transition: all .15s;
+        }
+        .repere-link:hover {
+            border-color: rgba(129,140,248,0.6);
+            background: rgba(99,102,241,0.18);
+        }
 
         /* ── QUALITÉ ÉTENDUE ── */
         .quality-dim { margin-bottom:10px; }
@@ -1184,14 +1208,14 @@
             <button class="stepper-btn" onclick="changeAbs(1)">+</button>
         </div>
         <div id="absChipsContainer" style="display:none; margin-bottom:10px;">
-            <div style="font-size:.72em; color:var(--muted); margin-bottom:6px; font-weight:600;">Cliquer pour marquer absent :</div>
+            <div style="font-size:.72em; color:var(--muted); margin-bottom:6px; font-weight:600;">1 clic = absent · 2 clics = sans copie · les deux restent independants.</div>
             <div id="absChipsGrid" class="students-checklist"></div>
         </div>
         <div id="absNoList" style="display:none;">
         </div>
         <input type="text" id="absencesNoms" placeholder="Noms des absents (optionnel)" style="margin-bottom:10px;">
         <div id="elevesSansCours" style="display:none; margin-bottom:14px;">
-            <div style="font-size:.72em; color:var(--warning); margin-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">⚠️ Élèves sans cours (absents ce jour)</div>
+            <div style="font-size:.72em; color:var(--warning); margin-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;">⚠️ Élèves sans copie / sans cours</div>
             <div id="elevesSansCoursGrid" class="students-checklist"></div>
         </div>
 
@@ -3289,25 +3313,15 @@
             if (absentsEleves.indexOf(name) >= 0) item.classList.add('absent');
             if (elevesSansCopie.indexOf(name) >= 0) item.classList.add('sans-copie');
 
-            // Single click = toggle absent
+            // Single click = toggle absent only
             item.addEventListener('click', function(e) {
                 var idx = absentsEleves.indexOf(name);
                 if (idx >= 0) {
                     absentsEleves.splice(idx, 1);
                     item.classList.remove('absent');
-                    var scIdx = elevesSansCopie.indexOf(name);
-                    if (scIdx >= 0) {
-                        elevesSansCopie.splice(scIdx, 1);
-                        item.classList.remove('sans-copie');
-                    }
                 } else {
                     absentsEleves.push(name);
                     item.classList.add('absent');
-                    // Auto-mark sans copie when absent
-                    if (elevesSansCopie.indexOf(name) < 0) {
-                        elevesSansCopie.push(name);
-                        item.classList.add('sans-copie');
-                    }
                 }
                 syncRosterCounts();
             });
@@ -4839,20 +4853,13 @@
         if (isAbsent && absIdx < 0) absentsEleves.push(studentName);
         if (!isAbsent && absIdx >= 0) absentsEleves.splice(absIdx, 1);
 
-        if (isAbsent && elevesSansCopie.indexOf(studentName) < 0) {
-            elevesSansCopie.push(studentName);
-        } else if (!isAbsent) {
-            var scIdx = elevesSansCopie.indexOf(studentName);
-            if (scIdx >= 0) elevesSansCopie.splice(scIdx, 1);
-        }
-
         var item = null;
         document.querySelectorAll('.student-item[data-student-name]').forEach(function(node) {
             if (node.dataset.studentName === studentName) item = node;
         });
         if (item) {
             item.classList.toggle('absent', isAbsent);
-            item.classList.toggle('sans-copie', isAbsent);
+            item.classList.toggle('sans-copie', elevesSansCopie.indexOf(studentName) >= 0);
         }
         syncRosterCounts();
     }
@@ -5500,6 +5507,38 @@
         return '';
     }
 
+    function buildRepereLink(href, label) {
+        return '<a class="repere-link" href="' + href + '">' + escapeSuiviHtml(label) + '</a>';
+    }
+
+    function hasReperePlanningContent(sem) {
+        if (!sem) return false;
+        return !!(
+            ((sem.moduleBase || sem.module || '') + '').trim() ||
+            ((sem.seance || '') + '').trim()
+        );
+    }
+
+    function findMissingPlannedWeeks(classeDocId, contextDate) {
+        var prevue = allPrevue.find(function(p) { return p.id === classeDocId; });
+        if (!prevue || !Array.isArray(prevue.semaines)) return [];
+
+        var currentMonday = getMondayLocal(contextDate);
+        if (!currentMonday) return [];
+
+        return prevue.semaines.filter(function(sem) {
+            var semDate = parseLocalDate(sem && sem.date);
+            if (!semDate || semDate.getTime() >= currentMonday.getTime()) return false;
+            if (!hasReperePlanningContent(sem)) return false;
+            return !currentClassLogs.some(function(log) {
+                return sameWeekLocal(log && log.date, semDate);
+            });
+        }).sort(function(a, b) {
+            return formatDateISO(parseLocalDate(a && a.date) || new Date(0))
+                .localeCompare(formatDateISO(parseLocalDate(b && b.date) || new Date(0)));
+        });
+    }
+
     function showHistoryTop(classeDocId, classeLabel) {
         var topCard = document.getElementById('historyTopCard');
         var prevuBlock = document.getElementById('reperePrevuBlock');
@@ -5530,6 +5569,10 @@
         document.getElementById('historyClasseLabel').textContent = classeLabel;
         if (fullList) fullList.style.display = 'none';
 
+        var dashboardHref = 'dashboard.html?tab=planif&classe=' + encodeURIComponent(classeDocId) +
+            '&date=' + encodeURIComponent(contextDate);
+        var missingWeeks = findMissingPlannedWeeks(classeDocId, contextDate);
+
         if (weekInfo && weekInfo.week) {
             var sem = weekInfo.week;
             var prevuModule = sem.moduleBase || sem.module || 'Aucun module prévu';
@@ -5543,15 +5586,18 @@
             prevuExtra.push('Statut prévu : ' + escapeSuiviHtml(prevuStatut));
             if (prevuSituation && prevuSituation !== 'Normal') prevuExtra.push('Situation : ' + escapeSuiviHtml(prevuSituation));
             if (prevuNb > 0) prevuExtra.push(prevuNb + ' séance' + (prevuNb > 1 ? 's' : '') + ' prévues');
+            var prevuActionLabel = hasReperePlanningContent(sem) ? 'Modifier dans planif' : 'Planifier cette semaine';
             prevuBlock.innerHTML =
                 '<div class="repere-kicker">Prévisionnel</div>' +
                 '<div class="repere-title">' + escapeSuiviHtml(prevuModule) + '</div>' +
                 '<div class="repere-main">' + escapeSuiviHtml(prevuSeance) + '</div>' +
-                '<div class="repere-detail">' + prevuExtra.join(' · ') + '</div>';
+                '<div class="repere-detail">' + prevuExtra.join(' · ') + '</div>' +
+                '<div class="repere-actions">' + buildRepereLink(dashboardHref, prevuActionLabel) + '</div>';
         } else {
             prevuBlock.innerHTML =
                 '<div class="repere-kicker">Prévisionnel</div>' +
-                '<div class="repere-empty">Aucune donnée de progression trouvée pour cette date et cette classe.</div>';
+                '<div class="repere-empty">Aucune donnée de progression trouvée pour cette date et cette classe.</div>' +
+                '<div class="repere-actions">' + buildRepereLink(dashboardHref, 'Ouvrir planif') + '</div>';
         }
 
         var last = hasLogs ? currentClassLogs[0] : null;
@@ -5564,11 +5610,14 @@
             if (phases) reelExtra.push('Phase : ' + escapeSuiviHtml(phases));
             if (last.arret) reelExtra.push('Arrêt : ' + escapeSuiviHtml(last.arret));
             if (last.remarque) reelExtra.push('Remarque : ' + escapeSuiviHtml(last.remarque));
+            var lastHref = 'log.html?date=' + encodeURIComponent(last.date || contextDate) +
+                '&classe=' + encodeURIComponent(classeDocId);
             reelBlock.innerHTML =
                 '<div class="repere-kicker">Dernier réel saisi</div>' +
                 '<div class="repere-title">' + escapeSuiviHtml(last.date || 'Date inconnue') + '</div>' +
                 '<div class="repere-main">' + meteo + escapeSuiviHtml(last.moduleId || 'Module non renseigné') + (seancesL ? ' · ' + escapeSuiviHtml(seancesL) : '') + '</div>' +
-                '<div class="repere-detail">' + reelExtra.join(' · ') + '</div>';
+                '<div class="repere-detail">' + reelExtra.join(' · ') + '</div>' +
+                '<div class="repere-actions">' + buildRepereLink(lastHref, 'Ouvrir cette saisie') + '</div>';
         } else {
             reelBlock.innerHTML =
                 '<div class="repere-kicker">Dernier réel saisi</div>' +
@@ -5604,6 +5653,17 @@
             var seancesFaites = countSeancesDone();
             suiviProgressHtml = '<div class="repere-detail">Avancement module : <strong>' + seancesFaites + ' / ' + currentNbSeancesPrevues + '</strong> séance' + (currentNbSeancesPrevues > 1 ? 's' : '') + '</div>';
         }
+        var catchUpHtml = '';
+        if (missingWeeks.length > 0) {
+            var firstMissing = missingWeeks[0];
+            var firstMissingDate = formatDateISO(parseLocalDate(firstMissing.date) || new Date(firstMissing.date));
+            var missingLabel = missingWeeks.length > 1
+                ? ('Rattraper la 1re séance oubliée (' + missingWeeks.length + ' en attente)')
+                : 'Rattraper la séance oubliée';
+            var catchUpHref = 'log.html?date=' + encodeURIComponent(firstMissingDate) +
+                '&classe=' + encodeURIComponent(classeDocId);
+            catchUpHtml = '<div class="repere-actions">' + buildRepereLink(catchUpHref, missingLabel) + '</div>';
+        }
         var todoSummary = last ? getRepereTodoSummary(last.todoNext) : '';
         var suiteHtml = todoSummary
             ? '<div class="repere-detail" style="margin-top:6px;">Suite mémorisée : <strong>' + escapeSuiviHtml(todoSummary) + '</strong></div>'
@@ -5612,7 +5672,8 @@
             '<div class="repere-kicker">Écart / reste à faire</div>' +
             (ecartHtml || '<div class="repere-empty">Aucun écart particulier détecté.</div>') +
             suiviProgressHtml +
-            suiteHtml;
+            suiteHtml +
+            catchUpHtml;
 
         // Reminders
         var remHtml = '';

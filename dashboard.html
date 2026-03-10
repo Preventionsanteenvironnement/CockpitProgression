@@ -250,6 +250,10 @@
         .planif-table tbody tr:hover {
             background: rgba(99,102,241,0.06);
         }
+        .planif-row-focus td {
+            background: rgba(99,102,241,0.12);
+            box-shadow: inset 0 2px 0 rgba(129,140,248,0.65), inset 0 -2px 0 rgba(129,140,248,0.65);
+        }
         .planif-row-locked {
             background: rgba(148,163,184,0.12);
         }
@@ -855,6 +859,11 @@
     let unsubLogs = null;
     let currentPlanifClasseId = '';
     let planifDirty = false;
+    const dashboardParams = new URLSearchParams(window.location.search);
+    const requestedDashboardTab = (dashboardParams.get('tab') || '').trim();
+    const requestedPlanifClasseId = (dashboardParams.get('classe') || '').trim();
+    const requestedPlanifDate = (dashboardParams.get('date') || '').trim();
+    let dashboardDeepLinkApplied = false;
     // STUDENTS_STORAGE_KEY imported from utils.js
     let localStudents = [];
     const STUDENTS_DOC_REF = ['progression_config', 'students_roster'];
@@ -1277,6 +1286,17 @@
     });
 
     // ═══════ TABS ═══════
+    function activateDashboardTab(tabName) {
+        if (!tabName) return;
+        var btn = document.querySelector('.tab[data-tab="' + tabName + '"]');
+        var section = document.getElementById('tab' + capitalize(tabName));
+        if (!btn || !section) return;
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+        btn.classList.add('active');
+        section.classList.add('active');
+    }
+
     document.querySelectorAll('.tab').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var leavingPlanifWithUnsaved = planifDirty &&
@@ -1289,10 +1309,7 @@
                 setPlanifDirtyState(false);
                 renderPlanifView();
             }
-            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
-            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
-            btn.classList.add('active');
-            document.getElementById('tab' + capitalize(btn.dataset.tab)).classList.add('active');
+            activateDashboardTab(btn.dataset.tab);
         });
     });
 
@@ -1300,6 +1317,43 @@
         if (s === 'agenda') return 'Agenda';
         if (s === 'meteo') return 'Meteo';
         return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function focusRequestedPlanifWeek() {
+        if (!requestedPlanifDate) return;
+        var target = parseDate(requestedPlanifDate);
+        if (!target) return;
+        var weekKey = formatDateISODate(target);
+        var row = document.querySelector('#planifTableWrap tr[data-week-key="' + weekKey + '"]');
+        if (!row) return;
+        row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        row.classList.add('planif-row-focus');
+        window.clearTimeout(focusRequestedPlanifWeek._timer);
+        focusRequestedPlanifWeek._timer = window.setTimeout(function() {
+            row.classList.remove('planif-row-focus');
+        }, 2400);
+    }
+
+    function applyDashboardDeepLink() {
+        if (dashboardDeepLinkApplied) return;
+
+        if (requestedPlanifClasseId && allPrevue.some(function(p) { return p.id === requestedPlanifClasseId; })) {
+            currentPlanifClasseId = requestedPlanifClasseId;
+            var planifSelect = document.getElementById('planifClasseSelect');
+            if (planifSelect) planifSelect.value = requestedPlanifClasseId;
+            if (!planifDirty) renderPlanifView();
+        }
+
+        if (requestedDashboardTab) {
+            activateDashboardTab(requestedDashboardTab);
+        }
+
+        if ((requestedDashboardTab === 'planif' || !requestedDashboardTab) &&
+            (requestedPlanifClasseId || currentPlanifClasseId)) {
+            focusRequestedPlanifWeek();
+        }
+
+        dashboardDeepLinkApplied = !!(requestedDashboardTab || requestedPlanifClasseId || requestedPlanifDate);
     }
 
     // ═══════ LOAD ALL DATA (real-time) ═══════
@@ -1319,6 +1373,7 @@
         renderTimeline();
         populatePlanifClassFilter();
         if (!planifDirty) renderPlanifView();
+        applyDashboardDeepLink();
         renderAlertes();
         // Rafraîchir agenda si actif
         if (document.getElementById('tabAgenda') && document.getElementById('tabAgenda').classList.contains('active')) renderAgenda();
