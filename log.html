@@ -179,6 +179,20 @@
         .status-btn.selected.s-non_realise { border-color: var(--danger); background: var(--danger-light); }
         .status-btn.selected.s-non_realise .label { color: var(--danger); }
 
+        /* ── MINI STATUT PER-SÉANCE ── */
+        .statut-row { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+        .statut-row-label { font-size: .8em; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .mini-statut-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+        .mini-statut-btn { padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bg); color: var(--text2); font-size: .72em; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s; -webkit-tap-highlight-color: transparent; }
+        .mini-statut-btn:active { transform: scale(.95); }
+        .mini-statut-btn.selected { color: #fff; }
+        .mini-statut-btn.sel-realise { border-color: var(--success); background: var(--success); }
+        .mini-statut-btn.sel-en_cours { border-color: #06b6d4; background: #06b6d4; }
+        .mini-statut-btn.sel-a_terminer { border-color: #f97316; background: #f97316; }
+        .mini-statut-btn.sel-prevu { border-color: #6366f1; background: #6366f1; }
+        .mini-statut-btn.sel-reporte { border-color: var(--warning); background: var(--warning); }
+        .mini-statut-btn.sel-non_realise { border-color: var(--danger); background: var(--danger); }
+
         /* ── SITUATION RAPIDE ── */
         .situation-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
         .situation-btn {
@@ -1145,27 +1159,29 @@
     </div>
 
     <!-- CARD 2: STATUT -->
-    <div class="card">
-        <div class="card-title">📌 Statut</div>
-        <div class="status-grid">
-            <button class="status-btn s-realise" onclick="selectStatut('Réalisé', this)">
-                <span class="emoji">✅</span><span class="label">Réalisé</span>
-            </button>
-            <button class="status-btn s-en_cours" onclick="selectStatut('En cours', this)">
-                <span class="emoji">⏳</span><span class="label">En cours</span>
-            </button>
-            <button class="status-btn s-a_terminer" onclick="selectStatut('À terminer', this)">
-                <span class="emoji">⏭️</span><span class="label">À terminer</span>
-            </button>
-            <button class="status-btn s-prevu" onclick="selectStatut('Prévu', this)">
-                <span class="emoji">📋</span><span class="label">Prévu</span>
-            </button>
-            <button class="status-btn s-reporte" onclick="selectStatut('Reporté', this)">
-                <span class="emoji">🔄</span><span class="label">Reporté</span>
-            </button>
-            <button class="status-btn s-non_realise" onclick="selectStatut('Non réalisé', this)">
-                <span class="emoji">❌</span><span class="label">Non réalisé</span>
-            </button>
+    <div class="card" id="statutCard">
+        <div class="card-title" id="statutCardTitle">📌 Statut</div>
+        <div id="statutCardBody">
+            <div class="status-grid">
+                <button class="status-btn s-realise" onclick="selectStatut('Réalisé', this)">
+                    <span class="emoji">✅</span><span class="label">Réalisé</span>
+                </button>
+                <button class="status-btn s-en_cours" onclick="selectStatut('En cours', this)">
+                    <span class="emoji">⏳</span><span class="label">En cours</span>
+                </button>
+                <button class="status-btn s-a_terminer" onclick="selectStatut('À terminer', this)">
+                    <span class="emoji">⏭️</span><span class="label">À terminer</span>
+                </button>
+                <button class="status-btn s-prevu" onclick="selectStatut('Prévu', this)">
+                    <span class="emoji">📋</span><span class="label">Prévu</span>
+                </button>
+                <button class="status-btn s-reporte" onclick="selectStatut('Reporté', this)">
+                    <span class="emoji">🔄</span><span class="label">Reporté</span>
+                </button>
+                <button class="status-btn s-non_realise" onclick="selectStatut('Non réalisé', this)">
+                    <span class="emoji">❌</span><span class="label">Non réalisé</span>
+                </button>
+            </div>
         </div>
 
         <!-- VALIDÉ TOGGLE -->
@@ -2542,7 +2558,9 @@
 
         // ── Récupérer le nb de séances prévues pour ce module ──
         currentNbSeancesPrevues = (weekInfo && weekInfo.week.nbSeancesPrevues) ? parseInt(weekInfo.week.nbSeancesPrevues) || 0 : 0;
+        seancesStatutMap = {};  // Reset statut par séance
         buildSeancePicker(); // Reconstruire le picker avec l'info du nb séances
+        rebuildStatutCard(); // Restaurer le mode mono
 
         if (weekInfo && weekInfo.week.module) {
             var expectedId = extractModuleId(weekInfo.week.module);
@@ -2753,6 +2771,14 @@
             var suggestedSeance = '';
             var lastSeance = last.seance || '';
             var lastStatut = last.statut || '';
+
+            // Si le dernier log a seancesDetail, utiliser la DERNIÈRE séance de la liste
+            if (last.seancesDetail && last.seancesDetail.length > 0) {
+                var lastDetail = last.seancesDetail[last.seancesDetail.length - 1];
+                lastSeance = lastDetail.label || lastSeance;
+                lastStatut = lastDetail.statut || lastStatut;
+            }
+
             var lastSeanceMatch = lastSeance.match(/[Ss]éance\s*(\d+)/);
             var lastSeanceNum = lastSeanceMatch ? parseInt(lastSeanceMatch[1]) : 0;
 
@@ -2833,6 +2859,7 @@
                 // Compat legacy
                 selectedSeance = selectedSeances[0] || '';
                 buildTodoGrid();
+                rebuildStatutCard();
                 updateStatutInfo();
             });
             grid.appendChild(btn);
@@ -2882,6 +2909,106 @@
                 if (strongEl) strongEl.textContent = allS.join(' + ');
             }
         }
+    }
+
+    // ═══════ STATUT PAR SÉANCE (multi-séances) ═══════
+    var STATUT_OPTIONS = [
+        { val: 'Réalisé',       cls: 'sel-realise',       emoji: '✅', short: 'Fait' },
+        { val: 'En cours',      cls: 'sel-en_cours',      emoji: '⏳', short: 'En cours' },
+        { val: 'À terminer',    cls: 'sel-a_terminer',    emoji: '⏭️', short: 'À finir' },
+        { val: 'Prévu',         cls: 'sel-prevu',         emoji: '📋', short: 'Prévu' },
+        { val: 'Reporté',       cls: 'sel-reporte',       emoji: '🔄', short: 'Reporté' },
+        { val: 'Non réalisé',   cls: 'sel-non_realise',   emoji: '❌', short: 'Non fait' }
+    ];
+
+    // Sauvegarder le HTML original de la carte statut (mode mono) dès le chargement
+    var statutCardOriginalHTML = (function() {
+        var b = document.getElementById('statutCardBody');
+        return b ? b.innerHTML : '';
+    })();
+
+    function rebuildStatutCard() {
+        var body = document.getElementById('statutCardBody');
+        var title = document.getElementById('statutCardTitle');
+        if (!body) return;
+
+        // Fallback si pas encore capturé
+        if (!statutCardOriginalHTML) {
+            statutCardOriginalHTML = body.innerHTML;
+        }
+
+        // Nettoyer les statuts de séances qui ne sont plus sélectionnées
+        Object.keys(seancesStatutMap).forEach(function(k) {
+            if (selectedSeances.indexOf(k) < 0) delete seancesStatutMap[k];
+        });
+
+        if (selectedSeances.length <= 1) {
+            // ── MODE MONO : restaurer l'interface classique ──
+            title.textContent = '📌 Statut';
+            body.innerHTML = statutCardOriginalHTML;
+            // Re-synchroniser la sélection visuelle si un statut était déjà choisi
+            if (selectedStatut) {
+                var clsMap = { 'Réalisé':'s-realise', 'En cours':'s-en_cours', 'À terminer':'s-a_terminer', 'Prévu':'s-prevu', 'Reporté':'s-reporte', 'Non réalisé':'s-non_realise' };
+                var targetCls = clsMap[selectedStatut];
+                if (targetCls) {
+                    var btn = body.querySelector('.status-btn.' + targetCls);
+                    if (btn) btn.classList.add('selected');
+                }
+            }
+            return;
+        }
+
+        // ── MODE MULTI : une ligne par séance ──
+        title.textContent = '📌 Statut par séance';
+        var html = '';
+        selectedSeances.forEach(function(seanceLabel) {
+            var currentVal = seancesStatutMap[seanceLabel] || '';
+            html += '<div class="statut-row">';
+            html += '<div class="statut-row-label">' + seanceLabel + '</div>';
+            html += '<div class="mini-statut-grid">';
+            STATUT_OPTIONS.forEach(function(opt) {
+                var selClass = (currentVal === opt.val) ? ' selected ' + opt.cls : '';
+                html += '<button type="button" class="mini-statut-btn' + selClass + '" data-seance="' + seanceLabel + '" data-statut="' + opt.val + '" data-cls="' + opt.cls + '">' + opt.emoji + ' ' + opt.short + '</button>';
+            });
+            html += '</div></div>';
+        });
+        body.innerHTML = html;
+
+        // Attacher les event listeners
+        body.querySelectorAll('.mini-statut-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var seance = btn.dataset.seance;
+                var statut = btn.dataset.statut;
+                var cls = btn.dataset.cls;
+                // Dé-sélectionner les autres boutons de la même séance
+                var row = btn.closest('.statut-row');
+                row.querySelectorAll('.mini-statut-btn').forEach(function(b) {
+                    b.classList.remove('selected');
+                    STATUT_OPTIONS.forEach(function(o) { b.classList.remove(o.cls); });
+                });
+                // Toggle : si même statut, dé-sélectionner
+                if (seancesStatutMap[seance] === statut) {
+                    delete seancesStatutMap[seance];
+                } else {
+                    seancesStatutMap[seance] = statut;
+                    btn.classList.add('selected', cls);
+                }
+                // Calculer le statut dominant pour selectedStatut (rétrocompat)
+                computeDominantStatut();
+                updateStatutInfo();
+            });
+        });
+    }
+
+    function computeDominantStatut() {
+        var vals = [];
+        Object.keys(seancesStatutMap).forEach(function(k) { vals.push(seancesStatutMap[k]); });
+        if (vals.length === 0) { selectedStatut = ''; return; }
+        var prio = ['En cours', 'À terminer', 'Réalisé', 'Prévu', 'Reporté', 'Non réalisé'];
+        for (var i = 0; i < prio.length; i++) {
+            if (vals.indexOf(prio[i]) >= 0) { selectedStatut = prio[i]; return; }
+        }
+        selectedStatut = vals[0] || '';
     }
 
     function findDistributedSeances() {
@@ -3377,6 +3504,14 @@
         document.querySelectorAll('.status-btn').forEach(function(b) { b.classList.remove('selected'); });
         btn.classList.add('selected');
         selectedStatut = val;
+        // Sync avec seancesStatutMap si 1 séance sélectionnée
+        if (selectedSeances.length === 1) {
+            seancesStatutMap = {};
+            seancesStatutMap[selectedSeances[0]] = val;
+        } else if (selectedSeances.length === 0 && selectedSeance) {
+            seancesStatutMap = {};
+            seancesStatutMap[selectedSeance] = val;
+        }
         updateStatutInfo();
     };
 
@@ -5284,7 +5419,13 @@
             if (!classeDocId) { showToast('Sélectionnez une classe'); return; }
         } else {
             if (!classeDocId || !moduleId) { showToast('Sélectionnez classe et module'); return; }
-            if (!selectedStatut) { showToast('Sélectionnez le statut'); return; }
+            // Validation statut : multi-séances ou mono
+            if (selectedSeances.length > 1) {
+                var missing = selectedSeances.filter(function(s) { return !seancesStatutMap[s]; });
+                if (missing.length > 0) { showToast('Attribuez un statut à chaque séance'); return; }
+            } else if (!selectedStatut) {
+                showToast('Sélectionnez le statut'); return;
+            }
         }
 
         var btnSave = document.getElementById('btnSave');
@@ -5310,7 +5451,24 @@
                 phase: selectedPhaseSuivant
             } : null,
             seance: selectedSeance,
-            statut: selectedStatut,
+            statut: (function() {
+                // Si multi-séances, calculer le statut dominant pour rétrocompat
+                var vals = [];
+                Object.keys(seancesStatutMap).forEach(function(k) { vals.push(seancesStatutMap[k]); });
+                if (vals.length <= 1) return selectedStatut;
+                var prio = ['En cours', 'À terminer', 'Réalisé', 'Prévu', 'Reporté', 'Non réalisé'];
+                for (var i = 0; i < prio.length; i++) {
+                    if (vals.indexOf(prio[i]) >= 0) return prio[i];
+                }
+                return selectedStatut;
+            })(),
+            seancesDetail: (function() {
+                var keys = Object.keys(seancesStatutMap);
+                if (keys.length === 0) return [];
+                return keys.map(function(label) {
+                    return { label: label, statut: seancesStatutMap[label] };
+                });
+            })(),
             situation: selectedSituation || 'Normal',
             isValide: isValide,
             arret: document.getElementById('inputArret').value.trim(),
@@ -5699,6 +5857,7 @@
     let phaseAutreText = '';
     let selectedSeances = [];
     let seanceAutreText = '';
+    var seancesStatutMap = {};  // { "Séance 3": "Réalisé", "Séance 4": "En cours" }
     let currentNbSeancesPrevues = 0; // Nombre de séances prévues pour le module (depuis progression_prevue)
     let moduleAutreEnabled = false;
     let qualityData = {};

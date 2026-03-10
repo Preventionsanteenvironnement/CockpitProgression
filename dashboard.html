@@ -1406,6 +1406,13 @@
         document.getElementById('weekDetailOverlay').style.display = 'none';
     };
 
+    function getLastLogForClasse(classeId) {
+        var logs = logsByClasse[classeId] || [];
+        if (logs.length === 0) return null;
+        var sorted = logs.slice().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+        return sorted[0];
+    }
+
     function showWeekDetail(classeId, sem, classeDocId) {
         var panel = document.getElementById('weekDetail');
         var overlay = document.getElementById('weekDetailOverlay');
@@ -1510,11 +1517,39 @@
         if (matchLog) {
             html += '<div style="padding:12px; border-radius:10px; background:var(--success-light); border:1px solid rgba(16,185,129,0.3); font-size:0.82em; margin-bottom:14px;">';
             html += '<strong>✅ Log du ' + matchLog.date + '</strong><br>';
-            html += (matchLog.moduleId || '') + ' — ' + (matchLog.seance || '') + ' [' + (matchLog.statut || '') + ']';
+            // Affichage enrichi si seancesDetail multi
+            if (matchLog.seancesDetail && matchLog.seancesDetail.length > 1) {
+                html += (matchLog.moduleId || '');
+                matchLog.seancesDetail.forEach(function(sd) {
+                    html += '<br>→ ' + sd.label + ' [' + sd.statut + ']';
+                });
+            } else {
+                html += (matchLog.moduleId || '') + ' — ' + (matchLog.seance || '') + ' [' + (matchLog.statut || '') + ']';
+            }
             if (matchLog.qualite) html += '<br>Qualité : ' + matchLog.qualite;
             if (matchLog.absences > 0) html += '<br>Absences : ' + matchLog.absences;
             if (matchLog.absencesNoms) html += ' (' + matchLog.absencesNoms + ')';
+            if (matchLog.arret) html += '<br>📍 Arrêt : ' + matchLog.arret;
             if (matchLog.remarque) html += '<br>💬 ' + matchLog.remarque;
+            html += '</div>';
+        }
+
+        // ── BANDEAU "À PRÉPARER" (dernier log de cette classe) ──
+        var lastLogForPrep = getLastLogForClasse(classeId);
+        if (lastLogForPrep && (lastLogForPrep.arret || (lastLogForPrep.todoNext && lastLogForPrep.todoNext.label) || lastLogForPrep.remarque)) {
+            html += '<div style="padding:12px; border-radius:10px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); font-size:0.82em; margin-bottom:14px;">';
+            html += '<div style="font-weight:700; margin-bottom:6px;">📋 À préparer pour le prochain cours</div>';
+            if (lastLogForPrep.arret) html += '<div>📍 Arrêt précis : <strong>' + lastLogForPrep.arret + '</strong></div>';
+            if (lastLogForPrep.seancesDetail && lastLogForPrep.seancesDetail.length > 1) {
+                lastLogForPrep.seancesDetail.forEach(function(sd) {
+                    html += '<div style="margin-left:8px; color:var(--muted);">→ ' + sd.label + ' : ' + sd.statut + '</div>';
+                });
+            }
+            if (lastLogForPrep.todoNext && lastLogForPrep.todoNext.label) html += '<div>🎯 Todo : <strong>' + lastLogForPrep.todoNext.label + '</strong></div>';
+            if (lastLogForPrep.todoNext && lastLogForPrep.todoNext.note) html += '<div style="color:var(--muted);">💬 ' + lastLogForPrep.todoNext.note + '</div>';
+            if (lastLogForPrep.remarque && (!lastLogForPrep.todoNext || !lastLogForPrep.todoNext.note || lastLogForPrep.remarque !== lastLogForPrep.todoNext.note)) {
+                html += '<div style="color:var(--muted);">💬 ' + lastLogForPrep.remarque + '</div>';
+            }
             html += '</div>';
         }
 
@@ -3811,9 +3846,16 @@
         if (log) {
             var logDiv = document.createElement('div');
             logDiv.style.fontSize = '.73em'; logDiv.style.marginTop = '3px';
-            var seances = Array.isArray(log.seances) ? log.seances.join('+') : (log.seance||'');
             var meteo = log.meteo ? log.meteo.emoji + ' ' : '';
-            logDiv.innerHTML = '<span style="color:var(--success);">' + meteo + (log.moduleId||'') + ' — ' + seances + '</span>';
+            // Affichage enrichi si seancesDetail multi
+            if (log.seancesDetail && log.seancesDetail.length > 1) {
+                var detailParts = log.seancesDetail.map(function(sd) { return sd.label + ' [' + sd.statut + ']'; });
+                logDiv.innerHTML = '<span style="color:var(--success);">' + meteo + (log.moduleId||'') + '</span>';
+                logDiv.innerHTML += '<br><span style="color:var(--text2);">' + detailParts.join(' · ') + '</span>';
+            } else {
+                var seances = Array.isArray(log.seances) ? log.seances.join('+') : (log.seance||'');
+                logDiv.innerHTML = '<span style="color:var(--success);">' + meteo + (log.moduleId||'') + ' — ' + seances + '</span>';
+            }
             if (log.arret) logDiv.innerHTML += '<br><span style="color:var(--muted);">📍 ' + log.arret + '</span>';
             infoDiv.appendChild(logDiv);
         }
@@ -3903,12 +3945,20 @@
 
         // Log existant
         if (log) {
+            var logDetailHtml = '';
+            if (log.seancesDetail && log.seancesDetail.length > 1) {
+                logDetailHtml = '<strong>✅ Séance saisie :</strong> ' + meteo + (log.moduleId||'');
+                log.seancesDetail.forEach(function(sd) {
+                    logDetailHtml += '<br>→ ' + sd.label + ' [' + sd.statut + ']';
+                });
+            } else {
+                logDetailHtml = '<strong>✅ Séance saisie :</strong> ' + meteo + (log.moduleId||'') + (seances ? ' — '+seances : '') +
+                    (log.statut ? ' ['+log.statut+']' : '');
+            }
+            logDetailHtml += (log.arret ? '<br>📍 Arrêt : '+log.arret : '') +
+                (log.remarque ? '<br>💬 '+log.remarque : '');
             html += '<div style="padding:11px 12px;border-radius:9px;background:var(--success-light);border:1px solid rgba(16,185,129,0.3);font-size:.83em;margin-bottom:12px;">' +
-                '<strong>✅ Séance saisie :</strong> ' + meteo + (log.moduleId||'') + (seances ? ' — '+seances : '') +
-                (log.statut ? ' ['+log.statut+']' : '') +
-                (log.arret ? '<br>📍 Arrêt : '+log.arret : '') +
-                (log.remarque ? '<br>💬 '+log.remarque : '') +
-                '</div>';
+                logDetailHtml + '</div>';
         }
 
         // Actions
