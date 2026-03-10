@@ -468,6 +468,79 @@
         .banner-info .banner-detail { color:#93c5fd; }
         .banner-situation .banner-detail { color:#fcd34d; }
 
+        .repere-grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .repere-block {
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+        .repere-block.repere-prevu {
+            background: rgba(99,102,241,0.12);
+            border-color: rgba(129,140,248,0.45);
+        }
+        .repere-block.repere-reel {
+            background: rgba(16,185,129,0.12);
+            border-color: rgba(16,185,129,0.4);
+        }
+        .repere-block.repere-ecart {
+            background: rgba(245,158,11,0.10);
+            border-color: rgba(245,158,11,0.35);
+        }
+        .repere-kicker {
+            font-size: .72em;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .repere-title {
+            font-size: 1em;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 4px;
+            line-height: 1.25;
+        }
+        .repere-main {
+            font-size: .86em;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.35;
+            margin-bottom: 4px;
+        }
+        .repere-detail {
+            font-size: .8em;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+        .repere-alert {
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: .8em;
+            line-height: 1.4;
+        }
+        .repere-alert.warn {
+            background: rgba(245,158,11,0.14);
+            border: 1px solid rgba(245,158,11,0.35);
+            color: #fcd34d;
+        }
+        .repere-alert.info {
+            background: rgba(96,165,250,0.12);
+            border: 1px solid rgba(96,165,250,0.35);
+            color: #bfdbfe;
+        }
+        .repere-empty {
+            color: var(--muted);
+            font-size: .8em;
+            line-height: 1.4;
+        }
+
         /* ── QUALITÉ ÉTENDUE ── */
         .quality-dim { margin-bottom:10px; }
         .quality-dim-title { font-size:.72em; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
@@ -903,8 +976,12 @@
     <!-- HISTORIQUE + RAPPELS (en haut) -->
     <div id="historyTopCard" style="display:none;">
         <div class="card">
-            <div class="card-title">📋 Dernière séance <span style="background:var(--primary-light);color:var(--primary-dark);padding:2px 9px;border-radius:20px;font-size:.75em;font-weight:700;" id="historyClasseLabel"></span></div>
-            <div id="lastLogBannerNew"></div>
+            <div class="card-title">🧭 Repères de séance <span style="background:var(--primary-light);color:var(--primary-dark);padding:2px 9px;border-radius:20px;font-size:.75em;font-weight:700;" id="historyClasseLabel"></span></div>
+            <div id="repereGrid" class="repere-grid">
+                <div id="reperePrevuBlock" class="repere-block repere-prevu"></div>
+                <div id="repereReelBlock" class="repere-block repere-reel"></div>
+                <div id="repereEcartBlock" class="repere-block repere-ecart"></div>
+            </div>
             <div id="remindersBannerNew"></div>
             <div id="historyShortListNew"></div>
             <button id="historyToggleBtnNew" onclick="toggleFullHistoryNew()" style="background:none;border:none;color:var(--muted);font-size:.78em;font-weight:700;cursor:pointer;padding:4px 0;font-family:inherit;display:none;">▼ Voir tout l'historique</button>
@@ -2304,28 +2381,15 @@
 
         // Load last log + history for this class
         await loadLastLog(classeDocId, prevue.classeId);
-        // Afficher historique en haut de page
-        showHistoryTop(classeDocId, prevue.classeId);
         // Situation auto depuis progression prévue
         var weekInfoSit = findWeekByDate(classeDocId, contextDate) || findCurrentWeekPrevue(classeDocId, contextDate);
-        if (weekInfoSit) {
-            var sitPrevue = (weekInfoSit.week.situation || '').toLowerCase();
-            var situAutoCard = document.getElementById('situationAutoCard');
-            if (situAutoCard) {
-                if (sitPrevue && sitPrevue !== 'normal' && sitPrevue !== '' && sitPrevue !== 'n/a') {
-                    situAutoCard.style.display = 'block';
-                    situAutoCard.innerHTML = '<div class="banner banner-situation" style="margin-bottom:12px;">' +
-                        '<div class="banner-title">📋 Situation prévue cette semaine : ' + weekInfoSit.week.situation + '</div>' +
-                        '<div class="banner-detail">D\'après votre progression. Si confirmé, sélectionnez-la ci-dessous.</div></div>';
-                } else { situAutoCard.style.display = 'none'; }
-            }
-        }
+        var situAutoCard = document.getElementById('situationAutoCard');
+        if (situAutoCard) situAutoCard.style.display = 'none';
 
         // Rebuild checklist (uses currentClassLogs for smart distribution)
         buildChecklist();
-
-        // Check for module delay vs planned progression
-        await checkModuleDelay(classeDocId);
+        // Afficher les repères en haut de page
+        showHistoryTop(classeDocId, prevue.classeId);
 
         // Rebuild checklist when module changes too
         selectModule.onchange = function() {
@@ -5424,12 +5488,36 @@
     }
 
     // ── HISTORIQUE TOP ──
+    function getRepereTodoSummary(todoNext) {
+        if (!todoNext) return '';
+        if (typeof todoNext === 'string') return todoNext;
+        if (typeof todoNext === 'object') {
+            var parts = [];
+            if (todoNext.label) parts.push(todoNext.label);
+            if (todoNext.note) parts.push(todoNext.note);
+            return parts.join(' — ');
+        }
+        return '';
+    }
+
     function showHistoryTop(classeDocId, classeLabel) {
         var topCard = document.getElementById('historyTopCard');
-        var lastBanner = document.getElementById('lastLogBannerNew');
+        var prevuBlock = document.getElementById('reperePrevuBlock');
+        var reelBlock = document.getElementById('repereReelBlock');
+        var ecartBlock = document.getElementById('repereEcartBlock');
         var remindersBanner = document.getElementById('remindersBannerNew');
         var shortList = document.getElementById('historyShortListNew');
-        if (!topCard || !currentClassLogs || currentClassLogs.length === 0) {
+        var toggleBtn = document.getElementById('historyToggleBtnNew');
+        var fullList = document.getElementById('historyFullListNew');
+        if (!topCard || !prevuBlock || !reelBlock || !ecartBlock) {
+            return;
+        }
+
+        var contextDate = getContextDateISO();
+        var weekInfo = findWeekByDate(classeDocId, contextDate) || findCurrentWeekPrevue(classeDocId, contextDate);
+        var hasLogs = !!(currentClassLogs && currentClassLogs.length > 0);
+
+        if (!weekInfo && !hasLogs) {
             if (topCard) topCard.style.display = 'none';
             return;
         }
@@ -5440,52 +5528,131 @@
         if (oldLastLog) oldLastLog.style.display = 'none';
         if (oldHistory) oldHistory.style.display = 'none';
         document.getElementById('historyClasseLabel').textContent = classeLabel;
-        var last = currentClassLogs[0];
-        var seancesL = Array.isArray(last.seances) ? last.seances.join(' + ') : (last.seance || '');
-        var phases = Array.isArray(last.phases) ? last.phases.join('+') : (last.phase || '');
-        var meteo = last.meteo ? last.meteo.emoji + ' ' : '';
-        lastBanner.innerHTML = '<div class="history-compact"><div class="history-compact-header">' +
-            '<span class="history-compact-date">' + (last.date||'') + '</span>' +
-            '<span class="history-compact-statut">' + (last.statut||'') + ' ' + meteo + '</span>' +
-            '</div><div class="history-compact-detail">' +
-            (last.moduleId||'') + ' — ' + seancesL + (phases?' ['+phases+']':'') +
-            (last.arret ? '<br>📍 Arrêt : <em>' + last.arret + '</em>' : '') +
-            '</div></div>';
+        if (fullList) fullList.style.display = 'none';
+
+        if (weekInfo && weekInfo.week) {
+            var sem = weekInfo.week;
+            var prevuModule = sem.moduleBase || sem.module || 'Aucun module prévu';
+            var prevuSeance = sem.seance || 'Séance non définie';
+            var prevuPhase = sem.phase || 'Cours';
+            var prevuSituation = sem.situation || 'Normal';
+            var prevuStatut = sem.statut || 'Prévu';
+            var prevuNb = sem.nbSeancesPrevues ? parseInt(sem.nbSeancesPrevues, 10) || 0 : 0;
+            var prevuExtra = [];
+            prevuExtra.push('Phase : ' + escapeSuiviHtml(prevuPhase));
+            prevuExtra.push('Statut prévu : ' + escapeSuiviHtml(prevuStatut));
+            if (prevuSituation && prevuSituation !== 'Normal') prevuExtra.push('Situation : ' + escapeSuiviHtml(prevuSituation));
+            if (prevuNb > 0) prevuExtra.push(prevuNb + ' séance' + (prevuNb > 1 ? 's' : '') + ' prévues');
+            prevuBlock.innerHTML =
+                '<div class="repere-kicker">Prévisionnel</div>' +
+                '<div class="repere-title">' + escapeSuiviHtml(prevuModule) + '</div>' +
+                '<div class="repere-main">' + escapeSuiviHtml(prevuSeance) + '</div>' +
+                '<div class="repere-detail">' + prevuExtra.join(' · ') + '</div>';
+        } else {
+            prevuBlock.innerHTML =
+                '<div class="repere-kicker">Prévisionnel</div>' +
+                '<div class="repere-empty">Aucune donnée de progression trouvée pour cette date et cette classe.</div>';
+        }
+
+        var last = hasLogs ? currentClassLogs[0] : null;
+        if (last) {
+            var seancesL = Array.isArray(last.seances) ? last.seances.join(' + ') : (last.seance || '');
+            var phases = Array.isArray(last.phases) ? last.phases.join(' + ') : (last.phase || '');
+            var meteo = last.meteo ? last.meteo.emoji + ' ' : '';
+            var reelExtra = [];
+            reelExtra.push('Statut : ' + escapeSuiviHtml(last.statut || ''));
+            if (phases) reelExtra.push('Phase : ' + escapeSuiviHtml(phases));
+            if (last.arret) reelExtra.push('Arrêt : ' + escapeSuiviHtml(last.arret));
+            if (last.remarque) reelExtra.push('Remarque : ' + escapeSuiviHtml(last.remarque));
+            reelBlock.innerHTML =
+                '<div class="repere-kicker">Dernier réel saisi</div>' +
+                '<div class="repere-title">' + escapeSuiviHtml(last.date || 'Date inconnue') + '</div>' +
+                '<div class="repere-main">' + meteo + escapeSuiviHtml(last.moduleId || 'Module non renseigné') + (seancesL ? ' · ' + escapeSuiviHtml(seancesL) : '') + '</div>' +
+                '<div class="repere-detail">' + reelExtra.join(' · ') + '</div>';
+        } else {
+            reelBlock.innerHTML =
+                '<div class="repere-kicker">Dernier réel saisi</div>' +
+                '<div class="repere-empty">Aucune séance saisie pour cette classe. Vous partez du prévisionnel.</div>';
+        }
+
+        var ecartHtml = '';
+        if (weekInfo && weekInfo.week && last) {
+            var expectedModule = weekInfo.week.module || '';
+            var expectedSeance = weekInfo.week.seance || '';
+            var lastModule = last.moduleId || '';
+            var lastSeance = last.seance || '';
+
+            if (expectedModule && expectedModule !== 'N/A' && extractModuleId(lastModule) !== extractModuleId(expectedModule)) {
+                ecartHtml += '<div class="repere-alert warn"><strong>Retard / écart détecté</strong><br>Prévu : <strong>' + escapeSuiviHtml(expectedModule) + '</strong><br>Dernier réel : <strong>' + escapeSuiviHtml(lastModule || 'Non saisi') + '</strong></div>';
+            } else if (expectedSeance && lastSeance && expectedSeance !== 'N/A') {
+                var expectedNum = parseInt(expectedSeance.replace(/[^\d]/g, ''), 10) || 0;
+                var lastNum = parseInt(lastSeance.replace(/[^\d]/g, ''), 10) || 0;
+                if (isStatutContinuation(last.statut || '')) {
+                    ecartHtml += '<div class="repere-alert warn"><strong>Séance à reprendre</strong><br>La dernière saisie est marquée <strong>' + escapeSuiviHtml(last.statut || '') + '</strong>. Il faut terminer <strong>' + escapeSuiviHtml(lastSeance) + '</strong> avant de poursuivre normalement.</div>';
+                } else if (lastNum && expectedNum && lastNum < expectedNum - 1) {
+                    ecartHtml += '<div class="repere-alert warn"><strong>Retard détecté</strong><br>Prévu : <strong>' + escapeSuiviHtml(expectedSeance) + '</strong><br>Dernier réel : <strong>' + escapeSuiviHtml(lastSeance) + '</strong></div>';
+                } else {
+                    ecartHtml += '<div class="repere-alert info"><strong>Repère de progression</strong><br>Le dernier réel est cohérent avec le prévisionnel ou l’écart est faible.</div>';
+                }
+            }
+        } else if (weekInfo && weekInfo.week && !last) {
+            ecartHtml += '<div class="repere-alert info"><strong>Repère de progression</strong><br>Aucun réel saisi pour cette classe. Basez-vous sur le prévisionnel puis enregistrez la séance du jour.</div>';
+        }
+
+        var suiviProgressHtml = '';
+        if (currentNbSeancesPrevues > 0) {
+            var seancesFaites = countSeancesDone();
+            suiviProgressHtml = '<div class="repere-detail">Avancement module : <strong>' + seancesFaites + ' / ' + currentNbSeancesPrevues + '</strong> séance' + (currentNbSeancesPrevues > 1 ? 's' : '') + '</div>';
+        }
+        var todoSummary = last ? getRepereTodoSummary(last.todoNext) : '';
+        var suiteHtml = todoSummary
+            ? '<div class="repere-detail" style="margin-top:6px;">Suite mémorisée : <strong>' + escapeSuiviHtml(todoSummary) + '</strong></div>'
+            : '';
+        ecartBlock.innerHTML =
+            '<div class="repere-kicker">Écart / reste à faire</div>' +
+            (ecartHtml || '<div class="repere-empty">Aucun écart particulier détecté.</div>') +
+            suiviProgressHtml +
+            suiteHtml;
 
         // Reminders
         var remHtml = '';
-        var cl = last.checklist || {};
-        if (cl.copies_ramassees && !cl.copies_corrigees) remHtml += '<div class="banner banner-warn"><div class="banner-title">📝 Copies à corriger</div></div>';
-        if (cl.copies_corrigees && !cl.copies_rendues) remHtml += '<div class="banner banner-warn"><div class="banner-title">📤 Copies à rendre</div></div>';
-        if (cl.eval_corrigee && !cl.eval_rendue) remHtml += '<div class="banner banner-warn"><div class="banner-title">📤 Évaluation à rendre</div></div>';
-        if (last.todos && Array.isArray(last.todos)) {
-            last.todos.forEach(function(t) {
-                remHtml += '<div class="banner banner-info"><div class="banner-title">📌 ' + (t.label||t) + '</div>' +
-                    (t.note ? '<div class="banner-detail">'+t.note+'</div>' : '') + '</div>';
-            });
-        } else if (last.todoNext && last.todoNext.label) {
-            remHtml += '<div class="banner banner-info"><div class="banner-title">📌 ' + last.todoNext.label + '</div>' +
-                (last.todoNext.note ? '<div class="banner-detail">'+last.todoNext.note+'</div>' : '') + '</div>';
+        var cl = last ? (last.checklist || {}) : {};
+        if (last) {
+            if (cl.copies_ramassees && !cl.copies_corrigees) remHtml += '<div class="banner banner-warn"><div class="banner-title">📝 Copies à corriger</div></div>';
+            if (cl.copies_corrigees && !cl.copies_rendues) remHtml += '<div class="banner banner-warn"><div class="banner-title">📤 Copies à rendre</div></div>';
+            if (cl.eval_corrigee && !cl.eval_rendue) remHtml += '<div class="banner banner-warn"><div class="banner-title">📤 Évaluation à rendre</div></div>';
+            if (last.todos && Array.isArray(last.todos)) {
+                last.todos.forEach(function(t) {
+                    remHtml += '<div class="banner banner-info"><div class="banner-title">📌 ' + escapeSuiviHtml(t.label || t) + '</div>' +
+                        (t.note ? '<div class="banner-detail">' + escapeSuiviHtml(t.note) + '</div>' : '') + '</div>';
+                });
+            } else if (last.todoNext && last.todoNext.label) {
+                remHtml += '<div class="banner banner-info"><div class="banner-title">📌 ' + escapeSuiviHtml(last.todoNext.label) + '</div>' +
+                    (last.todoNext.note ? '<div class="banner-detail">' + escapeSuiviHtml(last.todoNext.note) + '</div>' : '') + '</div>';
+            }
         }
         remindersBanner.innerHTML = remHtml;
 
         // Short history
         shortList.innerHTML = '';
-        currentClassLogs.slice(1,4).forEach(function(log) {
-            var d = document.createElement('div');
-            d.className = 'history-compact';
-            var sl = Array.isArray(log.seances)?log.seances.join('+'):(log.seance||'');
-            var m = log.meteo ? log.meteo.emoji : '';
-            d.innerHTML = '<div class="history-compact-header"><span class="history-compact-date">'+
-                (log.date||'')+'</span><span class="history-compact-statut">'+(log.statut||'')+' '+m+
-                '</span></div><div class="history-compact-detail">'+(log.moduleId||'')+' — '+sl+'</div>';
-            shortList.appendChild(d);
-        });
-        var toggleBtn = document.getElementById('historyToggleBtnNew');
-        if (currentClassLogs.length > 4) {
+        if (hasLogs) {
+            currentClassLogs.slice(1,4).forEach(function(log) {
+                var d = document.createElement('div');
+                d.className = 'history-compact';
+                var sl = Array.isArray(log.seances) ? log.seances.join('+') : (log.seance || '');
+                var m = log.meteo ? log.meteo.emoji : '';
+                d.innerHTML = '<div class="history-compact-header"><span class="history-compact-date">' +
+                    escapeSuiviHtml(log.date || '') + '</span><span class="history-compact-statut">' + escapeSuiviHtml(log.statut || '') + ' ' + m +
+                    '</span></div><div class="history-compact-detail">' + escapeSuiviHtml(log.moduleId || '') + ' — ' + escapeSuiviHtml(sl) + '</div>';
+                shortList.appendChild(d);
+            });
+        }
+        if (hasLogs && currentClassLogs.length > 4) {
             toggleBtn.style.display = 'block';
             toggleBtn.textContent = '▼ Voir tout (' + currentClassLogs.length + ' séances)';
-        } else { toggleBtn.style.display = 'none'; }
+        } else {
+            toggleBtn.style.display = 'none';
+        }
     }
 
     window.toggleFullHistoryNew = function() {
