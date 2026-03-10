@@ -749,6 +749,72 @@
         .suivi-note-adjust-fields.active {
             display: grid; grid-template-columns: 110px 1fr;
         }
+
+        /* ── GRILLE SAISIE RAPIDE ── */
+        .bulk-grid-panel {
+            display: none; margin-top: 12px;
+        }
+        .bulk-grid-panel.active { display: block; }
+        .bulk-grid-toolbar {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+        }
+        .bulk-grid-toolbar-btn {
+            padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px;
+            background: var(--surface-2); color: var(--muted); cursor: pointer;
+            font-size: 0.78em; font-weight: 700; font-family: inherit; transition: all 0.15s;
+        }
+        .bulk-grid-toolbar-btn:hover { border-color: var(--primary); color: var(--text); }
+        .bulk-grid-toolbar-btn.prefill { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); color: #34d399; }
+        .bulk-grid-toolbar-btn.prefill:hover { border-color: var(--success); background: rgba(16,185,129,0.2); }
+        .bulk-grid-toolbar-btn.save-all {
+            border-color: rgba(16,185,129,0.5); background: linear-gradient(135deg, #10b981, #059669);
+            color: white; font-weight: 800;
+        }
+        .bulk-grid-toolbar-btn.save-all:hover { opacity: 0.9; }
+        .bulk-grid-toolbar-btn.save-all:disabled { opacity: 0.5; cursor: not-allowed; }
+        .bulk-grid-cards {
+            display: grid; gap: 8px; max-height: 55vh; overflow-y: auto;
+            padding-right: 4px;
+        }
+        .bulk-card {
+            padding: 10px 12px; border: 2px solid var(--border); border-radius: 12px;
+            background: var(--surface-2); transition: border-color 0.15s;
+        }
+        .bulk-card.filled { border-color: rgba(16,185,129,0.35); }
+        .bulk-card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px;
+        }
+        .bulk-card-name {
+            font-size: 0.82em; font-weight: 800; color: var(--text);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .bulk-card-note {
+            font-size: 0.82em; font-weight: 900; padding: 3px 10px;
+            border-radius: 999px; flex-shrink: 0; margin-left: 8px;
+        }
+        .bulk-card-note.good { background: var(--success-light); color: var(--success); }
+        .bulk-card-note.warn { background: var(--warning-light); color: #92400e; }
+        .bulk-card-note.bad { background: var(--danger-light); color: var(--danger); }
+        .bulk-card-note.empty { background: rgba(100,116,139,0.15); color: var(--muted); }
+        .bulk-card-chips {
+            display: flex; flex-wrap: wrap; gap: 5px;
+        }
+        .bulk-chip {
+            padding: 5px 9px; border: 2px solid var(--border); border-radius: 8px;
+            background: var(--bg); color: var(--muted); cursor: pointer;
+            font-size: 0.7em; font-weight: 700; font-family: inherit;
+            transition: all 0.12s; -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bulk-chip:active { transform: scale(0.94); }
+        .bulk-chip.good { border-color: var(--success); background: var(--success-light); color: var(--success); }
+        .bulk-chip.warning { border-color: var(--warning); background: var(--warning-light); color: #92400e; }
+        .bulk-chip.danger { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+        .bulk-chip.neutral { border-color: var(--primary); background: var(--primary-light); color: #818cf8; }
+        .bulk-grid-status {
+            margin-top: 8px; font-size: 0.74em; color: var(--muted); text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -1017,8 +1083,17 @@
                 </div>
                 <div id="suiviCriteriaGrid" class="suivi-mini-grid"></div>
                 <div class="suivi-bulk-bar">
-                    <button type="button" id="suiviBulkNoteBtn" class="suivi-bulk-btn">⚡ Noter rapidement les élèves restants</button>
-                    <div class="suivi-bulk-note">Applique une même note manuelle aux élèves restants non absents. La fiche individuelle reste disponible ensuite pour affiner.</div>
+                    <button type="button" id="suiviBulkNoteBtn" class="suivi-bulk-btn">⚡ Grille de saisie rapide</button>
+                    <div class="suivi-bulk-note">Ouvre une grille pour noter tous les élèves restants d'un coup. La fiche individuelle reste disponible ensuite pour affiner.</div>
+                </div>
+                <div id="suiviBulkGridPanel" class="bulk-grid-panel">
+                    <div class="bulk-grid-toolbar">
+                        <button type="button" id="bulkPrefillBtn" class="bulk-grid-toolbar-btn prefill">✅ Tout « Bien »</button>
+                        <button type="button" id="bulkResetBtn" class="bulk-grid-toolbar-btn">🔄 Réinitialiser</button>
+                        <button type="button" id="bulkSaveAllBtn" class="bulk-grid-toolbar-btn save-all">💾 Enregistrer tout</button>
+                    </div>
+                    <div id="bulkGridCards" class="bulk-grid-cards"></div>
+                    <div id="bulkGridStatus" class="bulk-grid-status"></div>
                 </div>
                 <div id="suiviEmpty" class="suivi-empty" style="display:none;"></div>
                 <div id="suiviStudentsGrid" class="students-checklist suivi-students"></div>
@@ -1568,6 +1643,8 @@
     let currentSuiviEleveCode = '';
     let currentSuiviSaisie = null;
     let suiviRefreshTimer = null;
+    let bulkGridVisible = false;
+    let bulkGridState = {}; // { code: { travail: value, oral: value, ..., bavardage, telephone } }
 
     // ═══════ AUTH ═══════
     onAuthStateChanged(auth, (user) => {
@@ -3241,10 +3318,25 @@
 
         closeBtn.addEventListener('click', closeSuiviModal);
         if (bulkBtn) {
+            bulkBtn.textContent = '⚡ Grille de saisie rapide';
             bulkBtn.addEventListener('click', function() {
-                applyBulkSuiviNote().catch(function(err) {
-                    console.error('Bulk suivi error:', err);
-                    showToast('Erreur lot : ' + err.message);
+                toggleBulkGrid();
+            });
+        }
+        var prefillBtn = document.getElementById('bulkPrefillBtn');
+        if (prefillBtn) {
+            prefillBtn.addEventListener('click', function() { prefillBulkAll(); });
+        }
+        var resetBtn = document.getElementById('bulkResetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() { resetBulkGrid(); });
+        }
+        var saveAllBtn = document.getElementById('bulkSaveAllBtn');
+        if (saveAllBtn) {
+            saveAllBtn.addEventListener('click', function() {
+                saveBulkGrid().catch(function(err) {
+                    console.error('Bulk grid save error:', err);
+                    showToast('Erreur sauvegarde : ' + err.message);
                 });
             });
         }
@@ -3490,6 +3582,15 @@
             renderSuiviStudents();
             updateSuiviSummary();
             if (document.getElementById('suiviModal').classList.contains('active')) closeSuiviModal();
+            // Fermer la grille rapide si ouverte
+            if (bulkGridVisible) {
+                bulkGridVisible = false;
+                var bgPanel = document.getElementById('suiviBulkGridPanel');
+                if (bgPanel) bgPanel.classList.remove('active');
+                var bgBtn = document.getElementById('suiviBulkNoteBtn');
+                if (bgBtn) bgBtn.textContent = '⚡ Grille de saisie rapide';
+                bulkGridState = {};
+            }
             return;
         }
 
@@ -3730,74 +3831,322 @@
         });
     }
 
-    async function applyBulkSuiviNote() {
+    /* ══════════════════════════════════════════════════════
+       GRILLE DE SAISIE RAPIDE (remplace l'ancien prompt)
+       ══════════════════════════════════════════════════════ */
+
+    function toggleBulkGrid() {
         var context = getSuiviContext();
         if (!context.ready) {
             showToast(context.reason || 'Contexte de suivi incomplet.');
             return;
         }
-
         var targets = getBulkSuiviTargets();
         if (!targets.length) {
             showToast('Aucun élève restant à noter.');
             return;
         }
+        var panel = document.getElementById('suiviBulkGridPanel');
+        if (!panel) return;
 
-        var rawNote = window.prompt(
-            'Note rapide à appliquer aux ' + targets.length + ' élève(s) restants (0 à 20, pas de 0,5 possible) :',
-            '14'
-        );
-        if (rawNote === null) return;
+        bulkGridVisible = !bulkGridVisible;
+        panel.classList.toggle('active', bulkGridVisible);
 
-        var note = parseFloat(String(rawNote).replace(',', '.'));
-        if (Number.isNaN(note) || note < 0 || note > 20) {
-            showToast('Note invalide.');
-            return;
-        }
-        note = Math.round(note * 2) / 2;
+        var btn = document.getElementById('suiviBulkNoteBtn');
+        if (btn) btn.textContent = bulkGridVisible ? '✕ Fermer la grille rapide' : '⚡ Grille de saisie rapide';
 
-        var comment = window.prompt(
-            'Commentaire commun optionnel pour cette saisie rapide :',
-            ''
-        );
-        if (comment === null) return;
-        comment = comment.trim();
-
-        var ok = window.confirm(
-            'Appliquer ' + note + '/20 à ' + targets.length + ' élève(s) restants ?\n\n' +
-            'Les élèves déjà saisis ou marqués absents ne seront pas modifiés.'
-        );
-        if (!ok) return;
-
-        var bulkBtn = document.getElementById('suiviBulkNoteBtn');
-        if (bulkBtn) {
-            bulkBtn.disabled = true;
-            bulkBtn.textContent = '⏳ Saisie en lot...';
-        }
-
-        try {
-            for (var i = 0; i < targets.length; i++) {
-                var student = targets[i];
-                var docRef = doc(db, 'resultats', student.code, 'suivi', context.docId);
-                var existingSnap = await getDoc(docRef);
-                var oldDoc = existingSnap.exists() ? existingSnap.data() : null;
-                var payload = buildBulkSuiviPayload(context, student, note, comment);
-                await setDoc(docRef, payload);
-                await updateSuiviStats(student.code, note, payload, oldDoc);
-                syncSuiviPresenceToRoster(student.name, false);
-            }
-
-            showToast('⚡ ' + targets.length + ' élève(s) notés à ' + note + '/20 · séance à enregistrer ensuite');
-            await refreshSuiviSection();
-        } finally {
-            if (bulkBtn) {
-                bulkBtn.disabled = false;
-                bulkBtn.textContent = '⚡ Noter rapidement les élèves restants';
-            }
+        if (bulkGridVisible) {
+            initBulkGridState(targets);
+            renderBulkGrid();
         }
     }
 
-    function buildBulkSuiviPayload(context, student, note, comment) {
+    function initBulkGridState(targets) {
+        bulkGridState = {};
+        targets.forEach(function(student) {
+            bulkGridState[student.code] = {
+                travail: null, oral: null, attention: null,
+                porteVue: null, coursAJour: null, autonomie: null,
+                initiative: null, securite: null, planClasse: null,
+                bavardage: 'aucun', telephone: 'ok'
+            };
+        });
+    }
+
+    function getActiveCriteriaKeys() {
+        return Object.keys(suiviConfig.criteres).filter(function(key) {
+            return !!suiviConfig.criteres[key];
+        });
+    }
+
+    function getShortLabel(critere) {
+        var map = {
+            travail: 'Travail', oral: 'Oral', attention: 'Attention',
+            porteVue: 'P-Vue', coursAJour: 'Cours', autonomie: 'Autonom.',
+            initiative: 'Initiative', securite: 'Cadre', planClasse: 'Place'
+        };
+        return map[critere] || critere;
+    }
+
+    function cycleBulkValue(code, critere) {
+        var options = SUIVI_OPTION_SETS[critere];
+        if (!options || !bulkGridState[code]) return;
+        var current = bulkGridState[code][critere];
+        var idx = -1;
+        for (var i = 0; i < options.length; i++) {
+            if (String(options[i].value) === String(current)) { idx = i; break; }
+        }
+        var next = (idx + 1) % options.length;
+        var nextVal = options[next].value;
+        // Pour oral, on garde le type numérique sauf pour 'ne'
+        if (critere === 'oral' && nextVal !== 'ne') {
+            bulkGridState[code][critere] = parseInt(nextVal, 10);
+        } else {
+            bulkGridState[code][critere] = nextVal;
+        }
+        renderBulkGrid();
+    }
+
+    function getOptionDisplay(critere, value) {
+        var options = SUIVI_OPTION_SETS[critere] || [];
+        for (var i = 0; i < options.length; i++) {
+            if (String(options[i].value) === String(value)) return options[i];
+        }
+        return null;
+    }
+
+    function computeBulkNote(code) {
+        var data = bulkGridState[code];
+        if (!data) return null;
+        // Vérifier qu'au moins un critère actif est renseigné
+        var activeKeys = getActiveCriteriaKeys();
+        var hasValue = activeKeys.some(function(key) {
+            return data[key] !== null && data[key] !== undefined && data[key] !== '';
+        });
+        if (!hasValue) return null;
+        return calculateSuiviNote(data, suiviConfig.criteres);
+    }
+
+    function renderBulkGrid() {
+        var container = document.getElementById('bulkGridCards');
+        var statusEl = document.getElementById('bulkGridStatus');
+        if (!container) return;
+
+        var targets = getBulkSuiviTargets();
+        var activeKeys = getActiveCriteriaKeys();
+        container.innerHTML = '';
+
+        // Sync: retirer les élèves qui ne sont plus ciblés
+        Object.keys(bulkGridState).forEach(function(code) {
+            if (!targets.some(function(s) { return s.code === code; })) {
+                delete bulkGridState[code];
+            }
+        });
+        // Ajouter les nouveaux
+        targets.forEach(function(student) {
+            if (!bulkGridState[student.code]) {
+                bulkGridState[student.code] = {
+                    travail: null, oral: null, attention: null,
+                    porteVue: null, coursAJour: null, autonomie: null,
+                    initiative: null, securite: null, planClasse: null,
+                    bavardage: 'aucun', telephone: 'ok'
+                };
+            }
+        });
+
+        var filledCount = 0;
+
+        targets.forEach(function(student) {
+            var data = bulkGridState[student.code];
+            var noteResult = computeBulkNote(student.code);
+            var noteVal = noteResult ? noteResult.noteSur20 : null;
+
+            var card = document.createElement('div');
+            card.className = 'bulk-card' + (noteVal !== null ? ' filled' : '');
+
+            // Header: nom + note
+            var header = document.createElement('div');
+            header.className = 'bulk-card-header';
+
+            var nameEl = document.createElement('span');
+            nameEl.className = 'bulk-card-name';
+            nameEl.textContent = student.name;
+
+            var noteEl = document.createElement('span');
+            if (noteVal !== null) {
+                filledCount++;
+                var noteClass = noteVal >= 12 ? 'good' : (noteVal >= 8 ? 'warn' : 'bad');
+                noteEl.className = 'bulk-card-note ' + noteClass;
+                noteEl.textContent = noteVal + '/20';
+            } else {
+                noteEl.className = 'bulk-card-note empty';
+                noteEl.textContent = '--';
+            }
+
+            header.appendChild(nameEl);
+            header.appendChild(noteEl);
+            card.appendChild(header);
+
+            // Chips: critères actifs + bavardage + téléphone
+            var chipsRow = document.createElement('div');
+            chipsRow.className = 'bulk-card-chips';
+
+            activeKeys.forEach(function(critere) {
+                var chip = document.createElement('button');
+                chip.type = 'button';
+                var val = data[critere];
+                var opt = getOptionDisplay(critere, val);
+                var label = getShortLabel(critere);
+
+                if (opt && val !== null) {
+                    chip.className = 'bulk-chip ' + opt.tone;
+                    chip.textContent = opt.emoji + ' ' + label;
+                } else {
+                    chip.className = 'bulk-chip';
+                    chip.textContent = label;
+                }
+
+                chip.addEventListener('click', (function(c, cr) {
+                    return function() { cycleBulkValue(c, cr); };
+                })(student.code, critere));
+
+                chipsRow.appendChild(chip);
+            });
+
+            // Bavardage chip (toujours visible)
+            var bavChip = document.createElement('button');
+            bavChip.type = 'button';
+            var bavOpt = getOptionDisplay('bavardage', data.bavardage);
+            if (bavOpt && data.bavardage !== 'aucun') {
+                bavChip.className = 'bulk-chip ' + bavOpt.tone;
+                bavChip.textContent = bavOpt.emoji + ' Bav.';
+            } else {
+                bavChip.className = 'bulk-chip';
+                bavChip.textContent = '🤫 Bav.';
+            }
+            bavChip.addEventListener('click', (function(c) {
+                return function() { cycleBulkValue(c, 'bavardage'); };
+            })(student.code));
+            chipsRow.appendChild(bavChip);
+
+            // Téléphone chip (toujours visible)
+            var telChip = document.createElement('button');
+            telChip.type = 'button';
+            var telOpt = getOptionDisplay('telephone', data.telephone);
+            if (telOpt && data.telephone !== 'ok') {
+                telChip.className = 'bulk-chip ' + telOpt.tone;
+                telChip.textContent = telOpt.emoji + ' Tél.';
+            } else {
+                telChip.className = 'bulk-chip';
+                telChip.textContent = '📵 Tél.';
+            }
+            telChip.addEventListener('click', (function(c) {
+                return function() { cycleBulkValue(c, 'telephone'); };
+            })(student.code));
+            chipsRow.appendChild(telChip);
+
+            card.appendChild(chipsRow);
+            container.appendChild(card);
+        });
+
+        if (statusEl) {
+            statusEl.textContent = filledCount + '/' + targets.length + ' élève(s) renseigné(s)';
+        }
+    }
+
+    function prefillBulkAll() {
+        var activeKeys = getActiveCriteriaKeys();
+        // Premier choix "good" pour chaque critère
+        var goodValues = {};
+        activeKeys.forEach(function(critere) {
+            var options = SUIVI_OPTION_SETS[critere] || [];
+            var good = options.find(function(o) { return o.tone === 'good'; });
+            if (good) {
+                goodValues[critere] = (critere === 'oral' && good.value !== 'ne')
+                    ? parseInt(good.value, 10)
+                    : good.value;
+            }
+        });
+
+        Object.keys(bulkGridState).forEach(function(code) {
+            activeKeys.forEach(function(critere) {
+                if (goodValues[critere] !== undefined) {
+                    bulkGridState[code][critere] = goodValues[critere];
+                }
+            });
+        });
+        renderBulkGrid();
+        showToast('✅ Pré-rempli « Bien » pour tous. Ajustez les exceptions.');
+    }
+
+    function resetBulkGrid() {
+        var targets = getBulkSuiviTargets();
+        initBulkGridState(targets);
+        renderBulkGrid();
+        showToast('🔄 Grille réinitialisée.');
+    }
+
+    async function saveBulkGrid() {
+        var context = getSuiviContext();
+        if (!context.ready) {
+            showToast(context.reason || 'Contexte incomplet.');
+            return;
+        }
+
+        var targets = getBulkSuiviTargets();
+        var toSave = [];
+        targets.forEach(function(student) {
+            var data = bulkGridState[student.code];
+            if (!data) return;
+            var noteResult = computeBulkNote(student.code);
+            if (noteResult) {
+                toSave.push({ student: student, data: data, noteResult: noteResult });
+            }
+        });
+
+        if (!toSave.length) {
+            showToast('Aucun élève à enregistrer. Renseignez au moins un critère par élève.');
+            return;
+        }
+
+        var ok = confirm(
+            'Enregistrer le suivi de ' + toSave.length + ' élève(s) ?\n\n' +
+            'Les élèves sans critère renseigné seront ignorés.'
+        );
+        if (!ok) return;
+
+        var saveBtn = document.getElementById('bulkSaveAllBtn');
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Enregistrement...'; }
+
+        try {
+            for (var i = 0; i < toSave.length; i++) {
+                var item = toSave[i];
+                var docRef = doc(db, 'resultats', item.student.code, 'suivi', context.docId);
+                var existingSnap = await getDoc(docRef);
+                var oldDoc = existingSnap.exists() ? existingSnap.data() : null;
+                var payload = buildBulkGridPayload(context, item.student, item.data, item.noteResult);
+                await setDoc(docRef, payload);
+                await updateSuiviStats(item.student.code, item.noteResult.noteSur20, payload, oldDoc);
+                syncSuiviPresenceToRoster(item.student.name, false);
+            }
+
+            showToast('⚡ ' + toSave.length + ' élève(s) enregistrés · séance à enregistrer ensuite');
+
+            // Fermer la grille et rafraîchir
+            bulkGridVisible = false;
+            var panel = document.getElementById('suiviBulkGridPanel');
+            if (panel) panel.classList.remove('active');
+            var btn = document.getElementById('suiviBulkNoteBtn');
+            if (btn) btn.textContent = '⚡ Grille de saisie rapide';
+            bulkGridState = {};
+
+            await refreshSuiviSection();
+        } finally {
+            if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Enregistrer tout'; }
+        }
+    }
+
+    function buildBulkGridPayload(context, student, data, noteResult) {
         return {
             date: context.date,
             heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
@@ -3805,30 +4154,30 @@
             module: context.pseModule,
             moduleTitre: context.moduleTitre,
             competences: [],
-            travail: null,
-            oral: null,
-            attention: null,
-            porteVue: null,
-            coursAJour: null,
-            autonomie: null,
-            initiative: null,
-            securite: null,
-            planClasse: null,
-            bavardage: 'aucun',
-            telephone: 'ok',
-            commentaire: comment || null,
+            travail: data.travail,
+            oral: data.oral,
+            attention: data.attention,
+            porteVue: data.porteVue,
+            coursAJour: data.coursAJour,
+            autonomie: data.autonomie,
+            initiative: data.initiative,
+            securite: data.securite,
+            planClasse: data.planClasse,
+            bavardage: data.bavardage || 'aucun',
+            telephone: data.telephone || 'ok',
+            commentaire: null,
             coursDistrib: [],
             criteresActifs: Object.assign({}, suiviConfig.criteres),
-            points: 0,
-            maxPoints: 0,
-            noteBase: note,
-            noteCalculee: note,
-            plafond: 20,
-            malus: 0,
-            bonusObjectif: 0,
-            noteSur20: note,
-            ajustementManuel: true,
-            justificationAjustement: 'Saisie rapide en lot',
+            points: noteResult.points,
+            maxPoints: noteResult.maxPoints,
+            noteBase: noteResult.noteBase,
+            noteCalculee: noteResult.noteSur20,
+            plafond: noteResult.plafond,
+            malus: noteResult.malus,
+            bonusObjectif: noteResult.bonusObjectif,
+            noteSur20: noteResult.noteSur20,
+            ajustementManuel: false,
+            justificationAjustement: null,
             objectifValide: null,
             absent: false,
             createdAt: serverTimestamp(),
