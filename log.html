@@ -726,6 +726,15 @@
             background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(16,185,129,0.08));
             border: 1px solid rgba(99,102,241,0.25);
         }
+        .suivi-note-top {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 220px;
+            gap: 12px;
+            align-items: start;
+        }
+        .suivi-note-score {
+            min-width: 0;
+        }
         .suivi-note-label {
             font-size: 0.72em; font-weight: 800; color: var(--muted);
             text-transform: uppercase; letter-spacing: 0.5px;
@@ -761,6 +770,22 @@
         }
         .suivi-option.active.neutral {
             border-color: var(--primary); background: var(--primary-light); color: #818cf8;
+        }
+        .suivi-option-help {
+            margin-top: -2px;
+            margin-bottom: 12px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: rgba(148,163,184,0.12);
+            color: var(--muted);
+            font-size: 0.72em;
+            line-height: 1.45;
+        }
+        .suivi-option-help.active {
+            color: #e2e8f0;
+        }
+        .suivi-option-help strong {
+            color: var(--text);
         }
         .suivi-courses {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px;
@@ -834,7 +859,10 @@
 
         /* ── AJUSTEMENT DANS NOTE BOX ── */
         .suivi-note-adjust {
-            margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(15,23,42,0.18);
         }
         .suivi-note-adjust label {
             display: flex; align-items: center; gap: 8px;
@@ -844,7 +872,13 @@
             display: none; gap: 8px; margin-top: 8px;
         }
         .suivi-note-adjust-fields.active {
-            display: grid; grid-template-columns: 110px 1fr;
+            display: grid; grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 520px) {
+            .suivi-note-top {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* ── GRILLE SAISIE RAPIDE ── */
@@ -1675,6 +1709,80 @@
             { value: 'confisque', label: 'Confisqué', emoji: '⛔', tone: 'danger' },
             { value: 'ne', label: 'N/E', emoji: '⏭', tone: 'neutral' }
         ]
+    };
+    const SUIVI_OPTION_HINTS = {
+        travail: {
+            tresbien: 'Travail complet, soigné et autonome.',
+            fait: 'Travail réalisé correctement dans la séance.',
+            partiel: 'Travail engagé mais encore incomplet.',
+            insuffisant: 'Travail trop faible ou non abouti.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        oral: {
+            0: 'Aucune prise de parole observable.',
+            1: 'Participation orale très limitée.',
+            2: 'Participation correcte mais irrégulière.',
+            3: 'Bonne participation, réponses adaptées.',
+            4: 'Participation très solide et pertinente.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        attention: {
+            bonne: 'Concentration régulière pendant la séance.',
+            moyenne: 'Attention correcte mais fluctuante.',
+            insuffisante: 'Attention trop faible ou dispersée.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        porteVue: {
+            ok: 'Le porte-vue est présent et exploitable.',
+            oubli: 'Le porte-vue manque pour cette séance.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        coursAJour: {
+            a_jour: 'Le cours est tenu à jour.',
+            incomplet: 'Le cours existe mais reste partiellement tenu.',
+            pas_a_jour: 'Le cours n’est pas à jour.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        autonomie: {
+            bonne: 'L’élève travaille seul avec efficacité.',
+            moyenne: 'L’autonomie est présente mais encore fragile.',
+            insuffisante: 'L’élève dépend trop de l’aide extérieure.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        initiative: {
+            oui: 'L’élève propose, anticipe ou aide spontanément.',
+            parfois: 'L’initiative existe mais reste irrégulière.',
+            non: 'Attitude trop passive ou attentiste.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        securite: {
+            oui: 'Le cadre de classe est respecté.',
+            partiel: 'Quelques rappels ont été nécessaires.',
+            non: 'Le cadre n’a pas été respecté.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        planClasse: {
+            oui: 'La place attribuée a été respectée.',
+            partiel: 'Quelques écarts de place ont été constatés.',
+            non: 'Le plan de classe n’a pas été respecté.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        bavardage: {
+            aucun: 'Aucun bavardage relevé.',
+            rappel1: 'Un premier rappel oral a été nécessaire.',
+            rappel2: 'Deux rappels ont été nécessaires.',
+            rappel3: 'Bavardage important, la note est fortement plafonnée.',
+            retenu: 'Situation grave, plafond de note minimal.',
+            ne: 'Critère non observé pour cette séance.'
+        },
+        telephone: {
+            ok: 'Aucun souci téléphone pendant la séance.',
+            rappel1: 'Premier rappel lié au téléphone.',
+            rappel2: 'Deux rappels liés au téléphone.',
+            rappel3: 'Usage répété, malus important.',
+            confisque: 'Téléphone confisqué, malus maximal.',
+            ne: 'Critère non observé pour cette séance.'
+        }
     };
     const SUIVI_COURS_OPTIONS = [
         { value: 'seance1', label: 'S1' },
@@ -4368,14 +4476,19 @@
         /* ── 1. NOTE BOX (avec ajustement dedans) ── */
         var noteBoxHtml =
             '<div class="suivi-note-box">' +
-                '<div class="suivi-note-label">Note calculée</div>' +
-                '<div class="suivi-note-value" id="suiviNoteValue">--/20</div>' +
-                '<div class="suivi-note-meta" id="suiviNoteMeta"></div>' +
-                '<div class="suivi-note-adjust">' +
-                    '<label><input type="checkbox" id="suiviAdjustToggle"' + (currentSuiviSaisie.ajustementManuel ? ' checked' : '') + '> ✏️ Ajuster la note manuellement</label>' +
-                    '<div id="suiviAdjustFields" class="suivi-note-adjust-fields' + (currentSuiviSaisie.ajustementManuel ? ' active' : '') + '">' +
-                        '<input type="number" id="suiviManualNote" min="0" max="20" step="0.5" value="' + escapeSuiviHtml(currentSuiviSaisie.noteFinaleManuelle) + '" placeholder="Note /20">' +
-                        '<input type="text" id="suiviAdjustReason" value="' + escapeSuiviHtml(currentSuiviSaisie.justificationAjustement) + '" placeholder="Justification (optionnel)">' +
+                '<div class="suivi-note-top">' +
+                    '<div class="suivi-note-score">' +
+                        '<div class="suivi-note-label">Note calculée</div>' +
+                        '<div class="suivi-note-value" id="suiviNoteValue">--/20</div>' +
+                        '<div class="suivi-note-meta" id="suiviNoteMeta"></div>' +
+                    '</div>' +
+                    '<div class="suivi-note-adjust">' +
+                        '<div class="suivi-note-label">Ajustement manuel</div>' +
+                        '<label><input type="checkbox" id="suiviAdjustToggle"' + (currentSuiviSaisie.ajustementManuel ? ' checked' : '') + '> Modifier la note finale</label>' +
+                        '<div id="suiviAdjustFields" class="suivi-note-adjust-fields' + (currentSuiviSaisie.ajustementManuel ? ' active' : '') + '">' +
+                            '<input type="number" id="suiviManualNote" min="0" max="20" step="0.5" value="' + escapeSuiviHtml(currentSuiviSaisie.noteFinaleManuelle) + '" placeholder="Note /20">' +
+                            '<input type="text" id="suiviAdjustReason" value="' + escapeSuiviHtml(currentSuiviSaisie.justificationAjustement) + '" placeholder="Justification (optionnel)">' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -4450,6 +4563,9 @@
 
     function renderSuiviOptionSection(critere, label, selectedValue) {
         var options = SUIVI_OPTION_SETS[critere] || [];
+        var selectedOption = options.find(function(option) {
+            return String(selectedValue) === String(option.value);
+        }) || null;
         var buttons = options.map(function(option) {
             var isActive = String(selectedValue) === String(option.value);
             return '<button type="button" class="suivi-option' + (isActive ? (' active ' + option.tone) : '') + '" data-critere="' + critere + '" data-value="' + option.value + '">' +
@@ -4457,7 +4573,10 @@
                 '<span>' + escapeSuiviHtml(option.label) + '</span>' +
             '</button>';
         }).join('');
-        return '<div class="suivi-section-title">' + label + '</div><div class="suivi-options">' + buttons + '</div>';
+        var helpHtml = selectedOption
+            ? ('<strong>' + escapeSuiviHtml(selectedOption.label) + '</strong> · ' + escapeSuiviHtml(getSuiviOptionHint(critere, selectedOption.value)) + ' · Recliquez pour revenir au neutre.')
+            : 'Touchez une option, puis recliquez dessus pour revenir au neutre.';
+        return '<div class="suivi-section-title">' + label + '</div><div class="suivi-options">' + buttons + '</div><div class="suivi-option-help' + (selectedOption ? ' active' : '') + '">' + helpHtml + '</div>';
     }
 
     function bindSuiviModalEvents(student) {
@@ -4467,7 +4586,11 @@
                 syncSuiviFreeFields();
                 var critere = btn.dataset.critere;
                 var value = btn.dataset.value;
-                currentSuiviSaisie[critere] = (critere === 'oral' && value !== 'ne') ? parseInt(value, 10) : value;
+                var currentValue = currentSuiviSaisie[critere];
+                var nextVal = String(currentValue) === String(value)
+                    ? null
+                    : ((critere === 'oral' && value !== 'ne') ? parseInt(value, 10) : value);
+                currentSuiviSaisie[critere] = nextVal;
                 renderSuiviModal(student);
             });
         });
@@ -4705,7 +4828,15 @@
         if (result.bonusObjectif > 0) {
             metaParts += '<span>Bonus 🎯 +' + result.bonusObjectif + '</span>';
         }
+        if (currentSuiviSaisie.ajustementManuel && hasValidSuiviManualAdjust()) {
+            metaParts += '<span>Note ajustée manuellement</span>';
+        }
         noteMeta.innerHTML = metaParts;
+    }
+
+    function getSuiviOptionHint(critere, value) {
+        var hints = SUIVI_OPTION_HINTS[critere] || {};
+        return hints[String(value)] || 'Critère renseigné pour cette séance.';
     }
 
     function hasSuiviActiveValue(saisieData) {
