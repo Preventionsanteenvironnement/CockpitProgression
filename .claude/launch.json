@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "cockpit",
-      "runtimeExecutable": "ruby",
-      "runtimeArgs": ["-run", "-ehttpd", "--", "--port=8086"],
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8086"],
       "port": 8086
     }
   ]
